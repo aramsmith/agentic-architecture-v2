@@ -1,0 +1,19 @@
+# Local case data is never committed.
+cases/*
+!cases/_template/
+!cases/_template/**
+!cases/contoso-permit-services/
+!cases/contoso-permit-services/**
+
+# Local credentials and environment files.
+.env
+.env.*
+*.local
+*.secret
+*.secrets
+
+# Generated and dependency artifacts.
+node_modules/
+dist/
+_site/
+*.log

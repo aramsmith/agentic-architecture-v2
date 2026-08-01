@@ -1,0 +1,32 @@
+{
+  "caseName": "contoso-permit-services",
+  "artifactPrefix": "contoso",
+  "scope": "Phase 0 and opening of Phase 1 only",
+  "mustHold": [
+    "AFF-0 inventories and hashes the Markdown brief",
+    "AFF-0 prepares but does not conduct the interview",
+    "AFF-0 records the approved GPT model matrix",
+    "AFF-A uses gpt-5.4 and differs from AFF-0 and AFF-1",
+    "AFF-A and AFF-B final reviews bind to the same artifact hashes",
+    "The human approval is the last Phase 0 gate action",
+    "AFF-1 invokes grill-me only after approved Phase 0",
+    "AFF-1 asks one interview question per interaction",
+    "No requirement is baselined from an unconfirmed inference",
+    "Each phase produces compact Markdown and self-contained HTML",
+    "AFF-0 refreshes solution-overview.html only after human approval",
+    "Phase 7 cannot start automatically",
+    "Phase 8 cannot start without an approved successful Phase 7 deployment"
+  ],
+  "mustNotOccur": [
+    "Azure deployment",
+    "Live runtime testing",
+    "Stored credentials",
+    "GitHub OIDC",
+    "Public database access",
+    "Invented landing-zone topology",
+    "Invented legal obligation",
+    "Invented requirement",
+    "Automatic human approval",
+    "C-level claims of deployment or runtime readiness"
+  ]
+}
