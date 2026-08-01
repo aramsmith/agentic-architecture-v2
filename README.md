@@ -9,14 +9,14 @@ phase. Deployment and runtime testing are optional and always require separate h
 
 ## Interactive solution overview
 
-- **[Open the interactive HTML solution overview](https://aramsmith.github.io/agentic-architecture-v2/)**
-- [View the HTML source in this repository](./agentic-architecture-v2.html)
+- **[Open the interactive HTML solution overview](https://aramsmith.github.io/agentic-architecture-v2/agentic-architecture-v2.html)**
 
 The interactive overview includes the animated architecture ring, phase model, reviewer roles, agent
 roster, assurance sequence, and short operating manual.
 
 After the first push, select **Settings → Pages → Source: GitHub Actions** if Pages is not already
-enabled. The included workflow publishes the HTML overview at the link above.
+enabled. The included workflow publishes both the site root and the explicit HTML file at the link
+above.
 
 ## Architecture ring
 

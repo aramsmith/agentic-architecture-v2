@@ -35,6 +35,7 @@ jobs:
         run: |
           mkdir -p _site
           cp agentic-architecture-v2.html _site/index.html
+          cp agentic-architecture-v2.html _site/agentic-architecture-v2.html
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
