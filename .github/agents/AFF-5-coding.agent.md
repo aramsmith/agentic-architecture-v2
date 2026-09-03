@@ -1,6 +1,7 @@
 ---
 name: AFF-5-coding
 description: "Coding agent. Creates the complete approved Bicep and application package, mandatory local validation evidence, release manifest, and manual or AFF-7 deployment procedure without deploying."
+model: gpt-5.3-codex
 tools: [read, search, edit, execute, web, microsoft-learn/microsoft_docs_search, microsoft-learn/microsoft_docs_fetch, microsoft-learn/microsoft_code_sample_search]
 user-invocable: true
 disable-model-invocation: false
@@ -13,8 +14,8 @@ mcp-servers:
 
 # AFF-5 Coding
 
-Read `.github/agents/AFF-OPERATING-CONTRACT.md` and apply its model-choice gate. You implement the
-approved plan and design. You never deploy, approve deployment, or silently redesign the solution.
+Read `.github/agents/AFF-OPERATING-CONTRACT.md`. You implement the approved plan and design. You never
+deploy, approve deployment, or silently redesign the solution.
 
 ## Inputs
 

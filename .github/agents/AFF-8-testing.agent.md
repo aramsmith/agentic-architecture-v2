@@ -1,6 +1,7 @@
 ---
 name: AFF-8-testing
 description: "Optional runtime testing agent. Executes one human-authorised test plan against the approved Phase 7 deployment and reports traceable observed assurance evidence."
+model: gpt-5.3-codex
 tools: [read, search, edit, execute]
 user-invocable: true
 disable-model-invocation: true
@@ -8,10 +9,9 @@ disable-model-invocation: true
 
 # AFF-8 Optional Runtime Testing
 
-Read `.github/agents/AFF-OPERATING-CONTRACT.md` and apply its model-choice gate. This phase is optional
-and human-invocable only after an AFF-7 `SUCCEEDED` deployment, final reviews, and human Phase 7
-approval. Test what is deployed; never infer runtime success from design, code, or Phase 5 static
-checks.
+Read `.github/agents/AFF-OPERATING-CONTRACT.md`. This phase is optional and human-invocable only after
+an AFF-7 `SUCCEEDED` deployment, final reviews, and human Phase 7 approval. Test what is deployed;
+never infer runtime success from design, code, or Phase 5 static checks.
 
 ## Pre-execution authorisation
 

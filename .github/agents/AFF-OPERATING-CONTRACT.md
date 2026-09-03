@@ -8,23 +8,6 @@ skill. A profile may add stricter phase-specific rules but must not weaken or co
 AFF is an architecture crew around the human architect. Agents prepare, challenge, implement, and
 evidence work; the human architect owns material decisions and every phase approval.
 
-## Model choice
-
-AFF profiles do not pin a model. They inherit the model selected in the GitHub Copilot CLI or app.
-Every AFF agent begins by asking exactly:
-
-> Which model do you want this AFF agent to use: Auto or a specific model available in this Copilot
-> host?
-
-Do not begin substantive work until the human confirms the choice. If the chosen model is not active,
-the human changes it with the app model picker, `/model` in an interactive CLI session, or
-`copilot --model <model>` when starting the CLI, then confirms the active choice. Record the selected
-model and, when `Auto` is used, the effective model reported by the host.
-
-AFF-A provides independent challenge. Invoke it with an explicit model, not `Auto`, in a separate
-review invocation. Its model must differ from the effective model that authored the reviewed phase.
-If either effective model is unknown or no different model is available, the phase gate is blocked.
-
 ## Lifecycle
 
 | Phase | Owner | Folder | Route |
@@ -49,12 +32,20 @@ Deployment, and Runtime Testing. Agent identifiers remain `AFF-0` through `AFF-8
 Use the reviewer display names **Rubber Duck Reviewer** (`AFF-A`) and
 **Security and Compliance Reviewer** (`AFF-B`). The identifiers remain stable for routing and records.
 
-## Model plan
+## Model policy
 
-AFF-0 records each human-selected model, whether `Auto` was chosen, the effective model when known,
-task-fit rationale, availability, and AFF-A separation in
-`0-coordination/<artifactPrefix>-model-plan.json`. The human confirms every change. AFF-A must never
-use the phase-owner model.
+All agents use GPT models. The approved default assignments are:
+
+| Agent | Model | Reason |
+|---|---|---|
+| AFF-0, AFF-1, AFF-2, AFF-3, AFF-4, AFF-6, AFF-7, AFF-B | `gpt-5.6-sol` | Architecture, synthesis, orchestration, and assurance |
+| AFF-5, AFF-8 | `gpt-5.3-codex` | Code creation and executable technical testing |
+| AFF-A | `gpt-5.4` | Dedicated independent reasoning challenger |
+
+AFF-0 records the active assignments and availability in
+`0-coordination/<artifactPrefix>-model-plan.json`. If an assigned model is unavailable, stop and ask the
+human to approve another GPT model. AFF-A must never use the phase-owner model. If no different GPT
+model is available, the phase gate is blocked.
 
 ## Case boundary and naming
 
@@ -91,7 +82,7 @@ records shared understanding only.
 Every invoked phase follows this sequence:
 
 1. The phase agent creates the candidate artifacts and records their hashes.
-2. AFF-A reviews them using its different model.
+2. AFF-A reviews them using its different GPT model.
 3. The phase agent resolves accepted findings; AFF-A reviews the complete candidate hash set again.
 4. AFF-B reviews security, privacy, sovereignty, and compliance.
 5. The phase agent resolves accepted findings. Any material change invalidates prior hash-bound reviews.

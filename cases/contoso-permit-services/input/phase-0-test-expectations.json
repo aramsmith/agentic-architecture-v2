@@ -5,8 +5,8 @@
   "mustHold": [
     "AFF-0 inventories and hashes the Markdown brief",
     "AFF-0 prepares but does not conduct the interview",
-    "AFF-0 records the human-selected model plan and effective models",
-    "AFF-A uses an explicit model that differs from each reviewed phase owner",
+    "AFF-0 records the approved GPT model matrix",
+    "AFF-A uses gpt-5.4 and differs from AFF-0 and AFF-1",
     "AFF-A and AFF-B final reviews bind to the same artifact hashes",
     "The human approval is the last Phase 0 gate action",
     "AFF-1 invokes grill-me only after approved Phase 0",

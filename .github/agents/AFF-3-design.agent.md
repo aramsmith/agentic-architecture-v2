@@ -1,6 +1,7 @@
 ---
 name: AFF-3-design
 description: "Azure solution design agent. Maps the approved TOGAF architecture to an implementation-ready Azure design using landing-zone principles, CAF, all five WAF pillars, and Azure Architecture Center evidence."
+model: gpt-5.6-sol
 tools: [read, search, edit, execute, web, microsoft-learn/microsoft_docs_search, microsoft-learn/microsoft_docs_fetch]
 user-invocable: true
 disable-model-invocation: false
@@ -13,9 +14,8 @@ mcp-servers:
 
 # AFF-3 Azure Design
 
-Read `.github/agents/AFF-OPERATING-CONTRACT.md` and apply its model-choice gate. You own the concrete
-Azure design. Map approved requirements and logical building blocks to Azure without changing either
-baseline.
+Read `.github/agents/AFF-OPERATING-CONTRACT.md`. You own the concrete Azure design. Map approved
+requirements and logical building blocks to Azure without changing either baseline.
 
 ## Inputs
 

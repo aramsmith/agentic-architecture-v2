@@ -30,8 +30,7 @@ These are the GitHub-documented locations for
 [repository custom agents](https://docs.github.com/en/copilot/how-tos/copilot-cli/customize-copilot/create-custom-agents-for-cli)
 and [project skills](https://docs.github.com/en/copilot/how-tos/copilot-cli/customize-copilot/add-skills).
 Prerequisites are GitHub Copilot access, a current Copilot CLI or the Copilot app, a clean clone or
-checkout of the target branch, and at least two available models when independent AFF-A review is
-required.
+checkout of the target branch, and access to the models listed below.
 
 Open Copilot CLI from the repository root. It discovers project agents and skills from the checked-out
 branch. If files change during a running session, restart the CLI to reload agents or use
@@ -41,11 +40,10 @@ To verify discovery in Copilot CLI:
 
 1. Run `/agent` and confirm `AFF-0-coordinator` is available.
 2. Run `/skills list`, then `/skills info grill-me` and `/skills info render-case-html`.
-3. Select `AFF-0-coordinator` and confirm its first question asks which model to use. The equivalent
-   command-line check is:
+3. Select `AFF-0-coordinator`, or run:
 
    ```powershell
-   copilot --agent=AFF-0-coordinator --model auto --prompt "Begin." --silent
+   copilot --agent=AFF-0-coordinator --prompt "State only the custom agent profile name. Do not read or modify files." --silent
    ```
 
 In the GitHub Copilot app, select this repository and the branch containing the profiles, then select
@@ -109,24 +107,24 @@ verdicts cover the same unchanged artifact hashes.
 
 ## Agent roster
 
-| ID | Display name | Model policy | Responsibility |
+| ID | Display name | Model | Responsibility |
 |---|---|---|---|
-| AFF-0 | Phase 0 — Coordinate | Human-selected | Normalise inputs, initialise state and models, prepare the interview, route reviews and gates |
-| AFF-1 | Phase 1 — Requirements | Human-selected | Conduct the human interview and create the governed requirements baseline |
-| AFF-2 | Phase 2 — TOGAF Architecture | Human-selected | Create the vendor-neutral Business, Data, Application, and Technology Architecture |
-| AFF-3 | Phase 3 — Azure Design | Human-selected | Map the logical architecture to landing zones, CAF, WAF, Azure services, and controls |
-| AFF-4 | Phase 4 — Implementation Plan | Human-selected | Produce the dependency-led Bicep plan, validation, rollback, and deployment procedure |
-| AFF-5 | Phase 5 — Coding | Human-selected | Build and locally validate the complete IaC/application package without deploying |
-| AFF-6 | Phase 6 — C-level Presentation | Human-selected | Create the evidence-backed DECKIO board narrative and PDF |
-| AFF-7 | Phase 7 — Deployment | Human-selected | Optionally execute one explicitly authorised Azure deployment attempt |
-| AFF-8 | Phase 8 — Runtime Testing | Human-selected | Optionally execute one authorised test plan against the approved deployment |
-| AFF-A | Rubber Duck Reviewer | Explicitly different | Challenge correctness, logic, traceability, and unsupported claims with a different model |
-| AFF-B | Security and Compliance Reviewer | Human-selected | Derive case-specific obligations and review security, privacy, sovereignty, and compliance |
+| AFF-0 | Phase 0 — Coordinate | `gpt-5.6-sol` | Normalise inputs, initialise state and models, prepare the interview, route reviews and gates |
+| AFF-1 | Phase 1 — Requirements | `gpt-5.6-sol` | Conduct the human interview and create the governed requirements baseline |
+| AFF-2 | Phase 2 — TOGAF Architecture | `gpt-5.6-sol` | Create the vendor-neutral Business, Data, Application, and Technology Architecture |
+| AFF-3 | Phase 3 — Azure Design | `gpt-5.6-sol` | Map the logical architecture to landing zones, CAF, WAF, Azure services, and controls |
+| AFF-4 | Phase 4 — Implementation Plan | `gpt-5.6-sol` | Produce the dependency-led Bicep plan, validation, rollback, and deployment procedure |
+| AFF-5 | Phase 5 — Coding | `gpt-5.3-codex` | Build and locally validate the complete IaC/application package without deploying |
+| AFF-6 | Phase 6 — C-level Presentation | `gpt-5.6-sol` | Create the evidence-backed DECKIO board narrative and PDF |
+| AFF-7 | Phase 7 — Deployment | `gpt-5.6-sol` | Optionally execute one explicitly authorised Azure deployment attempt |
+| AFF-8 | Phase 8 — Runtime Testing | `gpt-5.3-codex` | Optionally execute one authorised test plan against the approved deployment |
+| AFF-A | Rubber Duck Reviewer | `gpt-5.4` | Challenge correctness, logic, traceability, and unsupported claims with a different GPT model |
+| AFF-B | Security and Compliance Reviewer | `gpt-5.6-sol` | Derive case-specific obligations and review security, privacy, sovereignty, and compliance |
 
 ## Core principles
 
 - **Human-final governance:** agents prepare and challenge; the human decides and approves.
-- **Independent review:** the Rubber Duck Reviewer uses a different model from the phase agent.
+- **Independent review:** the Rubber Duck Reviewer uses a different GPT model from the phase agent.
 - **Evidence-bound convergence:** both reviewers must cover identical artifact hashes.
 - **Compact outputs:** each phase produces one authoritative Markdown document and safe HTML rendering.
 - **No invented facts:** unknowns become explicit decisions, blockers, or owned assumptions.
@@ -138,11 +136,15 @@ verdicts cover the same unchanged artifact hashes.
 
 ## Before the first case
 
-Each agent asks which available model the human wants before substantive work starts. Profiles inherit
-the host selection: use the app model picker, `/model` in Copilot CLI, or start the CLI with
-`copilot --model <model>`. `Auto` is allowed for phase owners when the effective model is recorded.
-AFF-A must use an explicitly selected model that differs from the model that authored the reviewed
-phase.
+Confirm these GPT models are available:
+
+- `gpt-5.6-sol` for architecture, coordination, presentation, deployment, and AFF-B;
+- `gpt-5.3-codex` for coding and runtime testing;
+- `gpt-5.4` reserved for the Rubber Duck Reviewer.
+
+If a model is unavailable, the human must approve a GPT replacement and update agent frontmatter,
+`.github/agents/AFF-OPERATING-CONTRACT.md`, and `.github/agents/AFF-LIFECYCLE.json` consistently. The
+Rubber Duck Reviewer must always use a different model from the phase agent.
 
 ## Start a use case
 

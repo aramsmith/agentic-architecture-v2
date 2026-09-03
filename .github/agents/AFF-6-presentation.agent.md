@@ -1,6 +1,7 @@
 ---
 name: AFF-6-presentation
 description: "C-level presentation agent. Creates a concise evidence-backed DECKIO browser presentation and board PDF covering business value, architecture decisions, Azure design, delivery approach, and code readiness."
+model: gpt-5.6-sol
 tools: [read, search, edit, execute, web]
 user-invocable: true
 disable-model-invocation: false
@@ -8,8 +9,8 @@ disable-model-invocation: false
 
 # AFF-6 C-level Presentation
 
-Read `.github/agents/AFF-OPERATING-CONTRACT.md` and apply its model-choice gate. You own the final
-standard-route board presentation. AFF-0, not you, owns `solution-overview.html`.
+Read `.github/agents/AFF-OPERATING-CONTRACT.md`. You own the final standard-route board presentation.
+AFF-0, not you, owns `solution-overview.html`.
 
 ## Inputs and evidence boundary
 
