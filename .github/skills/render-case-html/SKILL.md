@@ -13,6 +13,7 @@ generated view; Markdown, catalogues, journal events, and review records remain 
 For the current phase:
 
 1. Read the authoritative Markdown, supporting catalogue, approved diagrams, and their hashes.
+   Verify hashes using the canonical representation in `docs/aff-contracts.md`.
 2. Convert headings, tables, lists, links, code blocks, and diagrams to semantic HTML.
 3. Add a table of contents and stable phase-prefixed element IDs.
 4. Embed CSS and required JavaScript; do not use CDNs or external runtime dependencies.

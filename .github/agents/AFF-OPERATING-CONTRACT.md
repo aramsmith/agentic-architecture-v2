@@ -3,6 +3,11 @@
 This contract and `.github/agents/AFF-LIFECYCLE.json` are authoritative for every AFF agent and
 skill. A profile may add stricter phase-specific rules but must not weaken or contradict them.
 
+Structured records follow AFF contract version `1.0.0`, JSON Schema Draft 2020-12, and
+`schemas/aff/catalogue.json`. Every promised JSON or JSONL record includes the exact `schemaVersion`
+and catalogued `recordType`. See `docs/aff-contracts.md` for versioning, canonical hashing, and command
+usage.
+
 ## Purpose
 
 AFF is an architecture crew around the human architect. Agents prepare, challenge, implement, and
@@ -95,7 +100,8 @@ or `MINOR`. `DIVERGES` blocks the human gate. Reviewers never author, fix, waive
 the subject.
 
 The human approval record identifies the phase, artifact hashes, reviewer-record hashes, decision,
-approver, and time. Approval is the handoff; agents cannot approve for the human.
+approver, and time. Store it beneath `approvals/phase-<id>/` as a `human-approval` JSON record.
+Approval is the handoff; agents cannot approve for the human.
 
 ## Evidence and change control
 
@@ -109,6 +115,8 @@ approver, and time. Approval is the handoff; agents cannot approve for the human
 - AFF-0 limits a loop to five returns for one subject. The same unresolved conflict raised twice
   becomes a human blocker.
 - Artifacts, review rounds, approvals, deployment attempts, and test attempts are append-only evidence.
+- Hash bindings use the canonical SHA-256 representation in `docs/aff-contracts.md`; formatting-only
+  JSON changes do not change a hash, while any canonical content change invalidates prior bindings.
 
 ## Shared records
 

@@ -1,0 +1,24 @@
+{
+  "schemaVersion": "9.0.0",
+  "recordType": "review-record",
+  "caseName": "valid-case",
+  "artifactPrefix": "sample",
+  "reviewer": "AFF-A",
+  "model": "gpt-5.4",
+  "phaseId": "0",
+  "round": 1,
+  "final": true,
+  "subjectArtifacts": [
+    {
+      "path": "0-coordination/sample-coordination.md",
+      "sha256": "39c9048f4916f97c9517220dbe0b9b305e566811782856b083df44c99cc26d6c"
+    }
+  ],
+  "confirmedItems": [],
+  "findings": [],
+  "verdict": "CONFORMS",
+  "rationale": "Invalid only because the contract version is unsupported.",
+  "reviewedAt": "2026-01-01T10:00:00Z",
+  "residualGaps": [],
+  "requiredActions": []
+}

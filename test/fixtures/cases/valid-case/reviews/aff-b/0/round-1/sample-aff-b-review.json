@@ -1,0 +1,36 @@
+{
+  "schemaVersion": "1.0.0",
+  "recordType": "review-record",
+  "caseName": "valid-case",
+  "artifactPrefix": "sample",
+  "reviewer": "AFF-B",
+  "model": "gpt-5.6-sol",
+  "phaseId": "0",
+  "round": 1,
+  "final": true,
+  "subjectArtifacts": [
+    {
+      "path": "0-coordination/sample-coordination.md",
+      "sha256": "39c9048f4916f97c9517220dbe0b9b305e566811782856b083df44c99cc26d6c"
+    },
+    {
+      "path": "0-coordination/sample-coordination.html",
+      "sha256": "29a0027a4a669a0718e8cea654a115572e485e0bff434d455fb43ff6af78031f"
+    },
+    {
+      "path": "0-coordination/sample-input-inventory.json",
+      "sha256": "aa7883b59a07e8cfd3368a8902af6281c9982622101f9f5d07f5fb6077436f8b"
+    },
+    {
+      "path": "0-coordination/sample-model-plan.json",
+      "sha256": "5eb77296d5f5caccff718242ed770184e81b655b0af956516510dab552220878"
+    }
+  ],
+  "confirmedItems": ["No unsupported compliance claim is present."],
+  "findings": [],
+  "verdict": "CONFORMS",
+  "rationale": "No material security or compliance issue remains.",
+  "reviewedAt": "2026-01-01T10:05:00Z",
+  "residualGaps": [],
+  "requiredActions": []
+}

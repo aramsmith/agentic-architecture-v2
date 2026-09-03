@@ -51,6 +51,23 @@ In the GitHub Copilot app, select this repository and the branch containing the 
 when the prompt and the skill description match, or when a profile explicitly references the skill.
 Repository custom agents must be on the default branch for normal repository-wide app discovery.
 
+## Validate AFF contracts
+
+The repository includes versioned JSON Schema contracts and a cross-platform Node.js validator. With
+Node.js 22 or later:
+
+```powershell
+npm ci
+npm run validate -- --framework-only
+npm run validate -- --case cases/<case-name>
+```
+
+The first command proves the packaged profiles, skills, lifecycle, schemas, routes, models, and
+repository references agree. The case command also checks structured records, safe paths, canonical
+SHA-256 bindings, final reviewer convergence, and human approval bindings. See
+[`docs/aff-contracts.md`](docs/aff-contracts.md) for the version policy, schema catalogue, and plain
+language error guidance.
+
 ## Architecture ring
 
 ```mermaid

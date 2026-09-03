@@ -1,0 +1,38 @@
+{
+  "schemaVersion": "1.0.0",
+  "recordType": "implementation-catalogue",
+  "caseName": "valid-case",
+  "artifactPrefix": "sample",
+  "revision": "1",
+  "designRevision": "1",
+  "units": [
+    {
+      "id": "unit-a",
+      "name": "Foundation",
+      "dependsOn": [],
+      "inputs": ["approved design"],
+      "outputs": ["foundation module"],
+      "owner": "AFF-5-coding",
+      "stage": "1",
+      "validation": ["Compile the module"],
+      "rollback": "Remove generated local output",
+      "evidence": ["5-coding/evidence/foundation.txt"],
+      "designElements": ["DES-001"],
+      "requirements": ["TR-001"]
+    },
+    {
+      "id": "unit-b",
+      "name": "Workload",
+      "dependsOn": ["unit-a"],
+      "inputs": ["foundation module"],
+      "outputs": ["workload module"],
+      "owner": "AFF-5-coding",
+      "stage": "2",
+      "validation": ["Compile the workload"],
+      "rollback": "Remove generated local output",
+      "evidence": ["5-coding/evidence/workload.txt"],
+      "designElements": ["DES-002"],
+      "requirements": ["FR-001"]
+    }
+  ]
+}
