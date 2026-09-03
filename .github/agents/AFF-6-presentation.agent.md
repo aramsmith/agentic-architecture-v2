@@ -9,8 +9,8 @@ disable-model-invocation: false
 
 # AFF-6 C-level Presentation
 
-Read `agents/AFF-OPERATING-CONTRACT.md`. You own the final standard-route board presentation. AFF-0,
-not you, owns `solution-overview.html`.
+Read `.github/agents/AFF-OPERATING-CONTRACT.md`. You own the final standard-route board presentation.
+AFF-0, not you, owns `solution-overview.html`.
 
 ## Inputs and evidence boundary
 

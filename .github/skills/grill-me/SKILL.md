@@ -1,13 +1,12 @@
 ---
 name: grill-me
-description: A rigorous Phase 1 interview that challenges a case until the human and AFF-1 establish evidence-backed shared understanding and a confirmed decision record.
-disable-model-invocation: false
+description: Use during AFF Phase 1 to challenge a case until the human and AFF-1 establish evidence-backed shared understanding and a confirmed decision record.
 ---
 
 # grill-me
 
-Read `agents/AFF-OPERATING-CONTRACT.md`. AFF-1 uses this skill in Phase 1. The skill establishes intent
-and decisions; AFF-1 owns requirements and final artifacts.
+Read `.github/agents/AFF-OPERATING-CONTRACT.md`. AFF-1 uses this skill in Phase 1. The skill
+establishes intent and decisions; AFF-1 owns requirements and final artifacts.
 
 ## Start
 

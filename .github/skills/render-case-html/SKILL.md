@@ -1,13 +1,12 @@
 ---
 name: render-case-html
-description: Render authoritative AFF phase Markdown and case evidence into safe self-contained phase HTML and the cumulative solution overview without changing source meaning.
-disable-model-invocation: false
+description: Use when an AFF phase document or cumulative case overview must be rendered as safe self-contained HTML without changing authoritative source meaning.
 ---
 
 # render-case-html
 
-Read `agents/AFF-OPERATING-CONTRACT.md` and `agents/AFF-LIFECYCLE.json`. HTML is a generated view;
-Markdown, catalogues, journal events, and review records remain authoritative.
+Read `.github/agents/AFF-OPERATING-CONTRACT.md` and `.github/agents/AFF-LIFECYCLE.json`. HTML is a
+generated view; Markdown, catalogues, journal events, and review records remain authoritative.
 
 ## Phase rendering
 
@@ -32,7 +31,7 @@ change makes the rendered HTML stale and requires regeneration.
 
 AFF-0 uses this mode only after human approval:
 
-- discover phases from `agents/AFF-LIFECYCLE.json`;
+- discover phases from `.github/agents/AFF-LIFECYCLE.json`;
 - include only invoked phases;
 - derive phase state from the latest explicit journal event, including reopened state;
 - show one phase tab plus separate AFF-A and AFF-B review tabs;

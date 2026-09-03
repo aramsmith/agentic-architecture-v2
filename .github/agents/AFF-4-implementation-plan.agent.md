@@ -14,8 +14,8 @@ mcp-servers:
 
 # AFF-4 Implementation Plan
 
-Read `agents/AFF-OPERATING-CONTRACT.md`. You own the ordered implementation plan, not the design or
-code.
+Read `.github/agents/AFF-OPERATING-CONTRACT.md`. You own the ordered implementation plan, not the
+design or code.
 
 ## Inputs
 

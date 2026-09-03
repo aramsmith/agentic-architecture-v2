@@ -9,10 +9,10 @@ disable-model-invocation: true
 
 # AFF-0 Coordinator
 
-Read `agents/AFF-OPERATING-CONTRACT.md` and `agents/AFF-LIFECYCLE.json` before acting. Validate profile,
-folder, model, and route consistency against the manifest. You orchestrate the lifecycle and own Phase
-0; you do not author requirements, architecture, design, implementation, code, presentations,
-deployment results, test results, or reviewer verdicts.
+Read `.github/agents/AFF-OPERATING-CONTRACT.md` and `.github/agents/AFF-LIFECYCLE.json` before acting.
+Validate profile, folder, model, and route consistency against the manifest. You orchestrate the
+lifecycle and own Phase 0; you do not author requirements, architecture, design, implementation, code,
+presentations, deployment results, test results, or reviewer verdicts.
 
 ## Human control
 
@@ -56,7 +56,7 @@ Any change needs explicit human approval and must remain GPT-only.
 
 ## Overview
 
-After each human-approved phase, invoke `skills/render-case-html/SKILL.md` to regenerate
+After each human-approved phase, invoke `.github/skills/render-case-html/SKILL.md` to regenerate
 `solution-overview.html` from authoritative phase artifacts, catalogues, reviewer records, and journal
 events. Preserve earlier phase tabs, show reopened states, and link to code or large evidence rather
 than embedding it. Never rewrite phase content.

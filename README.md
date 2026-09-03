@@ -18,6 +18,39 @@ After the first push, select **Settings → Pages → Source: GitHub Actions** i
 enabled. The included workflow publishes both the site root and the explicit HTML file at the link
 above.
 
+## GitHub Copilot compatibility
+
+AFF is packaged for GitHub Copilot CLI and the GitHub Copilot app:
+
+- the 11 repository custom agents use `.github/agents/*.agent.md`;
+- the two project skills use `.github/skills/<skill-name>/SKILL.md`;
+- the operating contract and lifecycle manifest remain beside the profiles in `.github/agents/`.
+
+These are the GitHub-documented locations for
+[repository custom agents](https://docs.github.com/en/copilot/how-tos/copilot-cli/customize-copilot/create-custom-agents-for-cli)
+and [project skills](https://docs.github.com/en/copilot/how-tos/copilot-cli/customize-copilot/add-skills).
+Prerequisites are GitHub Copilot access, a current Copilot CLI or the Copilot app, a clean clone or
+checkout of the target branch, and access to the models listed below.
+
+Open Copilot CLI from the repository root. It discovers project agents and skills from the checked-out
+branch. If files change during a running session, restart the CLI to reload agents or use
+`/skills reload` to reload skills.
+
+To verify discovery in Copilot CLI:
+
+1. Run `/agent` and confirm `AFF-0-coordinator` is available.
+2. Run `/skills list`, then `/skills info grill-me` and `/skills info render-case-html`.
+3. Select `AFF-0-coordinator`, or run:
+
+   ```powershell
+   copilot --agent=AFF-0-coordinator --prompt "State only the custom agent profile name. Do not read or modify files." --silent
+   ```
+
+In the GitHub Copilot app, select this repository and the branch containing the profiles, then select
+`AFF-0-coordinator` from the agent dropdown. Skills have no separate app selector: Copilot loads them
+when the prompt and the skill description match, or when a profile explicitly references the skill.
+Repository custom agents must be on the default branch for normal repository-wide app discovery.
+
 ## Architecture ring
 
 ```mermaid
@@ -110,8 +143,8 @@ Confirm these GPT models are available:
 - `gpt-5.4` reserved for the Rubber Duck Reviewer.
 
 If a model is unavailable, the human must approve a GPT replacement and update agent frontmatter,
-`agents/AFF-OPERATING-CONTRACT.md`, and `agents/AFF-LIFECYCLE.json` consistently. The Rubber Duck
-Reviewer must always use a different model from the phase agent.
+`.github/agents/AFF-OPERATING-CONTRACT.md`, and `.github/agents/AFF-LIFECYCLE.json` consistently. The
+Rubber Duck Reviewer must always use a different model from the phase agent.
 
 ## Start a use case
 
@@ -150,14 +183,15 @@ deployment.
 ## Repository structure
 
 ```text
-agents/
-  AFF-OPERATING-CONTRACT.md
-  AFF-LIFECYCLE.json
-  AFF-0...AFF-8 agent profiles
-  AFF-A and AFF-B reviewer profiles
-skills/
-  grill-me/
-  render-case-html/
+.github/
+  agents/
+    AFF-OPERATING-CONTRACT.md
+    AFF-LIFECYCLE.json
+    AFF-0...AFF-8 agent profiles
+    AFF-A and AFF-B reviewer profiles
+  skills/
+    grill-me/
+    render-case-html/
 cases/
   _template/
   contoso-permit-services/

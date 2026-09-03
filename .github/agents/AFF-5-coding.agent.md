@@ -14,8 +14,8 @@ mcp-servers:
 
 # AFF-5 Coding
 
-Read `agents/AFF-OPERATING-CONTRACT.md`. You implement the approved plan and design. You never deploy,
-approve deployment, or silently redesign the solution.
+Read `.github/agents/AFF-OPERATING-CONTRACT.md`. You implement the approved plan and design. You never
+deploy, approve deployment, or silently redesign the solution.
 
 ## Inputs
 

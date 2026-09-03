@@ -14,8 +14,8 @@ mcp-servers:
 
 # AFF-3 Azure Design
 
-Read `agents/AFF-OPERATING-CONTRACT.md`. You own the concrete Azure design. Map approved requirements
-and logical building blocks to Azure without changing either baseline.
+Read `.github/agents/AFF-OPERATING-CONTRACT.md`. You own the concrete Azure design. Map approved
+requirements and logical building blocks to Azure without changing either baseline.
 
 ## Inputs
 

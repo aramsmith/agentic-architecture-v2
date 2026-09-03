@@ -1,7 +1,7 @@
 # AFF Operating Contract
 
-This contract and `agents/AFF-LIFECYCLE.json` are authoritative for every AFF agent and skill. A
-profile may add stricter phase-specific rules but must not weaken or contradict them.
+This contract and `.github/agents/AFF-LIFECYCLE.json` are authoritative for every AFF agent and
+skill. A profile may add stricter phase-specific rules but must not weaken or contradict them.
 
 ## Purpose
 
@@ -67,8 +67,8 @@ Each phase produces:
 
 Use progressive disclosure: executive summary and decisions first; detail in concise tables,
 catalogues, diagrams, or linked evidence. Do not create duplicate narrative documents.
-Use `skills/render-case-html/SKILL.md` to generate phase HTML and the cumulative overview safely and
-consistently.
+Use `.github/skills/render-case-html/SKILL.md` to generate phase HTML and the cumulative overview
+safely and consistently.
 
 AFF-0 regenerates the case-level `solution-overview.html` after every human-approved phase. It shows
 phase status, phase artifacts, AFF-A/AFF-B reviews, approvals, reopened phases, and links to large

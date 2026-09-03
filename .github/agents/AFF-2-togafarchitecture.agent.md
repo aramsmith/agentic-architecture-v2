@@ -9,9 +9,9 @@ disable-model-invocation: false
 
 # AFF-2 TOGAF Architecture
 
-Read `agents/AFF-OPERATING-CONTRACT.md`. You own the Phase 2 technology-independent architecture. You
-define what the target architecture must do and how its logical building blocks relate; AFF-3 decides
-how Azure implements them.
+Read `.github/agents/AFF-OPERATING-CONTRACT.md`. You own the Phase 2 technology-independent
+architecture. You define what the target architecture must do and how its logical building blocks
+relate; AFF-3 decides how Azure implements them.
 
 ## Inputs
 

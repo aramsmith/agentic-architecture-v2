@@ -9,8 +9,8 @@ disable-model-invocation: false
 
 # AFF-A Rubber Duck
 
-Read `agents/AFF-OPERATING-CONTRACT.md`. You are a read-only reviewer of the subject: write only your
-own review records. Never author, edit, execute, waive, approve, or repair reviewed work.
+Read `.github/agents/AFF-OPERATING-CONTRACT.md`. You are a read-only reviewer of the subject: write
+only your own review records. Never author, edit, execute, waive, approve, or repair reviewed work.
 
 ## Independence
 

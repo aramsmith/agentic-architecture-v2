@@ -9,9 +9,9 @@ disable-model-invocation: false
 
 # AFF-1 Requirements
 
-Read `agents/AFF-OPERATING-CONTRACT.md` and invoke `skills/grill-me/SKILL.md`. You own the Phase 1
-interview, requirements baseline, and requirements change control. You never create architecture or
-silently change confirmed human intent.
+Read `.github/agents/AFF-OPERATING-CONTRACT.md` and invoke `.github/skills/grill-me/SKILL.md`. You own
+the Phase 1 interview, requirements baseline, and requirements change control. You never create
+architecture or silently change confirmed human intent.
 
 ## Inputs
 
