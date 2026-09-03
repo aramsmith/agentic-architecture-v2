@@ -22,8 +22,10 @@ export interface Approval {
   phaseId: string;
   decision: string;
   decidedAt: string;
+  approver: string;
   artifactHashes: Binding[];
   reviewRecords: Binding[];
+  syntheticTestEvidence: boolean;
 }
 
 export interface CandidateEvent {
@@ -76,6 +78,7 @@ export function asApproval(record: LoadedRecord): Approval | undefined {
     typeof value.phaseId !== "string" ||
     typeof value.decision !== "string" ||
     typeof value.decidedAt !== "string" ||
+    typeof value.approver !== "string" ||
     !Array.isArray(value.artifactHashes) ||
     !value.artifactHashes.every(isBinding) ||
     !Array.isArray(value.reviewRecords) ||
@@ -88,8 +91,13 @@ export function asApproval(record: LoadedRecord): Approval | undefined {
     phaseId: value.phaseId,
     decision: value.decision,
     decidedAt: value.decidedAt,
+    approver: value.approver,
     artifactHashes: value.artifactHashes,
     reviewRecords: value.reviewRecords,
+    syntheticTestEvidence:
+      isRecord(value.extensions) &&
+      value.extensions.syntheticTestEvidence === true &&
+      value.extensions.realApproval === false,
   };
 }
 

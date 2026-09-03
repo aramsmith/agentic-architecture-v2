@@ -7,13 +7,19 @@
     "node": ">=22"
   },
   "bin": {
+    "aff-render": "dist/src/render/cli.js",
     "aff-validate": "dist/src/cli.js"
   },
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "test": "vitest run",
+    "test:contracts": "vitest run test/schema.test.ts test/framework.test.ts test/case.test.ts",
+    "test:renderer": "vitest run test/render.test.ts test/render-cli.test.ts",
+    "test:smoke": "vitest run test/smoke-contoso.test.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "validate": "tsx src/cli.ts"
+    "validate": "tsx src/cli.ts",
+    "render": "tsx src/render/cli.ts",
+    "smoke:contoso": "tsx src/smoke/cli.ts"
   },
   "dependencies": {
     "ajv": "8.20.0",
@@ -21,11 +27,18 @@
     "commander": "14.0.2",
     "fast-glob": "3.3.3",
     "json-canonicalize": "3.0.0",
+    "markdown-it": "14.1.0",
     "minimatch": "10.2.6",
+    "parse5": "7.3.0",
+    "sanitize-html": "2.17.0",
+    "write-file-atomic": "6.0.0",
     "yaml": "2.9.0"
   },
   "devDependencies": {
+    "@types/markdown-it": "14.1.2",
     "@types/node": "22.19.3",
+    "@types/sanitize-html": "2.16.0",
+    "@types/write-file-atomic": "4.0.3",
     "tsx": "4.21.0",
     "typescript": "5.9.3",
     "vitest": "4.0.18"

@@ -7,6 +7,7 @@ import { canonicalize } from "json-canonicalize";
 import { isRecord } from "../common/json.js";
 import type { ValidationError } from "../types.js";
 import type { LoadedRecord } from "./records.js";
+import { isPathContained } from "./path.js";
 
 const textExtensions = new Set([
   ".bicep",
@@ -126,16 +127,6 @@ export async function hashArtifact(absolutePath: string): Promise<string> {
   return createHash("sha256").update(canonical).digest("hex");
 }
 
-function isContained(caseRoot: string, candidate: string): boolean {
-  const relative = path.relative(caseRoot, candidate);
-  return (
-    relative !== "" &&
-    !path.isAbsolute(relative) &&
-    relative !== ".." &&
-    !relative.startsWith(`..${path.sep}`)
-  );
-}
-
 function currentBindingSources(records: LoadedRecord[]): BindingSource[] {
   const sources: BindingSource[] = [];
   const latestReviews = new Map<string, LoadedRecord>();
@@ -228,7 +219,7 @@ export async function validateHashBindings(
   for (const record of currentBindingSources(records)) {
     for (const binding of findBindings(record.value)) {
       const candidate = path.resolve(caseRoot, binding.path);
-      if (!isContained(caseRoot, candidate)) {
+      if (!isPathContained(caseRoot, candidate)) {
         errors.push({
           file: record.file,
           invariant: "artifact-hash-binding",
@@ -246,7 +237,7 @@ export async function validateHashBindings(
           throw new TypeError("not a file");
         }
         const physicalCandidate = await realpath(candidate);
-        if (!isContained(physicalCaseRoot, physicalCandidate)) {
+        if (!isPathContained(physicalCaseRoot, physicalCandidate)) {
           errors.push({
             file: record.file,
             invariant: "artifact-hash-binding",

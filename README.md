@@ -68,6 +68,52 @@ SHA-256 bindings, final reviewer convergence, and human approval bindings. See
 [`docs/aff-contracts.md`](docs/aff-contracts.md) for the version policy, schema catalogue, and plain
 language error guidance.
 
+## Plan 1 quick start
+
+**Prerequisites:** Git, Node.js 22 or later, and npm. No Azure subscription, credential, model access,
+or network service is needed after `npm ci`.
+
+From a clean clone in Windows PowerShell:
+
+```powershell
+npm ci
+npm run validate -- --framework-only
+npm run smoke:contoso
+```
+
+To retain the generated synthetic case for inspection, choose an empty ignored directory:
+
+```powershell
+npm run smoke:contoso -- --keep-output .\.aff-smoke\contoso-review
+```
+
+Success proves that repository agent and skill packaging, schemas, canonical hashes, the fixed model
+matrix, same-candidate AFF-A/AFF-B reviews, synthetic approval bindings, safe rendering, journal-derived
+routing, and the first one-question AFF-1 interaction agree.
+
+It does **not** prove live model quality, Azure access, deployment, runtime behavior, credential or OIDC
+configuration, public data access, or Phase 7/8 readiness. The generated approval is prominently marked
+synthetic test evidence and is never a real human approval.
+
+The default smoke workspace is deleted after the run. Retained output contains the generated case and
+`smoke-report.json`; committed Contoso inputs are not changed.
+
+## Render case HTML
+
+Use the deterministic renderer instead of model-authored HTML:
+
+```powershell
+npm run render -- phase --case cases\<case-name> --phase 0 `
+  --source 0-coordination\<artifactPrefix>-coordination.md `
+  --metadata 0-coordination\<artifactPrefix>-input-inventory.json 0-coordination\<artifactPrefix>-model-plan.json `
+  --output 0-coordination\<artifactPrefix>-coordination.html
+
+npm run render -- overview --case cases\<case-name>
+```
+
+See [`docs/aff-renderer.md`](docs/aff-renderer.md) for inputs, trust boundaries, limits, Mermaid behavior,
+accessibility, and error remediation.
+
 ## Architecture ring
 
 ```mermaid
@@ -185,7 +231,7 @@ credential, or personal data.
 
 Use `cases/contoso-permit-services/input/` to exercise Phase 0 and the opening of Phase 1 without Azure
 access, deployment, or live testing. Its JSON expectations define the safety and routing conditions
-that must hold.
+that must hold. `npm run smoke:contoso` executes every expectation as an assertion.
 
 ## Outputs
 
@@ -212,6 +258,12 @@ deployment.
 cases/
   _template/
   contoso-permit-services/
+docs/
+  aff-contracts.md
+  aff-renderer.md
+src/
+  render/
+  smoke/
 agentic-architecture-v2.html
 ```
 

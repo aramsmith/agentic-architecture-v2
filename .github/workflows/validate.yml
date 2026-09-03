@@ -7,7 +7,7 @@ on:
       - ".github/skills/**"
       - ".github/workflows/validate.yml"
       - "cases/**"
-      - "docs/aff-contracts.md"
+      - "docs/**"
       - "schemas/**"
       - "src/**"
       - "test/**"
@@ -22,7 +22,7 @@ on:
       - ".github/skills/**"
       - ".github/workflows/validate.yml"
       - "cases/**"
-      - "docs/aff-contracts.md"
+      - "docs/**"
       - "schemas/**"
       - "src/**"
       - "test/**"
@@ -51,7 +51,13 @@ jobs:
         run: npm ci
 
       - name: Run contract tests
-        run: npm test
+        run: npm run test:contracts
+
+      - name: Run secure renderer tests
+        run: npm run test:renderer
+
+      - name: Run Contoso harness tests
+        run: npm run test:smoke
 
       - name: Type-check
         run: npm run typecheck
@@ -61,3 +67,6 @@ jobs:
 
       - name: Validate framework
         run: npm run validate -- --framework-only
+
+      - name: Run offline Contoso smoke journey
+        run: npm run smoke:contoso

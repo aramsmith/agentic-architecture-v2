@@ -6,24 +6,26 @@ description: Use when an AFF phase document or cumulative case overview must be 
 # render-case-html
 
 Read `.github/agents/AFF-OPERATING-CONTRACT.md` and `.github/agents/AFF-LIFECYCLE.json`. HTML is a
-generated view; Markdown, catalogues, journal events, and review records remain authoritative.
+generated view; Markdown, catalogues, journal events, and review records remain authoritative. Use the
+deterministic `aff-render` implementation through `npm run render -- ...`; do not transform AFF content
+into HTML through prose generation.
 
 ## Phase rendering
 
-For the current phase:
+For the current phase, run the renderer with the authoritative Markdown and structured records:
 
-1. Read the authoritative Markdown, supporting catalogue, approved diagrams, and their hashes.
-   Verify hashes using the canonical representation in `docs/aff-contracts.md`.
-2. Convert headings, tables, lists, links, code blocks, and diagrams to semantic HTML.
-3. Add a table of contents and stable phase-prefixed element IDs.
-4. Embed CSS and required JavaScript; do not use CDNs or external runtime dependencies.
-5. Escape untrusted text. Never execute HTML, scripts, event handlers, or URLs supplied by case content.
-6. Embed only sanitised SVG without scripts, foreign objects, or external references.
-7. Link to large evidence and code instead of embedding it.
-8. Include source paths and hashes in generated metadata.
-9. Add accessible landmarks, keyboard navigation, visible focus, alt text, sufficient contrast, and
-   print styles.
-10. Write `<artifactPrefix>-<artifact>.html` beside the phase Markdown.
+```powershell
+npm run render -- phase --case cases\<case-name> --phase <id> `
+  --source <phase-folder>\<artifactPrefix>-<artifact>.md `
+  --metadata <phase-folder>\<artifactPrefix>-<catalogue>.json `
+  --output <phase-folder>\<artifactPrefix>-<artifact>.html
+```
+
+The renderer verifies canonical hashes in structured metadata, enforces case containment and input
+limits, rejects raw HTML and unsafe URLs, embeds only approved local image types, and writes atomically.
+Mermaid is shown as escaped accessible source with an explicit warning. If a visual diagram is a
+required completion condition, provide a reviewed static SVG or use `--require-visual-diagrams` to fail
+closed.
 
 Do not add claims, summaries, decisions, or status that are absent from authoritative sources. A source
 change makes the rendered HTML stale and requires regeneration.
@@ -32,18 +34,18 @@ change makes the rendered HTML stale and requires regeneration.
 
 AFF-0 uses this mode only after human approval:
 
-- discover phases from `.github/agents/AFF-LIFECYCLE.json`;
-- include only invoked phases;
-- derive phase state from the latest explicit journal event, including reopened state;
-- show one phase tab plus separate AFF-A and AFF-B review tabs;
-- show artifact, review, and approval hashes;
-- preserve previously approved phase tabs and refresh only affected content;
-- link to Phase 5 code and optional Phase 7/8 evidence rather than embedding it;
-- keep optional deployment/testing separate from the C-level presentation;
-- write the self-contained case-root `solution-overview.html`.
+```powershell
+npm run render -- overview --case cases\<case-name>
+```
+
+This mode validates the case first, derives invoked and reopened state only from validated journal
+events, verifies that journal decision hashes match the human approval record, preserves approved phase
+content, shows separate AFF-A and AFF-B review tabs, and writes the atomic case-root
+`solution-overview.html`.
 
 ## Failure conditions
 
-Stop and report when an authoritative source is missing, hashes do not match, required content cannot
-be rendered safely, SVG sanitisation fails, or phase state cannot be resolved from the journal. Never
-produce a success-looking page from incomplete evidence.
+Stop and report the renderer error when an authoritative source is missing, hashes do not match,
+required content cannot be rendered safely, SVG sanitisation fails, a limit is exceeded, or phase state
+cannot be resolved from the journal. Never hand-write a fallback page or produce success-looking output
+from incomplete evidence. See `docs/aff-renderer.md` for the trust model and remediation guidance.
