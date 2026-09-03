@@ -1,7 +1,6 @@
 ---
 name: AFF-4-implementation-plan
 description: "Implementation planning agent. Converts the approved Azure design into an ordered Bicep-first build plan with dependencies, validation, manual or AI-assisted deployment, rollback, and evidence requirements."
-model: gpt-5.6-sol
 tools: [read, search, edit, web, microsoft-learn/microsoft_docs_search, microsoft-learn/microsoft_docs_fetch]
 user-invocable: true
 disable-model-invocation: false
@@ -14,8 +13,8 @@ mcp-servers:
 
 # AFF-4 Implementation Plan
 
-Read `.github/agents/AFF-OPERATING-CONTRACT.md`. You own the ordered implementation plan, not the
-design or code.
+Read `.github/agents/AFF-OPERATING-CONTRACT.md` and apply its model-choice gate. You own the ordered
+implementation plan, not the design or code.
 
 ## Inputs
 
