@@ -126,7 +126,9 @@ export function latestReviews(records: LoadedRecord[]): Map<string, Review> {
   return latest;
 }
 
-function asCandidateEvent(record: LoadedRecord): CandidateEvent | undefined {
+export function asCandidateEvent(
+  record: LoadedRecord,
+): CandidateEvent | undefined {
   const value = record.value;
   if (
     value.recordType !== "run-journal-event" ||
@@ -135,8 +137,13 @@ function asCandidateEvent(record: LoadedRecord): CandidateEvent | undefined {
     typeof value.artifactPrefix !== "string" ||
     typeof value.sequence !== "number" ||
     !Array.isArray(value.artifactHashes) ||
+    value.artifactHashes.length === 0 ||
     !value.artifactHashes.every(isBinding)
   ) {
+    return undefined;
+  }
+  const paths = value.artifactHashes.map(({ path: artifactPath }) => artifactPath);
+  if (new Set(paths).size !== paths.length) {
     return undefined;
   }
   return {

@@ -1,6 +1,6 @@
 import { resolveCasePath } from "./path.js";
 import type { ValidationResult } from "../types.js";
-import { loadCaseRecords } from "./records.js";
+import { loadCaseRecords, type LoadedCaseRecords } from "./records.js";
 import { validateHashBindings } from "./hash.js";
 import { readLifecycle } from "../framework/lifecycle.js";
 import { validateApprovals } from "./approvals.js";
@@ -21,19 +21,27 @@ export async function validateCase(
   }
 
   const loaded = await loadCaseRecords(repositoryRoot, resolved.caseRoot);
+  return validateLoadedCase(repositoryRoot, resolved.caseRoot, loaded);
+}
+
+export async function validateLoadedCase(
+  repositoryRoot: string,
+  caseRoot: string,
+  loaded: LoadedCaseRecords,
+): Promise<ValidationResult> {
   const lifecycle = await readLifecycle(repositoryRoot);
   const hashErrors = await validateHashBindings(
-    resolved.caseRoot,
+    caseRoot,
     loaded.records,
   );
   const coverageErrors = await validateCandidateFileCoverage(
-    resolved.caseRoot,
+    caseRoot,
     loaded.records,
   );
   return {
     errors: [
       ...loaded.errors,
-      ...validateRecordIdentity(resolved.caseRoot, loaded.records),
+      ...validateRecordIdentity(caseRoot, loaded.records),
       ...validateModelPlans(loaded.records, lifecycle),
       ...validateReviewModels(loaded.records, lifecycle),
       ...coverageErrors,

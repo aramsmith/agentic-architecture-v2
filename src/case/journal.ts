@@ -1,5 +1,6 @@
 import type { ValidationError } from "../types.js";
 import type { LoadedRecord } from "./records.js";
+import { asCandidateEvent } from "./review-records.js";
 
 export function validateRunJournals(
   records: LoadedRecord[],
@@ -63,6 +64,19 @@ export function validateRunJournals(
       }
       if (typeof eventId === "string") {
         eventIds.add(eventId);
+      }
+      if (
+        event.value.eventType === "ARTIFACTS-RECORDED" &&
+        !asCandidateEvent(event)
+      ) {
+        errors.push({
+          file: event.file,
+          invariant: "run-journal-candidate",
+          message:
+            "ARTIFACTS-RECORDED must contain an artifact prefix and a non-empty set of unique valid artifact hashes.",
+          remediation:
+            "Append the complete current candidate with one canonical SHA-256 binding per artifact path.",
+        });
       }
     }
   }

@@ -158,6 +158,79 @@ describe("case validation", () => {
     );
   });
 
+  it("rejects a later hash-less candidate event without suppressing the prior candidate hash", async () => {
+    const { root, caseRoot } = await copyValidCase();
+    await writeFile(
+      path.join(caseRoot, "0-coordination", "sample-coordination.md"),
+      "# Phase 0\n\nTampered after the recorded candidate.\n",
+    );
+    const journalPath = path.join(caseRoot, "sample-run-journal.jsonl");
+    const journal = await readFile(journalPath, "utf8");
+    await writeFile(
+      journalPath,
+      `${journal.trimEnd()}\n${JSON.stringify({
+        schemaVersion: "1.0.0",
+        recordType: "run-journal-event",
+        caseName: "valid-case",
+        artifactPrefix: "sample",
+        eventId: "EVT-002",
+        sequence: 2,
+        timestamp: "2026-01-01T09:01:00Z",
+        phaseId: "0",
+        eventType: "ARTIFACTS-RECORDED",
+        actor: "AFF-0-coordinator",
+        summary: "Invalid hash-less candidate suppression attempt.",
+      })}\n`,
+    );
+
+    const result = await validateCase(root, "cases/valid-case");
+
+    expect(result.errors).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          file: "sample-run-journal.jsonl:2",
+          invariant: "schema-validation",
+        }),
+        expect.objectContaining({
+          file: "sample-run-journal.jsonl:1",
+          invariant: "artifact-hash-binding",
+        }),
+      ]),
+    );
+  });
+
+  it("rejects an ARTIFACTS-RECORDED event with an empty artifact set", async () => {
+    const { root, caseRoot } = await copyValidCase();
+    const journalPath = path.join(caseRoot, "sample-run-journal.jsonl");
+    const journal = await readFile(journalPath, "utf8");
+    await writeFile(
+      journalPath,
+      `${journal.trimEnd()}\n${JSON.stringify({
+        schemaVersion: "1.0.0",
+        recordType: "run-journal-event",
+        caseName: "valid-case",
+        artifactPrefix: "sample",
+        eventId: "EVT-002",
+        sequence: 2,
+        timestamp: "2026-01-01T09:01:00Z",
+        phaseId: "0",
+        eventType: "ARTIFACTS-RECORDED",
+        actor: "AFF-0-coordinator",
+        summary: "Invalid empty candidate.",
+        artifactHashes: [],
+      })}\n`,
+    );
+
+    const result = await validateCase(root, "cases/valid-case");
+
+    expect(result.errors).toContainEqual(
+      expect.objectContaining({
+        file: "sample-run-journal.jsonl:2",
+        invariant: "schema-validation",
+      }),
+    );
+  });
+
   it("rejects final reviewers that cover different artifact sets", async () => {
     const { root, caseRoot } = await copyValidCase();
     await writeFile(

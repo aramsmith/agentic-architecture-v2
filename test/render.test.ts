@@ -441,15 +441,45 @@ describe("phase HTML renderer", () => {
     ).rejects.toThrow(/limit/u);
   });
 
-  it("creates unique deterministic IDs for duplicate headings", async () => {
+  it("creates unique deterministic IDs for duplicate and naturally suffixed headings", async () => {
     const html = await renderMarkdown(
-      "# Phase 0\n\n## Scope\n\nFirst.\n\n## Scope\n\nSecond.\n",
+      "# Phase 0\n\n## Scope\n\nFirst.\n\n## Scope\n\nSecond.\n\n## Scope 2\n\nThird.\n",
     );
 
     expect(html.match(/id="phase-0-scope"/gu)).toHaveLength(1);
     expect(html.match(/id="phase-0-scope-2"/gu)).toHaveLength(1);
+    expect(html.match(/id="phase-0-scope-2-2"/gu)).toHaveLength(1);
+    const toc = html.match(
+      /<nav aria-label="Table of contents">[^]*?<\/nav>/u,
+    )?.[0];
+    const tocTargets = [...(toc ?? "").matchAll(/href="#([^"]+)"/gu)].map(
+      (match) => match[1],
+    );
+    expect(tocTargets).toEqual([
+      "phase-0-phase-0",
+      "phase-0-scope",
+      "phase-0-scope-2",
+      "phase-0-scope-2-2",
+    ]);
     const ids = [...html.matchAll(/\sid="([^"]+)"/gu)].map((match) => match[1]);
     expect(new Set(ids).size).toBe(ids.length);
+  });
+
+  it("allocates code captions through the same collision-proof ID namespace", async () => {
+    const html = await renderMarkdown(
+      "# Phase 0\n\n## Code 6\n\n```text\nfirst\n```\n\n```json\n{\"second\":true}\n```\n",
+    );
+    const ids = [...html.matchAll(/\sid="([^"]+)"/gu)].map((match) => match[1]);
+    const labelledBy = [
+      ...html.matchAll(/<figure[^>]+aria-labelledby="([^"]+)"/gu),
+    ].map((match) => match[1]);
+
+    expect(new Set(ids).size).toBe(ids.length);
+    expect(labelledBy).toHaveLength(2);
+    expect(new Set(labelledBy).size).toBe(2);
+    for (const captionId of labelledBy) {
+      expect(html).toContain(`<figcaption id="${captionId}">`);
+    }
   });
 
   it("rejects a heading hierarchy that skips a level", async () => {
@@ -653,7 +683,7 @@ describe("phase HTML renderer", () => {
     expect(html).toMatch(
       /href="#phase-0-phase-0"[^]*<ol>[^]*href="#phase-0-scope"/u,
     );
-    expect(html).toContain('aria-labelledby="phase-0-code-');
+    expect(html).toContain('aria-labelledby="phase-0-generated-code-');
     expect(html).toContain('<th scope="col">');
     expect(html).not.toMatch(/<(?:link|iframe)\b/iu);
     expect(html).not.toMatch(/<script\b/iu);
@@ -682,6 +712,13 @@ describe("phase HTML renderer", () => {
     expect(html).toContain("Approval record SHA-256");
     expect(html).toContain("aria-selected=");
     expect(html).not.toMatch(/(?:src|href)="https?:/iu);
+    const ids = [...html.matchAll(/\sid="([^"]+)"/gu)].map((match) => match[1]);
+    expect(new Set(ids).size).toBe(ids.length);
+    for (const reference of html.matchAll(
+      /aria-(?:controls|labelledby)="([^"]+)"/gu,
+    )) {
+      expect(ids).toContain(reference[1]);
+    }
   });
 
   it("represents an explicit reopened phase without losing approved content", async () => {
@@ -801,5 +838,64 @@ describe("phase HTML renderer", () => {
     );
     expect(html).not.toContain("Approved and exited");
     expect(html).toContain("Not approved");
+  });
+
+  it("cannot render tampered unapproved content after a later hash-less candidate event", async () => {
+    const { repositoryRoot, caseRoot } = await createValidatedOverviewCase();
+    const phaseRoot = path.join(caseRoot, "1-requirements");
+    await mkdir(phaseRoot, { recursive: true });
+    const markdownPath = path.join(phaseRoot, "sample-requirements.md");
+    await writeFile(markdownPath, "# Phase 1\n\nRecorded candidate.\n");
+    const recordedHash = await hashArtifact(markdownPath);
+    const journalPath = path.join(caseRoot, "sample-run-journal.jsonl");
+    const events = [
+      {
+        schemaVersion: "1.0.0",
+        recordType: "run-journal-event",
+        caseName: "valid-case",
+        artifactPrefix: "sample",
+        eventId: "EVT-006",
+        sequence: 6,
+        timestamp: "2026-01-01T10:13:00Z",
+        phaseId: "1",
+        eventType: "ARTIFACTS-RECORDED",
+        actor: "AFF-1-requirements",
+        summary: "Phase 1 candidate recorded.",
+        artifactHashes: [
+          {
+            path: "1-requirements/sample-requirements.md",
+            sha256: recordedHash,
+          },
+        ],
+      },
+      {
+        schemaVersion: "1.0.0",
+        recordType: "run-journal-event",
+        caseName: "valid-case",
+        artifactPrefix: "sample",
+        eventId: "EVT-007",
+        sequence: 7,
+        timestamp: "2026-01-01T10:14:00Z",
+        phaseId: "1",
+        eventType: "ARTIFACTS-RECORDED",
+        actor: "AFF-1-requirements",
+        summary: "Invalid hash-less candidate suppression attempt.",
+      },
+    ];
+    await writeFile(
+      journalPath,
+      `${await readFile(journalPath, "utf8")}${events.map((event) => JSON.stringify(event)).join("\n")}\n`,
+    );
+    await writeFile(markdownPath, "# Phase 1\n\nTampered unapproved content.\n");
+
+    await expect(
+      renderSolutionOverview({
+        repositoryRoot,
+        casePath: "cases/valid-case",
+      }),
+    ).rejects.toThrow(/validation failed/u);
+    await expect(
+      readFile(path.join(caseRoot, "solution-overview.html"), "utf8"),
+    ).rejects.toThrow();
   });
 });

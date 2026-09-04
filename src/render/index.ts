@@ -1,4 +1,4 @@
-import { readFile, readdir, stat } from "node:fs/promises";
+import { open, readFile, readdir } from "node:fs/promises";
 import path from "node:path";
 
 import MarkdownIt from "markdown-it";
@@ -7,9 +7,9 @@ import { parseFragment, type DefaultTreeAdapterMap } from "parse5";
 import sanitizeHtml from "sanitize-html";
 import writeFileAtomic from "write-file-atomic";
 
-import { hashArtifact } from "../case/hash.js";
+import { hashArtifact, hashArtifactBytes } from "../case/hash.js";
 import { validateHashBindings } from "../case/hash.js";
-import { validateCase } from "../case/index.js";
+import { validateLoadedCase } from "../case/index.js";
 import { validateRecordIdentity } from "../case/identity.js";
 import { loadCaseRecords, type LoadedRecord } from "../case/records.js";
 import {
@@ -67,6 +67,26 @@ interface TocEntry {
   text: string;
 }
 
+interface IdAllocator {
+  allocate(preferred: string): string;
+}
+
+function createIdAllocator(): IdAllocator {
+  const allocated = new Set<string>();
+  return {
+    allocate(preferred: string): string {
+      let candidate = preferred;
+      let suffix = 2;
+      while (allocated.has(candidate)) {
+        candidate = `${preferred}-${suffix}`;
+        suffix += 1;
+      }
+      allocated.add(candidate);
+      return candidate;
+    },
+  };
+}
+
 export class RenderError extends Error {
   public constructor(
     message: string,
@@ -109,14 +129,43 @@ async function readLimitedUtf8(
   limit: number,
   label: string,
 ): Promise<string> {
-  const details = await stat(absolutePath);
-  if (details.size > limit) {
-    throw new RenderError(
-      `${label} is ${details.size} bytes; the limit is ${limit} bytes.`,
-      "Link large evidence instead of embedding it in the rendered document.",
-    );
+  return decodeUtf8(
+    await readLimitedBytes(absolutePath, limit, label),
+    label,
+  );
+}
+
+async function readLimitedBytes(
+  absolutePath: string,
+  limit: number,
+  label: string,
+): Promise<Buffer> {
+  const handle = await open(absolutePath, "r");
+  try {
+    const content = Buffer.allocUnsafe(limit + 1);
+    let offset = 0;
+    while (offset < content.byteLength) {
+      const { bytesRead } = await handle.read(
+        content,
+        offset,
+        content.byteLength - offset,
+        offset,
+      );
+      if (bytesRead === 0) {
+        break;
+      }
+      offset += bytesRead;
+    }
+    if (offset > limit) {
+      throw new RenderError(
+        `${label} exceeds the ${limit}-byte limit.`,
+        "Link large evidence instead of embedding it in the rendered document.",
+      );
+    }
+    return content.subarray(0, offset);
+  } finally {
+    await handle.close();
   }
-  return decodeUtf8(await readFile(absolutePath), label);
 }
 
 function slugify(value: string): string {
@@ -400,13 +449,11 @@ async function embedImage(
       resolved.error?.remediation ?? "Use a physical asset beneath the case directory.",
     );
   }
-  const details = await stat(resolved.absolutePath);
-  if (details.size > MAX_ASSET_BYTES) {
-    throw new RenderError(
-      `Image "${imagePath}" exceeds the ${MAX_ASSET_BYTES}-byte asset limit.`,
-      "Compress the image or link to evidence instead of embedding it.",
-    );
-  }
+  const content = await readLimitedBytes(
+    resolved.absolutePath,
+    MAX_ASSET_BYTES,
+    `Image ${imagePath}`,
+  );
   const extension = path.extname(resolved.absolutePath).toLowerCase();
   const binaryTypes = new Map([
     [".png", "image/png"],
@@ -417,7 +464,7 @@ async function embedImage(
   ]);
   if (extension === ".svg") {
     const safeSvg = sanitizeSvg(
-      decodeUtf8(await readFile(resolved.absolutePath), `SVG ${imagePath}`),
+      decodeUtf8(content, `SVG ${imagePath}`),
     );
     return `data:image/svg+xml;base64,${Buffer.from(safeSvg, "utf8").toString("base64")}`;
   }
@@ -428,7 +475,7 @@ async function embedImage(
       "Use a PNG, JPEG, GIF, WebP, or safe static SVG asset.",
     );
   }
-  return `data:${mediaType};base64,${(await readFile(resolved.absolutePath)).toString("base64")}`;
+  return `data:${mediaType};base64,${content.toString("base64")}`;
 }
 
 function sanitizeMarkdownFragment(fragment: string): string {
@@ -495,6 +542,7 @@ async function renderMarkdown(
   phaseId: string,
   markdown: string,
   requireVisualDiagrams: boolean,
+  ids: IdAllocator,
   headingOffset = 0,
 ): Promise<{ body: string; toc: TocEntry[] }> {
   const engine = new MarkdownIt({
@@ -505,7 +553,6 @@ async function renderMarkdown(
   engine.validateLink = () => true;
   const tokens = engine.parse(markdown, {});
   const toc: TocEntry[] = [];
-  const slugCounts = new Map<string, number>();
 
   const linkTokens: Token[] = [];
   walkTokens(tokens, (token) => {
@@ -568,9 +615,7 @@ async function renderMarkdown(
     const inline = tokens[index + 1];
     const text = inline?.type === "inline" ? inline.content : "Section";
     const base = `phase-${phaseId}-${slugify(text)}`;
-    const occurrence = (slugCounts.get(base) ?? 0) + 1;
-    slugCounts.set(base, occurrence);
-    const id = occurrence === 1 ? base : `${base}-${occurrence}`;
+    const id = ids.allocate(base);
     token.attrSet("id", id);
     toc.push({
       depth: renderedDepth,
@@ -612,7 +657,9 @@ async function renderMarkdown(
   engine.renderer.rules.th_open = () => '<th scope="col">';
   engine.renderer.rules.code_block = (renderTokens, index) => {
     const token = renderTokens[index];
-    const captionId = `phase-${phaseId}-code-${index}`;
+    const captionId = ids.allocate(
+      `phase-${phaseId}-generated-code-${index}`,
+    );
     return `<figure class="code-block" aria-labelledby="${captionId}"><figcaption id="${captionId}">Plain text code</figcaption><pre><code>${escapeHtml(token?.content ?? "")}</code></pre></figure>`;
   };
   const defaultFence =
@@ -632,7 +679,9 @@ async function renderMarkdown(
     }
     const language = token.info.trim().split(/\s+/u, 1)[0] ?? "";
     const label = language || "Plain text";
-    const captionId = `phase-${phaseId}-code-${index}`;
+    const captionId = ids.allocate(
+      `phase-${phaseId}-generated-code-${index}`,
+    );
     if (language.toLowerCase() === "mermaid") {
       if (requireVisualDiagrams) {
         throw new RenderError(
@@ -781,15 +830,16 @@ export async function renderPhaseHtml(
     );
   }
 
-  const markdown = await readLimitedUtf8(
+  const markdownBytes = await readLimitedBytes(
     source.absolutePath,
     MAX_MARKDOWN_BYTES,
     options.sourcePath,
   );
+  const markdown = decodeUtf8(markdownBytes, options.sourcePath);
   const bindings: SourceBinding[] = [
     {
       path: options.sourcePath.split(path.sep).join("/"),
-      sha256: await hashArtifact(source.absolutePath),
+      sha256: hashArtifactBytes(source.absolutePath, markdownBytes),
     },
   ];
   const metadataRecords = [];
@@ -826,11 +876,12 @@ export async function renderPhaseHtml(
         metadata.error?.remediation ?? "Use a physical metadata file beneath the case directory.",
       );
     }
-    const metadataContent = await readLimitedUtf8(
+    const metadataBytes = await readLimitedBytes(
       metadata.absolutePath,
       MAX_METADATA_BYTES,
       metadataPath,
     );
+    const metadataContent = decodeUtf8(metadataBytes, metadataPath);
     let metadataValue: unknown;
     try {
       metadataValue = JSON.parse(metadataContent);
@@ -874,11 +925,12 @@ export async function renderPhaseHtml(
     metadataRecords.push({
       file: metadataPath.split(path.sep).join("/"),
       absolutePath: metadata.absolutePath,
+      snapshotSha256: hashArtifactBytes(metadata.absolutePath, metadataBytes),
       value: metadataValue,
     });
     bindings.push({
       path: metadataPath.split(path.sep).join("/"),
-      sha256: await hashArtifact(metadata.absolutePath),
+      sha256: hashArtifactBytes(metadata.absolutePath, metadataBytes),
     });
   }
   const metadataHashErrors = await validateHashBindings(
@@ -923,6 +975,8 @@ export async function renderPhaseHtml(
       "Use <phase-folder>/<artifactPrefix>-<phase-artifact>.md and its matching .html filename.",
     );
   }
+  const ids = createIdAllocator();
+  const mainContentId = ids.allocate("main-content");
   const rendered = await renderMarkdown(
     options.caseRoot,
     options.sourcePath,
@@ -930,12 +984,13 @@ export async function renderPhaseHtml(
     options.phaseId,
     markdown,
     options.requireVisualDiagrams ?? false,
+    ids,
   );
   const title = rendered.toc[0]?.text ?? `AFF Phase ${options.phaseId}`;
   const html = `<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="generator" content="aff-render"><meta name="aff-source-sha256" content="${bindings[0]?.sha256 ?? ""}"><title>${escapeHtml(title)}</title><style>${styles}</style></head>
-<body><a class="skip-link" href="#main-content">Skip to main content</a><header><p>AFF generated view</p><p class="document-title">${escapeHtml(title)}</p>${renderBindings(bindings)}</header>
-<main id="main-content"><article aria-label="${escapeHtml(title)}">${rendered.body}</article>${renderToc(rendered.toc)}</main>
+<body><a class="skip-link" href="#${mainContentId}">Skip to main content</a><header><p>AFF generated view</p><p class="document-title">${escapeHtml(title)}</p>${renderBindings(bindings)}</header>
+<main id="${mainContentId}"><article aria-label="${escapeHtml(title)}">${rendered.body}</article>${renderToc(rendered.toc)}</main>
 <footer>Generated from authoritative case sources. Markdown and structured records remain authoritative.</footer></body></html>
 `;
   if (Buffer.byteLength(html, "utf8") > MAX_OUTPUT_BYTES) {
@@ -1075,12 +1130,22 @@ function renderReviewPanel(
     .join("")}</section>`;
 }
 
-function tabButton(id: string, label: string, selected: boolean): string {
-  return `<button type="button" role="tab" id="tab-${id}" aria-controls="panel-${id}" aria-selected="${selected ? "true" : "false"}" tabindex="${selected ? "0" : "-1"}">${escapeHtml(label)}</button>`;
+function tabButton(
+  tabId: string,
+  panelId: string,
+  label: string,
+  selected: boolean,
+): string {
+  return `<button type="button" role="tab" id="${tabId}" aria-controls="${panelId}" aria-selected="${selected ? "true" : "false"}" tabindex="${selected ? "0" : "-1"}">${escapeHtml(label)}</button>`;
 }
 
-function tabPanel(id: string, content: string, selected: boolean): string {
-  return `<section role="tabpanel" id="panel-${id}" aria-labelledby="tab-${id}"${selected ? "" : " hidden"}>${content}</section>`;
+function tabPanel(
+  tabId: string,
+  panelId: string,
+  content: string,
+  selected: boolean,
+): string {
+  return `<section role="tabpanel" id="${panelId}" aria-labelledby="${tabId}"${selected ? "" : " hidden"}>${content}</section>`;
 }
 
 const tabScript = `<script>
@@ -1101,7 +1166,13 @@ export async function renderSolutionOverview(
       first?.remediation ?? "Use cases/<case-name>.",
     );
   }
-  const validation = await validateCase(options.repositoryRoot, options.casePath);
+  const caseRoot = resolved.caseRoot;
+  const loaded = await loadCaseRecords(options.repositoryRoot, caseRoot);
+  const validation = await validateLoadedCase(
+    options.repositoryRoot,
+    caseRoot,
+    loaded,
+  );
   if (validation.errors.length > 0) {
     const first = validation.errors[0];
     throw new RenderError(
@@ -1110,8 +1181,6 @@ export async function renderSolutionOverview(
     );
   }
 
-  const caseRoot = resolved.caseRoot;
-  const loaded = await loadCaseRecords(options.repositoryRoot, caseRoot);
   const lifecycle = await readLifecycle(options.repositoryRoot);
   const events = journalEvents(loaded.records);
   if (events.length === 0) {
@@ -1202,14 +1271,20 @@ export async function renderSolutionOverview(
   }
 
   const candidates = latestCandidateEvents(loaded.records);
+  const ids = createIdAllocator();
+  const mainContentId = ids.allocate("main-content");
   const reviewHashByFile = new Map<string, string>();
+  const loadedRecordHashByFile = new Map(
+    loaded.records.map((record) => [
+      record.file,
+      record.snapshotSha256,
+    ]),
+  );
   for (const review of allReviews(loaded.records)) {
-    reviewHashByFile.set(
-      review.file,
-      await hashArtifact(
-        path.join(caseRoot, review.file.split("/").join(path.sep)),
-      ),
-    );
+    const reviewHash = loadedRecordHashByFile.get(review.file);
+    if (reviewHash) {
+      reviewHashByFile.set(review.file, reviewHash);
+    }
   }
   const tabs: Array<{ id: string; label: string; content: string }> = [];
   for (const phase of lifecycle.phases) {
@@ -1245,11 +1320,22 @@ export async function renderSolutionOverview(
           markdownFile.error?.remediation ?? "Restore the governed phase Markdown.",
         );
       }
-      const markdown = await readLimitedUtf8(
+      const markdownBytes = await readLimitedBytes(
         markdownFile.absolutePath,
         MAX_MARKDOWN_BYTES,
         markdownBinding.path,
       );
+      const actualMarkdownHash = hashArtifactBytes(
+        markdownFile.absolutePath,
+        markdownBytes,
+      );
+      if (actualMarkdownHash !== markdownBinding.sha256) {
+        throw new RenderError(
+          `Phase ${phase.id} Markdown changed after case validation: SHA-256 ${actualMarkdownHash}, expected ${markdownBinding.sha256}.`,
+          "Do not render changed evidence; record a new candidate, reviews, and approval where required.",
+        );
+      }
+      const markdown = decodeUtf8(markdownBytes, markdownBinding.path);
       phaseContent = (
         await renderMarkdown(
           caseRoot,
@@ -1258,12 +1344,13 @@ export async function renderSolutionOverview(
           phase.id,
           markdown,
           false,
+          ids,
           1,
         )
       ).body;
     }
     const approvalHash = approval
-      ? await hashArtifact(path.join(caseRoot, approval.file.split("/").join(path.sep)))
+      ? loadedRecordHashByFile.get(approval.file)
       : undefined;
     const phaseEvents = events.filter(
       (event) => event.value.phaseId === phase.id,
@@ -1313,10 +1400,15 @@ export async function renderSolutionOverview(
       output.error?.remediation ?? "Write solution-overview.html at the case root.",
     );
   }
+  const allocatedTabs = tabs.map((tab) => ({
+    ...tab,
+    tabId: ids.allocate(`generated-tab-${tab.id}`),
+    panelId: ids.allocate(`generated-panel-${tab.id}`),
+  }));
   const html = `<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="generator" content="aff-render"><title>AFF solution overview</title><style>${styles}
 .tabs [role="tablist"]{display:flex;flex-wrap:wrap;gap:.5rem;border-bottom:1px solid var(--border);padding-bottom:.5rem}.tabs [role="tab"]{border:1px solid var(--border);background:var(--soft);color:var(--ink);padding:.65rem .9rem;border-radius:.35rem;cursor:pointer}.tabs [role="tab"][aria-selected="true"]{background:var(--accent);color:#fff}.tabs [role="tabpanel"]{padding-top:1rem}.tabs [hidden]{display:none}main.overview{display:block}
-</style></head><body><a class="skip-link" href="#main-content">Skip to main content</a><header><p>AFF generated cumulative view</p><h1>Solution overview</h1><p>States come only from validated journal events. Missing evidence never implies success.</p></header><main class="overview" id="main-content"><div class="tabs"><div role="tablist" aria-label="Case phases and independent reviews">${tabs.map((tab, index) => tabButton(tab.id, tab.label, index === 0)).join("")}</div>${tabs.map((tab, index) => tabPanel(tab.id, tab.content, index === 0)).join("")}</div></main><footer>Generated from validated case records. Authoritative Markdown, catalogues, journal events, reviews, and approvals remain separate.</footer>${tabScript}</body></html>
+</style></head><body><a class="skip-link" href="#${mainContentId}">Skip to main content</a><header><p>AFF generated cumulative view</p><h1>Solution overview</h1><p>States come only from validated journal events. Missing evidence never implies success.</p></header><main class="overview" id="${mainContentId}"><div class="tabs"><div role="tablist" aria-label="Case phases and independent reviews">${allocatedTabs.map((tab, index) => tabButton(tab.tabId, tab.panelId, tab.label, index === 0)).join("")}</div>${allocatedTabs.map((tab, index) => tabPanel(tab.tabId, tab.panelId, tab.content, index === 0)).join("")}</div></main><footer>Generated from validated case records. Authoritative Markdown, catalogues, journal events, reviews, and approvals remain separate.</footer>${tabScript}</body></html>
 `;
   if (Buffer.byteLength(html, "utf8") > MAX_OUTPUT_BYTES) {
     throw new RenderError(

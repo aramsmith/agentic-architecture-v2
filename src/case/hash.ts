@@ -8,6 +8,7 @@ import { isRecord } from "../common/json.js";
 import type { ValidationError } from "../types.js";
 import type { LoadedRecord } from "./records.js";
 import { isPathContained } from "./path.js";
+import { latestCandidateEvents } from "./review-records.js";
 
 const textExtensions = new Set([
   ".bicep",
@@ -99,8 +100,10 @@ function canonicalText(content: Buffer): Buffer {
   return Buffer.from(withoutBom.replace(/\r\n?/gu, "\n"), "utf8");
 }
 
-export async function hashArtifact(absolutePath: string): Promise<string> {
-  const content = await readFile(absolutePath);
+export function hashArtifactBytes(
+  absolutePath: string,
+  content: Buffer,
+): string {
   const extension = path.extname(absolutePath).toLowerCase();
   let canonical: Uint8Array = content;
 
@@ -127,11 +130,14 @@ export async function hashArtifact(absolutePath: string): Promise<string> {
   return createHash("sha256").update(canonical).digest("hex");
 }
 
+export async function hashArtifact(absolutePath: string): Promise<string> {
+  return hashArtifactBytes(absolutePath, await readFile(absolutePath));
+}
+
 function currentBindingSources(records: LoadedRecord[]): BindingSource[] {
   const sources: BindingSource[] = [];
   const latestReviews = new Map<string, LoadedRecord>();
   const latestApprovals = new Map<string, LoadedRecord>();
-  const latestArtifactEvents = new Map<string, LoadedRecord>();
 
   for (const record of records) {
     const recordType = record.value.recordType;
@@ -178,20 +184,6 @@ function currentBindingSources(records: LoadedRecord[]): BindingSource[] {
     }
 
     if (recordType === "run-journal-event") {
-      if (record.value.eventType === "ARTIFACTS-RECORDED") {
-        const phaseId = record.value.phaseId;
-        const sequence = record.value.sequence;
-        if (typeof phaseId === "string" && typeof sequence === "number") {
-          const current = latestArtifactEvents.get(phaseId);
-          if (
-            !current ||
-            typeof current.value.sequence !== "number" ||
-            sequence > current.value.sequence
-          ) {
-            latestArtifactEvents.set(phaseId, record);
-          }
-        }
-      }
       continue;
     }
 
@@ -205,7 +197,12 @@ function currentBindingSources(records: LoadedRecord[]): BindingSource[] {
       value: { artifactHashes: approval.value.artifactHashes },
     });
   }
-  sources.push(...latestArtifactEvents.values());
+  for (const candidate of latestCandidateEvents(records).values()) {
+    sources.push({
+      file: candidate.file,
+      value: { artifactHashes: candidate.artifacts },
+    });
+  }
   return sources;
 }
 
@@ -215,6 +212,12 @@ export async function validateHashBindings(
 ): Promise<ValidationError[]> {
   const errors: ValidationError[] = [];
   const physicalCaseRoot = await realpath(caseRoot);
+  const loadedHashes = new Map(
+    records.map((record) => [
+      record.file.replace(/:[0-9]+$/u, ""),
+      record.snapshotSha256,
+    ]),
+  );
 
   for (const record of currentBindingSources(records)) {
     for (const binding of findBindings(record.value)) {
@@ -266,7 +269,9 @@ export async function validateHashBindings(
 
       let actual: string;
       try {
-        actual = await hashArtifact(candidate);
+        actual =
+          loadedHashes.get(binding.path.split(path.sep).join("/")) ??
+          (await hashArtifact(candidate));
       } catch (error: unknown) {
         if (!(error instanceof SyntaxError) && !(error instanceof TypeError)) {
           throw error;

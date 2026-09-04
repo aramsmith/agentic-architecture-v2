@@ -6,6 +6,7 @@ import { minimatch } from "minimatch";
 
 import { isRecord } from "../common/json.js";
 import { toRepositoryPath } from "../common/path.js";
+import { hashArtifactBytes } from "./hash.js";
 import {
   createSchemaRegistry,
   validateRecordSchema,
@@ -16,6 +17,7 @@ import type { ValidationError } from "../types.js";
 export interface LoadedRecord {
   file: string;
   absolutePath: string;
+  snapshotSha256: string;
   value: Record<string, unknown>;
 }
 
@@ -89,9 +91,10 @@ async function loadJsonFile(
   file: string,
 ): Promise<LoadedCaseRecords> {
   const absolutePath = path.join(caseRoot, file);
+  const content = await readFile(absolutePath);
   let value: unknown;
   try {
-    value = JSON.parse(await readFile(absolutePath, "utf8"));
+    value = JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(content));
   } catch (error: unknown) {
     if (!(error instanceof SyntaxError)) {
       throw error;
@@ -109,7 +112,14 @@ async function loadJsonFile(
   const validated = validateParsedRecord(registry, file, value);
   return {
     records: validated.record
-      ? [{ file, absolutePath, value: validated.record }]
+      ? [
+          {
+            file,
+            absolutePath,
+            snapshotSha256: hashArtifactBytes(absolutePath, content),
+            value: validated.record,
+          },
+        ]
       : [],
     errors: validated.errors,
   };
@@ -121,7 +131,11 @@ async function loadJsonLinesFile(
   file: string,
 ): Promise<LoadedCaseRecords> {
   const absolutePath = path.join(caseRoot, file);
-  const lines = (await readFile(absolutePath, "utf8")).split(/\r?\n/u);
+  const content = await readFile(absolutePath);
+  const snapshotSha256 = hashArtifactBytes(absolutePath, content);
+  const lines = new TextDecoder("utf-8", { fatal: true })
+    .decode(content)
+    .split(/\r?\n/u);
   const records: LoadedRecord[] = [];
   const errors: ValidationError[] = [];
 
@@ -155,7 +169,7 @@ async function loadJsonLinesFile(
       ...(recordType ? locationErrors(registry, file, recordType) : []),
     );
     if (schemaErrors.length === 0 && isRecord(value)) {
-      records.push({ file: lineFile, absolutePath, value });
+      records.push({ file: lineFile, absolutePath, snapshotSha256, value });
     }
   }
 
