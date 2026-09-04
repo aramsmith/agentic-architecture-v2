@@ -18,6 +18,8 @@ See [CONTRIBUTORS.md](CONTRIBUTORS.md) for the contributor policy and full list.
 
 ## Start here
 
+- **[Open the interactive overview](https://aramsmith.github.io/agentic-architecture-v2/agentic-architecture-v2.html)**
+  — the visual guide: start-up manual, architecture ring, assurance sequence, and agent roster.
 - **[Ten-minute architect quick start](docs/quick-start.md)** — clone to verified synthetic evidence.
 - [Representative Contoso Phase 0 evidence](docs/examples/contoso-phase-0-evidence.md)
 - [Compatibility and support matrix](docs/compatibility.md)

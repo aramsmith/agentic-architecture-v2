@@ -1,641 +1,551 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; img-src 'self' data:; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
-  <title>Agentic Architecture v2</title>
-  <script>
-    (() => {
-      const param = new URLSearchParams(window.location.search).get("scoutTheme");
-      const theme =
-        param || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
-      document.documentElement.setAttribute("data-theme", theme);
-    })();
-  </script>
-  <style>
-    :root {
-      color-scheme: light;
-      --cp-bg: #f7f4ef;
-      --cp-bg-elevated: #fcfbf8;
-      --cp-surface: #ffffff;
-      --cp-surface-soft: #f5f5f5;
-      --cp-border: #dedede;
-      --cp-border-strong: #919191;
-      --cp-text: #242424;
-      --cp-text-muted: #5c5c5c;
-      --cp-text-soft: #6f6f6f;
-      --cp-accent: #b11f4b;
-      --cp-accent-hover: #9a1a41;
-      --cp-accent-soft: rgba(177, 31, 75, 0.08);
-      --cp-accent-fg: #ffffff;
-      --cp-success: #16a34a;
-      --cp-danger: #dc2626;
-      --cp-warning: #f59e0b;
-      --cp-link: #0078d4;
-      --cp-shadow: 0 18px 48px rgba(0, 0, 0, 0.12);
-      --cp-overlay: rgba(255, 255, 255, 0.8);
-      --cp-panel: rgba(255, 255, 255, 0.86);
-      --cp-panel-strong: rgba(255, 255, 255, 0.96);
-      --cp-sheen: rgba(255, 255, 255, 0.55);
-      --cp-highlight: rgba(177, 31, 75, 0.12);
-    }
-    html[data-theme="dark"] {
-      color-scheme: dark;
-      --cp-bg: #3d3b3a;
-      --cp-bg-elevated: #343231;
-      --cp-surface: #292929;
-      --cp-surface-soft: #2e2e2e;
-      --cp-border: #474747;
-      --cp-border-strong: #5f5f5f;
-      --cp-text: #dedede;
-      --cp-text-muted: #919191;
-      --cp-text-soft: #b0b0b0;
-      --cp-accent: #fd8ea1;
-      --cp-accent-hover: #fb7b91;
-      --cp-accent-soft: rgba(253, 142, 161, 0.14);
-      --cp-accent-fg: #1a1a1a;
-      --cp-success: #4ade80;
-      --cp-danger: #f87171;
-      --cp-warning: #fbbf24;
-      --cp-link: #4da6ff;
-      --cp-shadow: 0 18px 48px rgba(0, 0, 0, 0.32);
-      --cp-overlay: rgba(41, 41, 41, 0.88);
-      --cp-panel: rgba(41, 41, 41, 0.72);
-      --cp-panel-strong: rgba(41, 41, 41, 0.96);
-      --cp-sheen: rgba(255, 255, 255, 0.04);
-      --cp-highlight: rgba(253, 142, 161, 0.12);
-    }
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; img-src 'self' data:; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Agentic Architecture v2 — a human-centred architecture workflow where an AI crew prepares and challenges the work, and the architect signs every decision.">
+<title>Agentic Architecture v2 — the architect stays in the middle</title>
+<script>
+(() => {
+  const requested = new URLSearchParams(window.location.search).get("theme");
+  const theme = requested === "dark" || requested === "light"
+    ? requested
+    : (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+  document.documentElement.setAttribute("data-theme", theme);
+})();
+</script>
+<style>
+:root{
+  --ink:#0f172a; --body:#334155; --muted:#64748b; --faint:#94a3b8;
+  --page:#ffffff; --surface:#f8fafc; --raised:#ffffff; --border:#e2e8f0; --border-firm:#cbd5e1;
+  --accent:#1e40af; --accent-soft:#eff6ff; --accent-line:#bfdbfe;
+  --good:#166534; --good-soft:#f0fdf4; --good-line:#bbf7d0;
+  --warn:#92400e; --warn-soft:#fffbeb; --warn-line:#fde68a;
+  --shadow:0 1px 2px rgba(15,23,42,.04), 0 8px 24px -12px rgba(15,23,42,.12);
+  --radius:10px;
+}
+:root[data-theme="dark"]{
+  --ink:#f1f5f9; --body:#cbd5e1; --muted:#94a3b8; --faint:#64748b;
+  --page:#0b1220; --surface:#111a2e; --raised:#152037; --border:#243149; --border-firm:#33415c;
+  --accent:#93c5fd; --accent-soft:#13233f; --accent-line:#2c4a7c;
+  --good:#86efac; --good-soft:#0f2a1c; --good-line:#1f5136;
+  --warn:#fcd34d; --warn-soft:#2c2410; --warn-line:#5a4718;
+  --shadow:0 1px 2px rgba(0,0,0,.3), 0 12px 32px -16px rgba(0,0,0,.7);
+}
+*,*::before,*::after{box-sizing:border-box}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}
+  *,*::before,*::after{animation-duration:.001ms !important;animation-iteration-count:1 !important;transition-duration:.001ms !important}}
+body{
+  margin:0;background:var(--page);color:var(--body);
+  font:16px/1.65 ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3,h4{color:var(--ink);line-height:1.2;margin:0;letter-spacing:-.011em}
+p{margin:0}
+a{color:var(--accent);text-underline-offset:.18em}
+a:hover{text-decoration-thickness:2px}
+code{font-family:ui-monospace,SFMono-Regular,"Cascadia Mono",Consolas,monospace;font-size:.875em;
+  background:var(--surface);border:1px solid var(--border);border-radius:5px;padding:.08em .38em}
+.skip-link{position:absolute;left:-9999px;top:0;z-index:99;background:var(--ink);color:var(--page);padding:.7rem 1.1rem;border-radius:0 0 var(--radius) 0}
+.skip-link:focus{left:0}
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:4px}
+.wrap{width:min(72rem,100% - 3rem);margin-inline:auto}
+.stack>*+*{margin-top:var(--gap,1rem)}
 
-    * { box-sizing: border-box; }
-    html { scroll-behavior: smooth; }
-    body {
-      margin: 0;
-      background: var(--cp-bg);
-      color: var(--cp-text);
-      font-family: "Segoe UI", Aptos, Calibri, -apple-system, BlinkMacSystemFont, sans-serif;
-      font-size: 17px;
-      line-height: 1.6;
-    }
-    button, a { font: inherit; }
-    a { color: var(--cp-link); }
-    a:focus-visible, button:focus-visible {
-      outline: 3px solid var(--cp-accent);
-      outline-offset: 3px;
-    }
-    .shell { width: min(1180px, calc(100% - 32px)); margin: 0 auto; }
-    .topbar {
-      position: sticky;
-      top: 0;
-      z-index: 20;
-      border-bottom: 1px solid var(--cp-border);
-      background: var(--cp-panel-strong);
-    }
-    .topbar-inner {
-      min-height: 64px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 20px;
-    }
-    .brand { display: flex; align-items: center; gap: 12px; font-weight: 760; letter-spacing: -0.02em; }
-    .brand-mark {
-      width: 36px;
-      height: 36px;
-      display: grid;
-      place-items: center;
-      border: 2px solid var(--cp-accent);
-      border-radius: 50%;
-      color: var(--cp-accent);
-    }
-    .nav { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-    .nav a, .theme-button {
-      min-height: 40px;
-      padding: 8px 12px;
-      border: 1px solid var(--cp-border);
-      border-radius: 0.625rem;
-      background: var(--cp-surface);
-      color: var(--cp-text);
-      text-decoration: none;
-      cursor: pointer;
-    }
-    .nav a:hover, .theme-button:hover { border-color: var(--cp-accent); color: var(--cp-accent); }
-    .hero { padding: 76px 0 44px; }
-    .eyebrow {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      color: var(--cp-accent);
-      font-weight: 700;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      font-size: 0.78rem;
-    }
-    h1, h2, h3 { line-height: 1.15; letter-spacing: -0.035em; }
-    h1 { margin: 14px 0 18px; font-size: clamp(2.7rem, 7vw, 5.8rem); max-width: 980px; }
-    h2 { font-size: clamp(2rem, 4.5vw, 3.3rem); margin: 0 0 16px; }
-    h3 { font-size: 1.23rem; margin: 0 0 10px; }
-    .hero-copy { max-width: 820px; font-size: 1.18rem; color: var(--cp-text-soft); }
-    .hero-actions { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 28px; }
-    .button {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      min-height: 48px;
-      padding: 10px 18px;
-      border-radius: 0.625rem;
-      border: 1px solid var(--cp-accent);
-      background: var(--cp-accent);
-      color: var(--cp-accent-fg);
-      text-decoration: none;
-      font-weight: 700;
-    }
-    .button:hover { background: var(--cp-accent-hover); }
-    .button.secondary { background: var(--cp-surface); color: var(--cp-text); border-color: var(--cp-border); }
-    .button.secondary:hover { color: var(--cp-accent); border-color: var(--cp-accent); }
-    .metrics {
-      display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 12px;
-      margin-top: 44px;
-    }
-    .metric {
-      padding: 18px;
-      border: 1px solid var(--cp-border);
-      border-radius: 16px;
-      background: var(--cp-surface);
-    }
-    .metric strong { display: block; font-size: 1.8rem; color: var(--cp-accent); line-height: 1; }
-    .metric span { color: var(--cp-text-muted); font-size: 0.9rem; }
-    section { padding: 72px 0; }
-    .section-head { max-width: 780px; margin-bottom: 32px; }
-    .section-head p { color: var(--cp-text-soft); margin: 0; }
-    .start-head { max-width: 100%; }
-    .start-head h2 { font-size: clamp(2rem, 4vw, 3rem); text-wrap: balance; }
-    .nowrap { white-space: nowrap; }
-    .architecture-grid {
-      display: grid;
-      grid-template-columns: minmax(0, 1.25fr) minmax(280px, 0.75fr);
-      gap: 24px;
-      align-items: stretch;
-    }
-    .panel {
-      border: 1px solid var(--cp-border);
-      border-radius: 16px;
-      background: var(--cp-surface);
-      box-shadow: 0 1px 2px var(--cp-border);
-    }
-    .diagram-panel { position: relative; padding: 16px; overflow: hidden; }
-    .diagram-panel svg { width: 100%; height: auto; display: block; }
-    .replay-button {
-      position: absolute;
-      right: 16px;
-      bottom: 16px;
-      min-height: 40px;
-      padding: 8px 12px;
-      border: 1px solid var(--cp-border);
-      border-radius: 0.625rem;
-      background: var(--cp-panel-strong);
-      color: var(--cp-text);
-      cursor: pointer;
-    }
-    .replay-button:hover { border-color: var(--cp-accent); color: var(--cp-accent); }
-    .principles { padding: 24px; display: grid; gap: 18px; align-content: start; }
-    .principle { padding: 16px; border: 1px solid var(--cp-border); border-radius: 0.625rem; background: var(--cp-surface-soft); }
-    .principle p { margin: 0; color: var(--cp-text-muted); font-size: 0.94rem; }
-    .track-controls { display: flex; gap: 8px; flex-wrap: wrap; margin: 20px 0 28px; }
-    .track-button {
-      padding: 8px 14px;
-      border: 1px solid var(--cp-border);
-      border-radius: 999px;
-      background: var(--cp-surface);
-      color: var(--cp-text);
-      cursor: pointer;
-    }
-    .track-button.active { border-color: var(--cp-accent); color: var(--cp-accent); background: var(--cp-accent-soft); }
-    .roster {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 14px;
-    }
-    .agent-card {
-      padding: 20px;
-      border: 1px solid var(--cp-border);
-      border-radius: 16px;
-      background: var(--cp-surface);
-      transition: transform 160ms ease, border-color 160ms ease, opacity 160ms ease;
-    }
-    .agent-card:hover { transform: translateY(-3px); border-color: var(--cp-accent); }
-    .agent-card.dimmed { opacity: 0.28; }
-    .agent-meta { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
-    .agent-id {
-      display: inline-grid;
-      place-items: center;
-      min-width: 54px;
-      min-height: 34px;
-      padding: 4px 10px;
-      border-radius: 999px;
-      background: var(--cp-accent-soft);
-      color: var(--cp-accent);
-      font-family: Consolas, "Courier New", Courier, monospace;
-      font-weight: 700;
-    }
-    .model { color: var(--cp-text-muted); font-family: Consolas, "Courier New", Courier, monospace; font-size: 0.78rem; }
-    .agent-card p { margin: 0; color: var(--cp-text-muted); font-size: 0.95rem; }
-    .agent-card[data-track="review"] { border-top: 4px solid var(--cp-accent); }
-    .agent-card[data-track="optional"] { border-style: dashed; }
-    .gate {
-      margin-top: 28px;
-      display: grid;
-      grid-template-columns: repeat(7, minmax(0, 1fr));
-      gap: 8px;
-      align-items: stretch;
-    }
-    .gate-intro { margin-top: 28px; }
-    .gate-intro h3 { margin-bottom: 6px; }
-    .gate-intro p { margin: 0; color: var(--cp-text-muted); }
-    .gate-step {
-      padding: 14px 10px;
-      border: 1px solid var(--cp-border);
-      border-radius: 0.625rem;
-      background: var(--cp-surface);
-      text-align: center;
-      font-size: 0.84rem;
-      color: var(--cp-text-muted);
-    }
-    .gate-step strong { display: block; color: var(--cp-text); margin-bottom: 4px; }
-    .gate-step.human { border-color: var(--cp-accent); background: var(--cp-accent-soft); }
-    .manual {
-      display: grid;
-      grid-template-columns: minmax(0, 0.72fr) minmax(0, 1.28fr);
-      gap: 24px;
-      align-items: start;
-    }
-    .manual-aside { padding: 24px; position: sticky; top: 88px; }
-    .manual-aside code {
-      display: block;
-      margin-top: 16px;
-      padding: 14px;
-      border-radius: 0.625rem;
-      background: var(--cp-surface-soft);
-      color: var(--cp-text);
-      font-family: Consolas, "Courier New", Courier, monospace;
-      font-size: 0.86rem;
-      overflow-wrap: anywhere;
-    }
-    .steps { display: grid; gap: 12px; }
-    .step {
-      display: grid;
-      grid-template-columns: 52px minmax(0, 1fr);
-      gap: 16px;
-      padding: 20px;
-      border: 1px solid var(--cp-border);
-      border-radius: 16px;
-      background: var(--cp-surface);
-    }
-    .step-number {
-      width: 44px;
-      height: 44px;
-      display: grid;
-      place-items: center;
-      border-radius: 50%;
-      background: var(--cp-accent);
-      color: var(--cp-accent-fg);
-      font-weight: 800;
-    }
-    .step p { margin: 0; color: var(--cp-text-muted); }
-    .callout {
-      margin-top: 24px;
-      padding: 20px;
-      border: 1px solid var(--cp-accent);
-      border-radius: 16px;
-      background: var(--cp-accent-soft);
-    }
-    .callout strong { color: var(--cp-accent); }
-    .callout p { margin: 6px 0 0; color: var(--cp-text-soft); }
-    .guide-grid {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 16px;
-    }
-    .guide-card { padding: 22px; }
-    .guide-card p, .guide-card li { color: var(--cp-text-muted); }
-    .guide-card ul { padding-left: 22px; }
-    pre {
-      margin: 14px 0;
-      padding: 16px;
-      overflow-x: auto;
-      border: 1px solid var(--cp-border);
-      border-radius: 0.625rem;
-      background: var(--cp-bg-elevated);
-      color: var(--cp-text);
-      font: 0.86rem/1.55 Consolas, "Courier New", Courier, monospace;
-    }
-    code { font-family: Consolas, "Courier New", Courier, monospace; }
-    .generated-route { color: var(--cp-text-muted); margin: -12px 0 24px; }
-    footer { padding: 44px 0; border-top: 1px solid var(--cp-border); color: var(--cp-text-muted); }
-    .footer-inner { display: flex; justify-content: space-between; gap: 20px; flex-wrap: wrap; }
-    .phase-node { transition: opacity 160ms ease, transform 160ms ease; transform-origin: center; transform-box: fill-box; }
-    .phase-node:hover { transform: scale(1.06); }
-    .phase-node.dimmed { opacity: 0.22; }
-    .ring-diagram.motion-ready .outer-field { animation: field-emerge 1000ms cubic-bezier(0.16, 1, 0.3, 1) both; }
-    .ring-diagram.motion-ready .assurance-ring,
-    .ring-diagram.motion-ready .orbit-line { animation: ring-resolve 1100ms 250ms cubic-bezier(0.16, 1, 0.3, 1) both; }
-    .ring-diagram.motion-ready .architect-core { animation: architect-emerge 1100ms 300ms cubic-bezier(0.16, 1, 0.3, 1) both; transform-origin: center; transform-box: fill-box; }
-    .ring-diagram.motion-ready .review-node { animation: reviewer-converge 900ms var(--review-delay) cubic-bezier(0.16, 1, 0.3, 1) both; }
-    .ring-diagram.motion-ready .phase-node { animation: phase-arrive 1100ms var(--phase-delay) cubic-bezier(0.16, 1, 0.3, 1) both; }
-    .ring-diagram.motion-ready.is-active .orbit-line {
-      animation:
-        ring-resolve 1100ms 250ms cubic-bezier(0.16, 1, 0.3, 1) both,
-        orbit 22s 3900ms linear infinite;
-    }
-    @keyframes field-emerge {
-      from { opacity: 0.2; transform: scale(0.72); transform-origin: center; }
-      to { opacity: 1; transform: scale(1); transform-origin: center; }
-    }
-    @keyframes ring-resolve {
-      from { opacity: 0; stroke-dashoffset: 180; filter: blur(6px); }
-      to { opacity: 1; stroke-dashoffset: 0; filter: blur(0); }
-    }
-    @keyframes architect-emerge {
-      from { opacity: 0; transform: scale(0.64); filter: blur(10px); }
-      to { opacity: 1; transform: scale(1); filter: blur(0); }
-    }
-    @keyframes reviewer-converge {
-      from { opacity: 0; translate: var(--review-entry) 0; filter: blur(7px); }
-      to { opacity: 1; translate: 0 0; filter: blur(0); }
-    }
-    @keyframes phase-arrive {
-      from {
-        opacity: 0;
-        translate: var(--entry-x) var(--entry-y);
-        rotate: var(--entry-rotate);
-        scale: 0.78;
-        filter: blur(8px);
-      }
-      72% { opacity: 1; filter: blur(0); }
-      to { opacity: 1; translate: 0 0; rotate: 0deg; scale: 1; filter: blur(0); }
-    }
-    @keyframes orbit { to { stroke-dashoffset: -120; } }
+/* ---------- top bar ---------- */
+.topbar{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--page) 88%,transparent);
+  backdrop-filter:saturate(1.6) blur(10px);border-bottom:1px solid var(--border)}
+.topbar-inner{display:flex;align-items:center;gap:1.25rem;padding:.85rem 0;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:.6rem;font-weight:650;color:var(--ink);text-decoration:none;letter-spacing:-.02em}
+.brand .mark{width:26px;height:26px;flex:none}
+nav.primary{margin-left:auto}
+nav.primary ul{display:flex;gap:.35rem;list-style:none;margin:0;padding:0;flex-wrap:wrap}
+nav.primary a{display:inline-block;padding:.4rem .7rem;border-radius:7px;color:var(--muted);
+  text-decoration:none;font-size:.9rem;font-weight:520}
+nav.primary a:hover{background:var(--surface);color:var(--ink)}
+.btn{font:inherit;font-size:.875rem;font-weight:530;color:var(--body);background:var(--raised);
+  border:1px solid var(--border-firm);border-radius:7px;padding:.42rem .8rem;cursor:pointer;
+  transition:background .15s,color .15s,border-color .15s}
+.btn:hover{background:var(--surface);color:var(--ink)}
+.btn[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--page)}
+:root[data-theme="dark"] .btn[aria-pressed="true"]{color:#0b1220}
 
-    @media (max-width: 900px) {
-      .metrics, .roster, .guide-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-      .architecture-grid, .manual { grid-template-columns: 1fr; }
-      .manual-aside { position: static; }
-      .gate { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-      .topbar-inner { align-items: flex-start; padding: 12px 0; }
-    }
-    @media (max-width: 620px) {
-      body { font-size: 16px; }
-      .shell { width: min(100% - 20px, 1180px); }
-      .nav a { display: none; }
-      .hero { padding-top: 52px; }
-      .metrics, .roster, .gate, .guide-grid { grid-template-columns: 1fr; }
-      .step { grid-template-columns: 44px minmax(0, 1fr); }
-    }
-    @media print {
-      .topbar, .hero-actions, .track-controls { display: none; }
-      body { background: var(--cp-surface); }
-      section { break-inside: avoid; padding: 28px 0; }
-      .agent-card, .panel, .step { break-inside: avoid; box-shadow: none; }
-    }
-    @media (prefers-reduced-motion: reduce) {
-      html { scroll-behavior: auto; }
-      .ring-diagram.motion-ready .outer-field,
-      .ring-diagram.motion-ready .assurance-ring,
-      .ring-diagram.motion-ready .architect-core,
-      .ring-diagram.motion-ready .review-node,
-      .ring-diagram.motion-ready .phase-node,
-      .ring-diagram.is-active .orbit-line {
-        animation: none;
-        opacity: 1;
-        translate: 0 0;
-        rotate: 0deg;
-        scale: 1;
-        filter: none;
-      }
-      .replay-button { display: none; }
-    }
-  </style>
+/* ---------- hero ---------- */
+.hero{padding:5rem 0 4rem;border-bottom:1px solid var(--border);
+  background:radial-gradient(80rem 32rem at 50% -8rem,var(--surface),transparent 70%)}
+.eyebrow{display:inline-flex;align-items:center;gap:.5rem;font-size:.76rem;font-weight:650;
+  letter-spacing:.08em;text-transform:uppercase;color:var(--accent);
+  background:var(--accent-soft);border:1px solid var(--accent-line);border-radius:999px;padding:.3rem .8rem}
+.hero h1{font-size:clamp(2.1rem,5.2vw,3.4rem);margin-top:1.25rem;max-width:20ch}
+.hero .lede{font-size:clamp(1.05rem,2vw,1.25rem);color:var(--body);max-width:62ch;margin-top:1.25rem}
+.hero-actions{display:flex;gap:.75rem;flex-wrap:wrap;margin-top:2rem}
+.cta{display:inline-block;font-weight:580;font-size:.95rem;padding:.7rem 1.25rem;border-radius:8px;text-decoration:none;border:1px solid transparent}
+.cta.solid{background:var(--accent);color:var(--page);box-shadow:var(--shadow)}
+:root[data-theme="dark"] .cta.solid{color:#0b1220}
+.cta.ghost{border-color:var(--border-firm);color:var(--ink);background:var(--raised)}
+.cta:hover{opacity:.92}
+.pillars{display:grid;gap:1rem;grid-template-columns:repeat(auto-fit,minmax(15rem,1fr));margin-top:3.5rem}
+.pillar{background:var(--raised);border:1px solid var(--border);border-radius:var(--radius);padding:1.15rem 1.25rem}
+.pillar h3{font-size:.95rem;margin-bottom:.35rem}
+.pillar p{font-size:.9rem;color:var(--muted)}
+
+/* ---------- sections ---------- */
+section{padding:4.5rem 0;border-bottom:1px solid var(--border)}
+.section-head{max-width:60ch;margin-bottom:2.5rem}
+.section-head .kicker{font-size:.76rem;font-weight:650;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.section-head h2{font-size:clamp(1.5rem,3vw,2.05rem);margin-top:.7rem}
+.section-head p{margin-top:.85rem;color:var(--muted)}
+
+/* ---------- steps ---------- */
+.steps{display:grid;gap:1.1rem}
+.step{background:var(--raised);border:1px solid var(--border);border-radius:var(--radius);
+  padding:1.5rem 1.6rem;box-shadow:var(--shadow)}
+.step-head{display:flex;align-items:baseline;gap:.9rem;flex-wrap:wrap}
+.step-num{font-variant-numeric:tabular-nums;font-weight:680;font-size:.8rem;letter-spacing:.06em;
+  color:var(--accent);background:var(--accent-soft);border:1px solid var(--accent-line);
+  border-radius:6px;padding:.18rem .5rem;flex:none}
+.step h3{font-size:1.1rem}
+.step .when{margin-left:auto;font-size:.78rem;color:var(--faint);font-weight:520}
+.step>p,.step>ol,.step>ul{margin-top:.9rem;font-size:.95rem}
+.step ol,.step ul{padding-left:1.25rem}
+.step li+li{margin-top:.4rem}
+pre{margin:1rem 0 0;background:var(--ink);color:#e2e8f0;border-radius:8px;padding:1rem 1.15rem;
+  overflow-x:auto;font-size:.83rem;line-height:1.62;font-family:ui-monospace,SFMono-Regular,Consolas,monospace}
+:root[data-theme="dark"] pre{background:#060b16;border:1px solid var(--border)}
+pre code{background:none;border:0;padding:0;color:inherit;font-size:1em}
+.prompt{color:#64748b;user-select:none}
+.safe{display:flex;gap:.6rem;align-items:flex-start;margin-top:1rem;padding:.75rem .95rem;
+  background:var(--good-soft);border:1px solid var(--good-line);border-radius:8px;font-size:.88rem;color:var(--good)}
+.caution{display:flex;gap:.6rem;align-items:flex-start;margin-top:1rem;padding:.75rem .95rem;
+  background:var(--warn-soft);border:1px solid var(--warn-line);border-radius:8px;font-size:.88rem;color:var(--warn)}
+.safe strong,.caution strong{font-weight:660}
+
+/* ---------- ring ---------- */
+.ring-layout{display:grid;gap:2.5rem;grid-template-columns:minmax(0,1fr)}
+@media (min-width:62rem){.ring-layout{grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);align-items:center}}
+.ring-frame{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:1.25rem}
+.ring-diagram{width:100%;height:auto;display:block}
+.ring-node circle{fill:var(--raised);stroke:var(--border-firm);stroke-width:2}
+.ring-node text{fill:var(--ink);font-size:21px;font-weight:640;text-anchor:middle;
+  font-family:ui-sans-serif,-apple-system,"Segoe UI",sans-serif}
+.ring-node .node-label{font-size:12.5px;font-weight:500;fill:var(--muted)}
+.ring-node.optional circle{stroke-dasharray:5 4;fill:var(--surface)}
+.ring-node.review circle{fill:var(--accent-soft);stroke:var(--accent-line)}
+.ring-node.review text{fill:var(--accent)}
+.centre circle{fill:var(--accent);stroke:none}
+.centre text{fill:#ffffff;font-size:19px;font-weight:660;text-anchor:middle}
+:root[data-theme="dark"] .centre text{fill:#0b1220}
+.orbit{fill:none;stroke:var(--border);stroke-width:1.5}
+.orbit.inner{stroke-dasharray:3 6}
+.spoke{stroke:var(--border-firm);stroke-width:1.5;opacity:.5}
+.is-animated .spoke{stroke-dasharray:260;stroke-dashoffset:260;animation:draw .9s ease-out forwards}
+.is-animated .ring-node{opacity:0;animation:pop .5s ease-out forwards}
+@keyframes draw{to{stroke-dashoffset:0}}
+@keyframes pop{from{opacity:0;transform:scale(.9)}to{opacity:1;transform:scale(1)}}
+.ring-node{transform-origin:center;transform-box:fill-box}
+.legend{list-style:none;margin:1.25rem 0 0;padding:0;display:flex;gap:1.25rem;flex-wrap:wrap;font-size:.83rem;color:var(--muted)}
+.legend li{display:flex;align-items:center;gap:.45rem}
+.swatch{width:.85rem;height:.85rem;border-radius:50%;border:2px solid var(--border-firm);background:var(--raised);flex:none}
+.swatch.optional{border-style:dashed}
+.swatch.review{background:var(--accent-soft);border-color:var(--accent-line)}
+.swatch.human{background:var(--accent);border-color:var(--accent)}
+
+/* ---------- sequence ---------- */
+.sequence{list-style:none;counter-reset:seq;margin:0;padding:0;display:grid;gap:.65rem}
+.sequence li{counter-increment:seq;display:flex;gap:.9rem;align-items:flex-start;
+  background:var(--raised);border:1px solid var(--border);border-radius:8px;padding:.85rem 1.05rem}
+.sequence li::before{content:counter(seq);flex:none;width:1.6rem;height:1.6rem;border-radius:50%;
+  display:grid;place-items:center;font-size:.78rem;font-weight:680;
+  background:var(--surface);border:1px solid var(--border-firm);color:var(--muted)}
+.sequence li.human{border-color:var(--accent-line);background:var(--accent-soft)}
+.sequence li.human::before{background:var(--accent);border-color:var(--accent);color:#fff}
+:root[data-theme="dark"] .sequence li.human::before{color:#0b1220}
+.sequence .who{font-weight:600;color:var(--ink)}
+.sequence .what{color:var(--muted);font-size:.92rem}
+
+/* ---------- roster ---------- */
+.filters{display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:1.5rem}
+.generated-route{font-size:.9rem;color:var(--muted);margin-bottom:1.25rem}
+.roster{display:grid;gap:1rem;grid-template-columns:repeat(auto-fill,minmax(16.5rem,1fr))}
+.agent-card{background:var(--raised);border:1px solid var(--border);border-radius:var(--radius);padding:1.1rem 1.2rem}
+.agent-card[hidden]{display:none}
+.agent-card[data-track="optional"]{border-style:dashed}
+.agent-card[data-track="review"]{background:var(--accent-soft);border-color:var(--accent-line)}
+.agent-meta{display:flex;align-items:center;justify-content:space-between;gap:.75rem;margin-bottom:.55rem}
+.agent-id{font-size:.72rem;font-weight:700;letter-spacing:.07em;color:var(--muted)}
+.model{font-size:.72rem;font-family:ui-monospace,Consolas,monospace;color:var(--faint)}
+.agent-card h3{font-size:.98rem}
+.agent-card p{margin-top:.4rem;font-size:.85rem;color:var(--muted)}
+.agent-card code{font-size:.78rem}
+
+/* ---------- table ---------- */
+.table-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:var(--radius);background:var(--raised)}
+table{width:100%;border-collapse:collapse;font-size:.92rem;min-width:34rem}
+th,td{text-align:left;padding:.85rem 1.1rem;border-bottom:1px solid var(--border);vertical-align:top}
+thead th{background:var(--surface);font-size:.76rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:650}
+tbody tr:last-child td{border-bottom:0}
+
+/* ---------- principles ---------- */
+.grid-2{display:grid;gap:1rem;grid-template-columns:repeat(auto-fit,minmax(18rem,1fr))}
+.tile{background:var(--raised);border:1px solid var(--border);border-radius:var(--radius);padding:1.2rem 1.3rem}
+.tile h3{font-size:.95rem;margin-bottom:.4rem}
+.tile p{font-size:.89rem;color:var(--muted)}
+
+/* ---------- footer ---------- */
+footer.page{padding:3rem 0 4rem;color:var(--muted);font-size:.88rem}
+footer.page p+p{margin-top:.75rem}
+.foot-links{display:flex;gap:1.25rem;flex-wrap:wrap;margin-top:1.25rem}
+</style>
 </head>
 <body>
-  <header class="topbar">
-    <div class="shell topbar-inner">
-      <div class="brand">
-        <span class="brand-mark" aria-hidden="true">A</span>
-        <span>Agentic Architecture v2</span>
-      </div>
-      <nav class="nav" aria-label="Page navigation">
-        <a href="#evaluate">Evaluate</a>
-        <a href="#architecture">Architecture</a>
-        <a href="#roster">Roster</a>
-        <a href="#operate">Operate</a>
-        <button class="theme-button" id="themeToggle" type="button" aria-label="Toggle colour theme">Theme</button>
-      </nav>
+<a class="skip-link" href="#main">Skip to main content</a>
+
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <a class="brand" href="#top">
+      <svg class="mark" viewBox="0 0 24 24" role="img" aria-labelledby="markTitle">
+        <title id="markTitle">Agentic Architecture</title>
+        <circle cx="12" cy="12" r="10.2" fill="none" stroke="currentColor" stroke-width="1.4" opacity=".35"/>
+        <circle cx="12" cy="12" r="4.6" fill="currentColor"/>
+      </svg>
+      Agentic Architecture v2
+    </a>
+    <nav class="primary" aria-label="Page navigation">
+      <ul>
+        <li><a href="#evaluate">Get started</a></li>
+        <li><a href="#architecture">Architecture</a></li>
+        <li><a href="#assurance">Assurance</a></li>
+        <li><a href="#roster">Crew</a></li>
+        <li><a href="#operate">Operate</a></li>
+      </ul>
+    </nav>
+    <button class="btn" type="button" id="themeToggle" aria-pressed="false">Dark mode</button>
+  </div>
+</header>
+
+<main id="main">
+
+<div id="top" class="hero">
+  <div class="wrap">
+    <p class="eyebrow">Human-centred architecture workflow</p>
+    <h1>The crew prepares. The architect decides.</h1>
+    <p class="lede">
+      Agentic Architecture v2 turns an architecture brief into approved requirements, a TOGAF
+      architecture, an implementation-ready Azure design, a build plan, deployable code, and a board
+      presentation. Eleven specialist agents prepare and challenge the work. Every phase stops at a gate
+      only you can open — with a key no agent can use.
+    </p>
+    <div class="hero-actions">
+      <a class="cta solid" href="#evaluate">Start in ten minutes</a>
+      <a class="cta ghost" href="#architecture">See how it works</a>
     </div>
-  </header>
 
-  <main>
-    <section class="hero">
-      <div class="shell">
-        <span class="eyebrow">Human-centred architecture crew</span>
-        <h1>Architecture is a conversation, not a conveyor belt.</h1>
-        <p class="hero-copy">
-          Agentic Architecture v2 surrounds the human architect with a specialised GPT crew. Each
-          phase creates, challenges, secures, and evidences the work—while every material decision and
-          every gate stays with the human.
-        </p>
-        <div class="hero-actions">
-          <a class="button" href="#evaluate">Evaluate in ten minutes</a>
-          <a class="button secondary" href="#architecture">Explore the operating model</a>
-        </div>
-        <div class="metrics" aria-label="Solution highlights">
-          <div class="metric"><strong>9</strong><span>governed phases</span></div>
-          <div class="metric"><strong>2</strong><span>independent reviewers</span></div>
-          <div class="metric"><strong>1</strong><span>human approval per phase</span></div>
-          <div class="metric"><strong>0</strong><span>automatic deployments</span></div>
-        </div>
+    <div class="pillars">
+      <div class="pillar">
+        <h3>Signed decisions</h3>
+        <p>Approvals are signed with a passphrase-protected key. An agent can write an approval file; it
+        cannot produce a valid one.</p>
       </div>
-    </section>
-
-    <section id="evaluate">
-      <div class="shell">
-        <div class="section-head">
-          <span class="eyebrow">Deterministic evaluation</span>
-          <h2>Clone, validate, and inspect a synthetic result.</h2>
-          <p>No Copilot account, model call, Azure subscription, credential, deployment, or real approval is needed.</p>
-        </div>
-        <div class="guide-grid">
-          <article class="panel guide-card">
-            <h3>1. Prerequisites</h3>
-            <p>Use Git, Node.js 22 or later, npm, and Windows PowerShell. Network access is needed only for cloning and installing dependencies.</p>
-          </article>
-          <article class="panel guide-card">
-            <h3>2. Run the evidence path</h3>
-            <pre><code>npm ci --no-audit --no-fund
-npm run validate -- --framework-only
-npm run smoke:contoso -- --keep-output .\.aff-smoke\contoso-review</code></pre>
-          </article>
-          <article class="panel guide-card">
-            <h3>3. Inspect success</h3>
-            <pre><code>Get-Content .\.aff-smoke\contoso-review\smoke-report.json
-Invoke-Item .\.aff-smoke\contoso-review\cases\contoso-permit-services\solution-overview.html</code></pre>
-            <p>Expect zero live model calls, zero Azure actions, an explicitly synthetic approval, and routing readiness for AFF-1.</p>
-          </article>
-        </div>
-        <div class="callout">
-          <strong>Safe stop point</strong>
-          <p>This is a complete local evaluation. It proves repository contracts and deterministic evidence, not live model quality, Azure readiness, deployment, runtime behaviour, or production fitness.</p>
-        </div>
+      <div class="pillar">
+        <h3>Independent challenge</h3>
+        <p>A rubber-duck reviewer on a different model challenges every phase, then a security and
+        compliance reviewer assures it.</p>
       </div>
-    </section>
-
-    <section id="architecture">
-      <div class="shell">
-        <div class="section-head">
-          <span class="eyebrow">The architecture ring</span>
-          <h2>The human architect stays at the centre.</h2>
-          <p>
-            Standard phases move from brief to board narrative. The Rubber Duck Reviewer challenges
-            the reasoning; the Security and Compliance Reviewer challenges the controls. Deployment
-            and runtime testing remain optional.
-          </p>
-        </div>
-        <div class="architecture-grid">
-          <div class="panel diagram-panel">
-            <svg class="ring-diagram" id="architectureRing" viewBox="0 0 900 900" role="img" aria-labelledby="ringTitle ringDesc">
-              <title id="ringTitle">Human architect surrounded by the Agentic Architecture phases</title>
-              <desc id="ringDesc">Nine phase agents form an outer ring, two reviewers form an inner assurance ring, and the human architect controls the centre.</desc>
-
-              <circle class="outer-field" cx="450" cy="450" r="360" fill="var(--cp-surface-soft)" stroke="var(--cp-border)" stroke-width="2"/>
-              <circle class="orbit-line assurance-ring" cx="450" cy="450" r="290" fill="var(--cp-surface)" stroke="var(--cp-accent)" stroke-width="3" stroke-dasharray="10 10"/>
-              <circle class="assurance-ring" cx="450" cy="450" r="230" fill="var(--cp-accent-soft)" stroke="var(--cp-accent)" stroke-width="2"/>
-
-              <g class="architect-core" aria-label="Human architect">
-                <circle cx="450" cy="378" r="32" fill="var(--cp-text-soft)"/>
-                <path d="M389 478 C393 430 419 410 450 410 C481 410 507 430 511 478 Z" fill="var(--cp-text-soft)"/>
-                <circle cx="450" cy="450" r="165" fill="none" stroke="var(--cp-text-soft)" stroke-width="3"/>
-                <text x="450" y="520" text-anchor="middle" fill="var(--cp-text)" font-size="21" font-weight="800">HUMAN ARCHITECT</text>
-                <text x="450" y="547" text-anchor="middle" fill="var(--cp-text-soft)" font-size="14">decision · approval · accountability</text>
-              </g>
-
-              <g class="phase-node" data-track="standard" transform="translate(450 110)" style="--phase-delay: 900ms; --entry-x: 0px; --entry-y: -240px; --entry-rotate: 16deg;">
-                <circle r="48" fill="var(--cp-surface)" stroke="var(--cp-accent)" stroke-width="3"/>
-                <text text-anchor="middle" y="-11" fill="var(--cp-accent)" font-size="11" font-weight="800">PHASE 0</text>
-                <text text-anchor="middle" y="13" fill="var(--cp-text)" font-size="13" font-weight="700">Coordinate</text>
-              </g>
-              <g class="phase-node" data-track="standard" transform="translate(656 205)" style="--phase-delay: 1100ms; --entry-x: 190px; --entry-y: -220px; --entry-rotate: 16deg;">
-                <circle r="48" fill="var(--cp-surface)" stroke="var(--cp-border-strong)" stroke-width="2"/>
-                <text text-anchor="middle" y="-11" fill="var(--cp-accent)" font-size="11" font-weight="800">PHASE 1</text>
-                <text text-anchor="middle" y="13" fill="var(--cp-text)" font-size="12" font-weight="700">Requirements</text>
-              </g>
-              <g class="phase-node" data-track="standard" transform="translate(765 395)" style="--phase-delay: 1300ms; --entry-x: 250px; --entry-y: -40px; --entry-rotate: 16deg;">
-                <circle r="48" fill="var(--cp-surface)" stroke="var(--cp-border-strong)" stroke-width="2"/>
-                <text text-anchor="middle" y="-17" fill="var(--cp-accent)" font-size="11" font-weight="800">PHASE 2</text>
-                <text text-anchor="middle" y="4" fill="var(--cp-text)" font-size="12" font-weight="700">TOGAF</text>
-                <text text-anchor="middle" y="19" fill="var(--cp-text)" font-size="11">Architecture</text>
-              </g>
-              <g class="phase-node" data-track="standard" transform="translate(727 610)" style="--phase-delay: 1500ms; --entry-x: 220px; --entry-y: 170px; --entry-rotate: 16deg;">
-                <circle r="48" fill="var(--cp-surface)" stroke="var(--cp-border-strong)" stroke-width="2"/>
-                <text text-anchor="middle" y="-11" fill="var(--cp-accent)" font-size="11" font-weight="800">PHASE 3</text>
-                <text text-anchor="middle" y="13" fill="var(--cp-text)" font-size="12" font-weight="700">Azure Design</text>
-              </g>
-              <g class="phase-node" data-track="standard" transform="translate(559 750)" style="--phase-delay: 1700ms; --entry-x: 90px; --entry-y: 240px; --entry-rotate: 16deg;">
-                <circle r="48" fill="var(--cp-surface)" stroke="var(--cp-border-strong)" stroke-width="2"/>
-                <text text-anchor="middle" y="-17" fill="var(--cp-accent)" font-size="11" font-weight="800">PHASE 4</text>
-                <text text-anchor="middle" y="4" fill="var(--cp-text)" font-size="11" font-weight="700">Implementation</text>
-                <text text-anchor="middle" y="19" fill="var(--cp-text)" font-size="11">Plan</text>
-              </g>
-              <g class="phase-node" data-track="standard" transform="translate(341 750)" style="--phase-delay: 1900ms; --entry-x: -90px; --entry-y: 240px; --entry-rotate: -16deg;">
-                <circle r="48" fill="var(--cp-surface)" stroke="var(--cp-border-strong)" stroke-width="2"/>
-                <text text-anchor="middle" y="-11" fill="var(--cp-accent)" font-size="11" font-weight="800">PHASE 5</text>
-                <text text-anchor="middle" y="13" fill="var(--cp-text)" font-size="13" font-weight="700">Coding</text>
-              </g>
-              <g class="phase-node" data-track="standard" transform="translate(173 610)" style="--phase-delay: 2100ms; --entry-x: -220px; --entry-y: 170px; --entry-rotate: -16deg;">
-                <circle r="48" fill="var(--cp-surface)" stroke="var(--cp-border-strong)" stroke-width="2"/>
-                <text text-anchor="middle" y="-17" fill="var(--cp-accent)" font-size="11" font-weight="800">PHASE 6</text>
-                <text text-anchor="middle" y="4" fill="var(--cp-text)" font-size="11" font-weight="700">C-level</text>
-                <text text-anchor="middle" y="19" fill="var(--cp-text)" font-size="11">Presentation</text>
-              </g>
-              <g class="phase-node" data-track="optional" transform="translate(135 395)" style="--phase-delay: 2300ms; --entry-x: -250px; --entry-y: -40px; --entry-rotate: -16deg;">
-                <circle r="48" fill="var(--cp-surface)" stroke="var(--cp-warning)" stroke-width="3" stroke-dasharray="5 5"/>
-                <text text-anchor="middle" y="-11" fill="var(--cp-warning)" font-size="11" font-weight="800">PHASE 7</text>
-                <text text-anchor="middle" y="13" fill="var(--cp-text)" font-size="13" font-weight="700">Deployment</text>
-              </g>
-              <g class="phase-node" data-track="optional" transform="translate(244 205)" style="--phase-delay: 2500ms; --entry-x: -190px; --entry-y: -220px; --entry-rotate: -16deg;">
-                <circle r="48" fill="var(--cp-surface)" stroke="var(--cp-warning)" stroke-width="3" stroke-dasharray="5 5"/>
-                <text text-anchor="middle" y="-17" fill="var(--cp-warning)" font-size="11" font-weight="800">PHASE 8</text>
-                <text text-anchor="middle" y="4" fill="var(--cp-text)" font-size="11" font-weight="700">Runtime</text>
-                <text text-anchor="middle" y="19" fill="var(--cp-text)" font-size="11">Testing</text>
-              </g>
-
-              <g class="review-node" data-track="review" transform="translate(250 450)" style="--review-delay: 600ms; --review-entry: 200px;">
-                <rect x="-70" y="-41" width="140" height="82" rx="10" fill="var(--cp-surface)" stroke="var(--cp-accent)" stroke-width="2"/>
-                <text text-anchor="middle" y="-7" fill="var(--cp-accent)" font-size="12" font-weight="800">RUBBER DUCK</text>
-                <text text-anchor="middle" y="16" fill="var(--cp-text-muted)" font-size="11" font-weight="700">REVIEWER</text>
-              </g>
-              <g class="review-node" data-track="review" transform="translate(650 450)" style="--review-delay: 750ms; --review-entry: -200px;">
-                <rect x="-70" y="-41" width="140" height="82" rx="10" fill="var(--cp-surface)" stroke="var(--cp-accent)" stroke-width="2"/>
-                <text text-anchor="middle" y="-17" fill="var(--cp-accent)" font-size="11" font-weight="800">SECURITY AND</text>
-                <text text-anchor="middle" y="3" fill="var(--cp-text-muted)" font-size="10" font-weight="700">COMPLIANCE</text>
-                <text text-anchor="middle" y="21" fill="var(--cp-text-muted)" font-size="10" font-weight="700">REVIEWER</text>
-              </g>
-            </svg>
-            <button class="replay-button" id="replayRing" type="button" aria-label="Replay the architecture ring animation">Replay ring</button>
-          </div>
-          <aside class="panel principles">
-            <div class="principle">
-              <h3>Human-final governance</h3>
-              <p>No phase progresses until both reviewers cover the same artifact hashes and the human approves.</p>
-            </div>
-            <div class="principle">
-              <h3>Independent challenge</h3>
-              <p>The Rubber Duck Reviewer uses a different GPT model. The Security and Compliance Reviewer derives obligations from case evidence.</p>
-            </div>
-            <div class="principle">
-              <h3>Compact, traceable outputs</h3>
-              <p>Each phase produces one authoritative Markdown document, safe HTML, and only essential evidence.</p>
-            </div>
-            <div class="principle">
-              <h3>Azure-ready, never reckless</h3>
-              <p>Bicep-first implementation, private databases, no stored deployment credentials, and no automatic deployment.</p>
-            </div>
-            <div class="principle">
-              <h3>Fail closed</h3>
-              <p>Missing evidence, model independence, scope, approval, or safe rendering stops the lifecycle.</p>
-            </div>
-          </aside>
-        </div>
-
-        <div class="gate-intro">
-          <h3>Phase assurance and approval sequence</h3>
-          <p>Independent challenge. Shared evidence. Human authority.</p>
-        </div>
-        <div class="gate" aria-label="Phase assurance and approval sequence">
-          <div class="gate-step"><strong>1 · Phase Agent</strong>Creates candidate</div>
-          <div class="gate-step"><strong>2 · Rubber Duck</strong>Challenges logic</div>
-          <div class="gate-step"><strong>3 · Phase Agent</strong>Remediates</div>
-          <div class="gate-step"><strong>4 · Security</strong>Assures compliance</div>
-          <div class="gate-step"><strong>5 · Phase Agent</strong>Remediates</div>
-          <div class="gate-step"><strong>6 · Both Reviewers</strong>Confirm same hashes</div>
-          <div class="gate-step human"><strong>7 · Human Architect</strong>Approves</div>
-        </div>
+      <div class="pillar">
+        <h3>Evidence-bound</h3>
+        <p>Both reviewers must cover identical artifact hashes. Editing reviewed work invalidates the
+        review that covered it.</p>
       </div>
-    </section>
+      <div class="pillar">
+        <h3>Fails closed</h3>
+        <p>Missing evidence, independence, scope, order, or approval stops progression. Nothing proceeds
+        on optimism.</p>
+      </div>
+    </div>
+  </div>
+</div>
 
-    <section id="roster">
-      <div class="shell">
-        <div class="section-head">
-          <span class="eyebrow">Agent roster</span>
-          <h2>A specialist crew with sharp boundaries.</h2>
-          <p>Filter the roster to see the standard delivery line, optional execution line, or independent assurance line.</p>
+<!-- ============ GET STARTED ============ -->
+<section id="evaluate">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="kicker">Start-up manual</p>
+      <h2>Five stages. Each one is a safe place to stop.</h2>
+      <p>Stage one needs nothing but Node.js — no GitHub Copilot, no Azure, no credentials, no key. You
+      can prove the framework is sound before committing to anything.</p>
+    </div>
+
+    <div class="steps">
+
+      <article class="step">
+        <div class="step-head">
+          <span class="step-num">01</span>
+          <h3>Install and prove it works</h3>
+          <span class="when">Offline · ~10 minutes</span>
         </div>
-        <div class="track-controls" role="group" aria-label="Filter agent roster">
-          <button class="track-button active" type="button" data-filter="all">All agents</button>
-          <button class="track-button" type="button" data-filter="standard">Standard route</button>
-          <button class="track-button" type="button" data-filter="optional">Optional route</button>
-          <button class="track-button" type="button" data-filter="review">Reviewers</button>
+        <p>Prerequisites: Git, Node.js 22 or later, npm, Windows PowerShell.</p>
+<pre><code><span class="prompt">&gt;</span> git clone https://github.com/aramsmith/agentic-architecture-v2.git
+<span class="prompt">&gt;</span> Set-Location .\agentic-architecture-v2
+<span class="prompt">&gt;</span> npm ci --no-audit --no-fund
+<span class="prompt">&gt;</span> npm run validate -- --framework-only
+<span class="prompt">&gt;</span> npm run smoke:contoso -- --keep-output .\.aff-smoke\contoso-review</code></pre>
+        <p>The framework validates, every offline assertion passes, and the report records
+        <strong>zero live model calls</strong> and zero Azure actions. Open the generated
+        <code>solution-overview.html</code> and you will see its approval labelled as synthetic test
+        evidence — because no human made it.</p>
+        <p class="safe"><strong>Safe stop point.</strong> This proves the framework is internally
+        consistent. It does not prove model quality, Azure access, deployment, runtime behaviour, or real
+        human approval.</p>
+      </article>
+
+      <article class="step">
+        <div class="step-head">
+          <span class="step-num">02</span>
+          <h3>Create your approval identity</h3>
+          <span class="when">Once, ever</span>
         </div>
+        <p>This is the key that signs every phase decision you make.</p>
+<pre><code><span class="prompt">&gt;</span> npm run identity:create</code></pre>
+        <p>You choose a <strong>label</strong> — a role such as <code>Accountable architect</code> keeps a
+        personal name out of case folders — and a <strong>passphrase</strong>. The passphrase is never
+        written to disk and cannot be recovered. It is the one secret an agent sharing your machine
+        cannot read.</p>
+        <p>Creating the key also switches on a policy for this machine: a real human decision must be
+        signed. Skip this stage and approvals still work, but they are recorded as
+        <code>self-asserted</code>.</p>
+      </article>
+
+      <article class="step">
+        <div class="step-head">
+          <span class="step-num">03</span>
+          <h3>Connect GitHub Copilot</h3>
+          <span class="when">Needed for real cases</span>
+        </div>
+        <p>Open Copilot CLI from the repository root, then confirm discovery:</p>
+        <ol>
+          <li><code>/agent</code> — confirm <code>AFF-0-coordinator</code> is listed.</li>
+          <li><code>/skills list</code> — confirm <code>grill-me</code> and <code>render-case-html</code>.</li>
+        </ol>
+        <p>Agents load from <code>.github/agents/</code> and skills from <code>.github/skills/</code>, the
+        locations GitHub documents for
+        <a href="https://docs.github.com/en/copilot/how-tos/copilot-cli/customize-copilot/create-custom-agents-for-cli">custom agents</a>
+        and <a href="https://docs.github.com/en/copilot/how-tos/copilot-cli/customize-copilot/add-skills">project skills</a>.
+        Restart the CLI after changing an agent; use <code>/skills reload</code> after changing a skill.</p>
+        <p class="safe"><strong>Safe stop point.</strong> Discovery proves packaging only. It says nothing
+        about model quality, reviewer convergence, or production fitness.</p>
+      </article>
+
+      <article class="step">
+        <div class="step-head">
+          <span class="step-num">04</span>
+          <h3>Start your first case</h3>
+          <span class="when">Per engagement</span>
+        </div>
+<pre><code><span class="prompt">&gt;</span> New-Item -ItemType Directory .\cases\&lt;case-name&gt;\input</code></pre>
+        <p>Add the architecture brief and supporting evidence, then invoke
+        <code>AFF-0-coordinator</code>. Do not start with AFF-1 — Phase 0 establishes the source
+        inventory, model plan, shared records, interview preparation, and review routing.</p>
+        <p class="caution"><strong>Never commit case data.</strong> Case folders stay local and are
+        ignored by Git. Never include credentials, tokens, or unnecessary personal or regulated data.</p>
+      </article>
+
+      <article class="step">
+        <div class="step-head">
+          <span class="step-num">05</span>
+          <h3>Approve each phase, one at a time</h3>
+          <span class="when">Repeat to Phase 6</span>
+        </div>
+        <ol>
+          <li><strong>Read</strong> the phase document, both reviewer records, the decisions, and the
+          residual risks.</li>
+          <li><strong>Decide</strong> — in your own terminal, with no agent session running.</li>
+          <li><strong>Confirm</strong> the case still holds, then continue.</li>
+        </ol>
+<pre><code><span class="prompt">&gt;</span> npm run approve -- --case cases\&lt;case-name&gt; --phase 0
+<span class="prompt">&gt;</span> npm run validate -- --case cases\&lt;case-name&gt;</code></pre>
+        <p>The approval command prints the artifact hashes and both final verdicts, then asks you to
+        approve, reject, or cancel, and finally for your passphrase. It refuses to offer a decision the
+        evidence does not support. A phase cannot be entered, evidenced, or approved until its
+        predecessor holds an approved decision.</p>
+        <p class="caution"><strong>Never type your passphrase into an agent conversation.</strong> An
+        agent that asks for it is phishing you, whatever its intent. Agents prepare, challenge, and
+        evidence the work. You decide, alone.</p>
+      </article>
+
+    </div>
+  </div>
+</section>
+
+<!-- ============ ARCHITECTURE ============ -->
+<section id="architecture">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="kicker">The shape of the work</p>
+      <h2>The human architect stays at the centre.</h2>
+      <p>Nine phases form the outer ring. Two independent reviewers sit inside it. Every relationship
+      terminates at the centre, because every phase gate is yours.</p>
+    </div>
+
+    <div class="ring-layout">
+      <div class="ring-frame">
+        <svg class="ring-diagram is-animated" id="architectureRing" viewBox="0 0 900 900" role="img" aria-labelledby="ringTitle ringDesc">
+          <title id="ringTitle">The human architect at the centre of nine phases and two reviewers</title>
+          <desc id="ringDesc">Nine phase agents form an outer ring, two independent reviewers sit on an inner ring, and the human architect holds the centre. Every phase connects to the centre because every gate requires a signed human decision.</desc>
+
+          <circle class="orbit" cx="450" cy="450" r="320"/>
+          <circle class="orbit inner" cx="450" cy="450" r="210"/>
+
+          <g class="spokes">
+            <line class="spoke" x1="450" y1="450" x2="450" y2="130"/>
+            <line class="spoke" x1="450" y1="450" x2="656" y2="205"/>
+            <line class="spoke" x1="450" y1="450" x2="765" y2="394"/>
+            <line class="spoke" x1="450" y1="450" x2="727" y2="610"/>
+            <line class="spoke" x1="450" y1="450" x2="559" y2="751"/>
+            <line class="spoke" x1="450" y1="450" x2="341" y2="751"/>
+            <line class="spoke" x1="450" y1="450" x2="173" y2="610"/>
+            <line class="spoke" x1="450" y1="450" x2="135" y2="394"/>
+            <line class="spoke" x1="450" y1="450" x2="244" y2="205"/>
+          </g>
+
+          <g class="ring-node" style="animation-delay:.05s">
+            <circle cx="450" cy="130" r="56"/><text x="450" y="126">P0</text><text class="node-label" x="450" y="148">Coordinate</text>
+          </g>
+          <g class="ring-node" style="animation-delay:.1s">
+            <circle cx="656" cy="205" r="56"/><text x="656" y="201">P1</text><text class="node-label" x="656" y="223">Requirements</text>
+          </g>
+          <g class="ring-node" style="animation-delay:.15s">
+            <circle cx="765" cy="394" r="56"/><text x="765" y="390">P2</text><text class="node-label" x="765" y="412">TOGAF</text>
+          </g>
+          <g class="ring-node" style="animation-delay:.2s">
+            <circle cx="727" cy="610" r="56"/><text x="727" y="606">P3</text><text class="node-label" x="727" y="628">Azure design</text>
+          </g>
+          <g class="ring-node" style="animation-delay:.25s">
+            <circle cx="559" cy="751" r="56"/><text x="559" y="747">P4</text><text class="node-label" x="559" y="769">Build plan</text>
+          </g>
+          <g class="ring-node" style="animation-delay:.3s">
+            <circle cx="341" cy="751" r="56"/><text x="341" y="747">P5</text><text class="node-label" x="341" y="769">Coding</text>
+          </g>
+          <g class="ring-node" style="animation-delay:.35s">
+            <circle cx="173" cy="610" r="56"/><text x="173" y="606">P6</text><text class="node-label" x="173" y="628">Presentation</text>
+          </g>
+          <g class="ring-node optional" style="animation-delay:.4s">
+            <circle cx="135" cy="394" r="56"/><text x="135" y="390">P7</text><text class="node-label" x="135" y="412">Deployment</text>
+          </g>
+          <g class="ring-node optional" style="animation-delay:.45s">
+            <circle cx="244" cy="205" r="56"/><text x="244" y="201">P8</text><text class="node-label" x="244" y="223">Testing</text>
+          </g>
+
+          <g class="ring-node review" style="animation-delay:.55s">
+            <circle cx="302" cy="599" r="52"/><text x="302" y="595">A</text><text class="node-label" x="302" y="617">Rubber duck</text>
+          </g>
+          <g class="ring-node review" style="animation-delay:.6s">
+            <circle cx="598" cy="599" r="52"/><text x="598" y="595">B</text><text class="node-label" x="598" y="617">Security</text>
+          </g>
+
+          <g class="ring-node centre" style="animation-delay:.7s">
+            <circle cx="450" cy="450" r="104"/>
+            <text x="450" y="438">HUMAN</text>
+            <text x="450" y="464">ARCHITECT</text>
+          </g>
+        </svg>
+      </div>
+
+      <div class="stack" style="--gap:1.25rem">
+        <p>Read the numbered phases in order. The standard route ends at Phase 6 with a board
+        presentation. <strong>Phases 7 and 8 are never automatic</strong> — deployment and runtime
+        testing each require a separate, deliberate human invocation.</p>
+        <p>The two reviewers never author, fix, waive, or approve the work they review. The rubber duck
+        runs on a different model from the phase agent, so the challenge is genuinely independent rather
+        than the same reasoning agreeing with itself.</p>
+        <ul class="legend">
+          <li><span class="swatch" aria-hidden="true"></span> Standard route</li>
+          <li><span class="swatch optional" aria-hidden="true"></span> Human invocation only</li>
+          <li><span class="swatch review" aria-hidden="true"></span> Independent reviewer</li>
+          <li><span class="swatch human" aria-hidden="true"></span> You</li>
+        </ul>
+        <p><button class="btn" type="button" id="replayRing">Replay diagram</button></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ ASSURANCE ============ -->
+<section id="assurance">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="kicker">Phase assurance</p>
+      <h2>Independent challenge. Shared evidence. Human authority.</h2>
+      <p>Every invoked phase runs this sequence. Any material change invalidates the reviews that covered
+      the earlier version, and the gate reopens.</p>
+    </div>
+
+    <ol class="sequence">
+      <li><span><span class="who">Phase agent</span> — <span class="what">creates the candidate and records its hashes.</span></span></li>
+      <li><span><span class="who">Rubber Duck Reviewer</span> — <span class="what">challenges logic, traceability, and unsupported claims, on a different model.</span></span></li>
+      <li><span><span class="who">Phase agent</span> — <span class="what">resolves accepted findings.</span></span></li>
+      <li><span><span class="who">Security and Compliance Reviewer</span> — <span class="what">assures security, privacy, sovereignty, and compliance.</span></span></li>
+      <li><span><span class="who">Phase agent</span> — <span class="what">resolves accepted findings again.</span></span></li>
+      <li><span><span class="who">Both reviewers</span> — <span class="what">re-review until their final verdicts cover identical, unchanged artifact hashes.</span></span></li>
+      <li class="human"><span><span class="who">You</span> — <span class="what">read the evidence and sign the decision with your key. Nothing proceeds until you do.</span></span></li>
+    </ol>
+
+    <div class="section-head" style="margin-top:3.5rem">
+      <h2>What an approval actually proves</h2>
+      <p>Every decision carries one of three modes. The validator derives the mode from the evidence —
+      never from what the record claims about itself.</p>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th scope="col">Mode</th><th scope="col">What it means</th><th scope="col">How it is reached</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>human-verified</code></td>
+            <td>Signed by your approval key and unchanged since.</td>
+            <td>You ran the approval command and unlocked your key with a passphrase.</td>
+          </tr>
+          <tr>
+            <td><code>self-asserted</code></td>
+            <td>Recorded without verification of who decided.</td>
+            <td>A decision on a machine holding no approval key. Rejected where a key exists.</td>
+          </tr>
+          <tr>
+            <td><code>synthetic</code></td>
+            <td>Generated by the offline harness. No human decision was made.</td>
+            <td>Produced only by the Contoso smoke test, which cannot emit anything else.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p class="caution" style="max-width:70ch"><strong>Stated plainly.</strong> Verification is not access
+    control. An agent may still write an approval file — it simply cannot produce a valid signature
+    without a passphrase that is never stored. And a human who types that passphrase because an agent
+    asked has delegated their authority, which is not forgery. No system prevents that.</p>
+  </div>
+</section>
+
+<!-- ============ ROSTER ============ -->
+<section id="roster">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="kicker">The crew</p>
+      <h2>A specialist team with sharp boundaries.</h2>
+      <p>Generated from the lifecycle manifest, so this roster cannot drift from what the framework
+      actually enforces.</p>
+    </div>
+
+    <div class="filters">
+      <button class="btn" type="button" data-filter="all" aria-pressed="true">All</button>
+      <button class="btn" type="button" data-filter="standard" aria-pressed="false">Standard route</button>
+      <button class="btn" type="button" data-filter="optional" aria-pressed="false">Human invocation only</button>
+      <button class="btn" type="button" data-filter="review" aria-pressed="false">Reviewers</button>
+    </div>
+
 <!-- BEGIN GENERATED: AFF-LIFECYCLE-ROSTER -->
         <p class="generated-route"><strong>Manifest route:</strong> Phase 0 → Phase 1 → Phase 2 → Phase 3 → Phase 4 → Phase 5 → Phase 6. Phases 7 and 8 remain outside the standard route and require explicit human invocation.</p>
         <div class="roster">
@@ -696,145 +606,125 @@ Invoke-Item .\.aff-smoke\contoso-review\cases\contoso-permit-services\solution-o
           </article>
         </div>
 <!-- END GENERATED: AFF-LIFECYCLE-ROSTER -->
-      </div>
-    </section>
+  </div>
+</section>
 
-    <section id="operate">
-      <div class="shell">
-        <div class="section-head start-head">
-          <span class="eyebrow">Short manual</span>
-          <h2>Start with a brief. Start with <span class="nowrap">AFF-0.</span></h2>
-          <p>The operator only needs to prepare the case input, verify the models, and keep control of each gate.</p>
-        </div>
-        <div class="manual">
-          <aside class="panel manual-aside">
-            <h3>Case entrypoint</h3>
-            <p>Place the brief and evidence in the case input folder. Do not include credentials or unnecessary personal data.</p>
-            <code>cases/&lt;case-name&gt;/input/</code>
-            <div class="callout">
-              <strong>Invoke:</strong><br>
-              AFF-0-coordinator
-            </div>
-          </aside>
-          <div class="steps">
-            <article class="step">
-              <div class="step-number">1</div>
-              <div><h3>Confirm models</h3><p>Verify every model in the generated roster is available and keep AFF-A on a different model from each phase owner.</p></div>
-            </article>
-            <article class="step">
-              <div class="step-number">2</div>
-              <div><h3>Create the case</h3><p>Copy the architecture brief template or add your own brief and supporting evidence beneath the input folder.</p></div>
-            </article>
-            <article class="step">
-              <div class="step-number">3</div>
-              <div><h3>Invoke AFF-0</h3><p>AFF-0 inventories and normalises inputs, initialises the model plan and records, and prepares—not conducts—the interview.</p></div>
-            </article>
-            <article class="step">
-              <div class="step-number">4</div>
-              <div><h3>Review and approve</h3><p>Read the phase output, Rubber Duck review, Security and Compliance review, decisions, and residual risks. Approve only when both reviews cover the same hashes.</p></div>
-            </article>
-            <article class="step">
-              <div class="step-number">5</div>
-              <div><h3>Progress one phase at a time</h3><p>Continue through AFF-6. Invoke AFF-7 and AFF-8 separately only when deployment or runtime assurance is genuinely required.</p></div>
-            </article>
-          </div>
-        </div>
-        <div class="callout">
-          <strong>Practise with the included example case</strong>
-          <p>
-            Contoso is Microsoft's familiar fictitious company name used in examples. Contoso Permit
-            Services and this architecture case are entirely synthetic and exist solely for testing
-            this solution. Before using real customer information, run AFF-0 against
-            <code>cases/contoso-permit-services/input/</code>. This lets you verify input handling,
-            model assignments, reviewer sequencing, human approval, and the opening requirements
-            interview without Azure access, credentials, deployment, or live testing.
-          </p>
-        </div>
-        <div class="guide-grid">
-          <article class="panel guide-card">
-            <h3>Compatibility</h3>
-            <p>Node.js 22+ is the executable baseline. Windows and Ubuntu are exercised; macOS is expected but not automated. Confirm host and model availability before a live case.</p>
-            <p><a href="docs/compatibility.md">Read the compatibility matrix</a></p>
-          </article>
-          <article class="panel guide-card">
-            <h3>Troubleshooting</h3>
-            <p>Do not bypass lifecycle, hash, path, renderer, or smoke failures. Use the reported invariant and correct the source.</p>
-            <p><a href="docs/troubleshooting.md">Open troubleshooting</a></p>
-          </article>
-          <article class="panel guide-card">
-            <h3>Release boundary</h3>
-            <p>Tool, lifecycle, schema, and repository release versions are separate. Release requires the complete stack on protected main with validation and CodeQL passing.</p>
-            <p><a href="docs/release-process.md">Read the release process</a></p>
-          </article>
-        </div>
-      </div>
-    </section>
-  </main>
-
-  <footer>
-    <div class="shell footer-inner">
-      <span>Agentic Architecture v2 · Human-centred by design</span>
-      <span>Standard route ends at the C-level presentation</span>
+<!-- ============ OPERATE ============ -->
+<section id="operate">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="kicker">Operating principles</p>
+      <h2>What the framework refuses to do.</h2>
+      <p>These are enforced by a deterministic validator, not by agent good behaviour.</p>
     </div>
-  </footer>
 
-  <script>
-    (() => {
-      const themeButton = document.getElementById("themeToggle");
-      themeButton.addEventListener("click", () => {
-        const current = document.documentElement.getAttribute("data-theme");
-        document.documentElement.setAttribute("data-theme", current === "dark" ? "light" : "dark");
-      });
+    <div class="grid-2">
+      <div class="tile">
+        <h3>Human-final governance</h3>
+        <p>Agents prepare and challenge; you decide and sign. On a machine holding an approval key, an
+        unsigned decision is rejected.</p>
+      </div>
+      <div class="tile">
+        <h3>Enforced phase order</h3>
+        <p>A phase cannot be entered, evidenced, or approved until its predecessor holds an approved
+        decision. The order is checked from the records.</p>
+      </div>
+      <div class="tile">
+        <h3>Independent review</h3>
+        <p>The rubber duck must run on a different model from the phase agent. If no independent model is
+        available, the gate stays shut.</p>
+      </div>
+      <div class="tile">
+        <h3>Least privilege</h3>
+        <p>Every agent declares its capabilities. Reviewers may never run commands or drive other agents,
+        and the validator enforces it.</p>
+      </div>
+      <div class="tile">
+        <h3>No invented facts</h3>
+        <p>Unknowns become explicit decisions, blockers, or owned assumptions with a named human owner —
+        never confident filler.</p>
+      </div>
+      <div class="tile">
+        <h3>Safe rendering</h3>
+        <p>Case HTML is generated deterministically, never authored by a model. Remote content, scripts,
+        and unsafe SVG are rejected outright.</p>
+      </div>
+      <div class="tile">
+        <h3>Azure-ready, never reckless</h3>
+        <p>Bicep-first, parameterised environments, private databases. Phase 5 validates locally and
+        never deploys.</p>
+      </div>
+      <div class="tile">
+        <h3>No stored credentials</h3>
+        <p>Interactive Azure sign-in or an approved managed identity. GitHub OIDC is outside this
+        solution, and nothing is kept in the case.</p>
+      </div>
+    </div>
 
-      const filterButtons = Array.from(document.querySelectorAll(".track-button"));
-      const cards = Array.from(document.querySelectorAll(".agent-card"));
-      const phaseNodes = Array.from(document.querySelectorAll(".phase-node"));
-      const ring = document.getElementById("architectureRing");
-      const replayRing = document.getElementById("replayRing");
-      const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
-      let ringVisible = false;
-      let ringPlayed = false;
+    <div class="section-head" style="margin-top:3.5rem">
+      <h2>Case data never leaves your machine</h2>
+      <p>Real case folders are ignored by Git by design. Only the template and the synthetic Contoso case
+      are in the repository. Keep customer material local, and never commit or push it.</p>
+    </div>
+  </div>
+</section>
 
-      const playRing = () => {
-        if (reduceMotion.matches) return;
-        ring.classList.remove("motion-ready", "is-active");
-        void ring.getBoundingClientRect();
-        ring.classList.add("motion-ready");
-        if (ringVisible && !document.hidden) ring.classList.add("is-active");
-        ringPlayed = true;
-      };
+</main>
 
-      const ringObserver = new IntersectionObserver((entries) => {
-        entries.forEach((entry) => {
-          ringVisible = entry.isIntersecting;
-          if (ringVisible) {
-            if (!ringPlayed) playRing();
-            else if (!document.hidden) ring.classList.add("is-active");
-          } else {
-            ring.classList.remove("is-active");
-          }
-        });
-      }, { threshold: 0.32 });
+<footer class="page">
+  <div class="wrap">
+    <p>Agentic Architecture v2 — a human-centred architecture workflow for GitHub Copilot.
+    Licensed under Apache 2.0.</p>
+    <p>This site describes the framework. It is not architecture advice, not a support commitment, and
+    not evidence under the AFF contract.</p>
+    <div class="foot-links">
+      <a href="https://github.com/aramsmith/agentic-architecture-v2">Repository</a>
+      <a href="docs/compatibility.md">Compatibility</a>
+      <a href="docs/troubleshooting.md">Troubleshooting</a>
+      <a href="docs/release-process.md">Release process</a>
+    </div>
+  </div>
+</footer>
 
-      ringObserver.observe(ring);
-      replayRing.addEventListener("click", playRing);
-      document.addEventListener("visibilitychange", () => {
-        ring.classList.toggle("is-active", ringVisible && !document.hidden && ringPlayed);
-      });
+<script>
+(() => {
+  const root = document.documentElement;
+  const toggle = document.getElementById("themeToggle");
+  const syncToggle = () => {
+    const dark = root.getAttribute("data-theme") === "dark";
+    toggle.setAttribute("aria-pressed", String(dark));
+    toggle.textContent = dark ? "Light mode" : "Dark mode";
+  };
+  syncToggle();
+  toggle.addEventListener("click", () => {
+    root.setAttribute("data-theme", root.getAttribute("data-theme") === "dark" ? "light" : "dark");
+    syncToggle();
+  });
 
-      filterButtons.forEach((button) => {
-        button.addEventListener("click", () => {
-          const filter = button.dataset.filter;
-          filterButtons.forEach((item) => item.classList.toggle("active", item === button));
-          cards.forEach((card) => {
-            card.classList.toggle("dimmed", filter !== "all" && card.dataset.track !== filter);
-          });
-          phaseNodes.forEach((node) => {
-            node.classList.toggle("dimmed", filter === "review" || (filter !== "all" && node.dataset.track !== filter));
-          });
-        });
-      });
-    })();
-  </script>
+  const ring = document.getElementById("architectureRing");
+  const replay = document.getElementById("replayRing");
+  if (ring && replay) {
+    replay.addEventListener("click", () => {
+      ring.classList.remove("is-animated");
+      void ring.getBoundingClientRect();
+      ring.classList.add("is-animated");
+    });
+  }
+
+  const filters = [...document.querySelectorAll("[data-filter]")];
+  const cards = [...document.querySelectorAll(".agent-card")];
+  for (const button of filters) {
+    button.addEventListener("click", () => {
+      const wanted = button.getAttribute("data-filter");
+      for (const other of filters) {
+        other.setAttribute("aria-pressed", String(other === button));
+      }
+      for (const card of cards) {
+        card.hidden = wanted !== "all" && card.getAttribute("data-track") !== wanted;
+      }
+    });
+  }
+})();
+</script>
 </body>
 </html>
