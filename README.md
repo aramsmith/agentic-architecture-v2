@@ -365,3 +365,6 @@ are allowed into the repository. Keep real customer case data local and never co
 Except where a component includes its own licence file, this repository is licensed under the
 [Apache License 2.0](LICENSE). Component-level licences remain applicable to their components;
 `.github/skills/grill-me/LICENSE` applies to the `grill-me` skill.
+
+The published overview embeds the Inter typeface so the page stays self-contained. Inter is licensed
+under the SIL Open Font License 1.1; see [`licenses/inter/OFL.txt`](licenses/inter/OFL.txt).

@@ -31,6 +31,7 @@
 /docs/aff-contracts.md @aramsmith
 /docs/aff-renderer.md @aramsmith
 /docs/decisions/ @aramsmith
+/licenses/ @aramsmith
 
 # Case scaffolding and synthetic expectations
 /cases/_template/ @aramsmith
