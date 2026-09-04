@@ -20,6 +20,7 @@ accept a reproducible repository issue; it is not a service-level or vendor supp
 | Validator/tool package | `1.0.0`, private package | **Verified** by `package.json` and `package-lock.json` | This is repository tooling metadata, not the lifecycle or schema version and not proof of a published npm package. |
 | Renderer | Deterministic, self-contained HTML; contained local assets only; sanitised SVG; Mermaid shown as escaped source | **Verified** by renderer tests and the Contoso smoke | It does not execute Mermaid, remote scripts, or model-authored HTML. |
 | Azure | Not required for install, validation, rendering, or the Contoso smoke | **Verified boundary** | Only optional Phase 7/8 work needs Azure, case-specific authorisation, approved parameters, and organisation-approved identity. |
+| Human approval | `extensions.approvalMode` declares `synthetic`, `self-asserted`, or `human-verified`; the declaration must match the evidence | **Verified for record integrity and, when signed, for key custody** | A `human-verified` approval proves the record was signed by the case's approval key and is unchanged. A machine holding an approval key requires every real decision to be signed; a machine without one accepts `self-asserted`. Neither proves the passphrase holder acted unassisted. |
 
 Official host references:
 

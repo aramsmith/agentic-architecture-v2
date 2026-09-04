@@ -37,6 +37,21 @@ Deployment, and Runtime Testing. Agent identifiers remain `AFF-0` through `AFF-8
 Use the reviewer display names **Rubber Duck Reviewer** (`AFF-A`) and
 **Security and Compliance Reviewer** (`AFF-B`). The identifiers remain stable for routing and records.
 
+## Tool policy
+
+Every agent declares an explicit `tools` array and is granted the least capability its phase needs.
+The framework validator enforces this:
+
+- `read` is mandatory; an agent must be able to consult this contract and the case evidence.
+- Only `read`, `search`, `edit`, `execute`, `web`, `agent`, and `todo` are supported capabilities.
+- Any namespaced `<mcp-server>/<tool>` grant must name an MCP server declared in the same profile and
+  a tool listed in that server's own `tools` array.
+- **AFF-A and AFF-B must never hold `execute` or `agent`.** Reviewers challenge the subject and record
+  findings; they never run commands and never drive other agents. Their `edit` capability exists only
+  to write their own review records.
+
+Widening a grant is a contract change: update the profile and run the complete validation sequence.
+
 ## Model policy
 
 All agents use GPT models. The approved default assignments are:
@@ -102,6 +117,18 @@ the subject.
 The human approval record identifies the phase, artifact hashes, reviewer-record hashes, decision,
 approver, and time. Store it beneath `approvals/phase-<id>/` as a `human-approval` JSON record.
 Approval is the handoff; agents cannot approve for the human.
+
+Every approval declares its assurance in `extensions.approvalMode`, and the declaration must match what
+the evidence supports. A `human-verified` decision is signed by the architect's approval key, which is
+protected by a passphrase held only in the architect's head. **No agent may run the approval command,
+and no agent may ever ask for the passphrase.** An agent that requests it is phishing, whatever its
+intent. Agents prepare, challenge, and evidence the work; the human performs the final act alone, in
+their own terminal, outside any agent session.
+
+An unsigned approval remains valid and is labelled `self-asserted`. It proves reviewer convergence on
+identical hashes and record integrity, but not who decided or that a human decided. On a machine that
+holds an architect approval key, an unsigned real decision is rejected: holding a key means decisions are
+expected to carry it.
 
 ## Evidence and change control
 

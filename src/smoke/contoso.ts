@@ -66,6 +66,7 @@ interface Expectations {
 interface SmokeEvidence {
   frameworkValid: boolean;
   caseValid: boolean;
+  validationInvariants: string[];
   aff0Discovered: boolean;
   renderSkillDiscovered: boolean;
   grillSkillDiscovered: boolean;
@@ -76,6 +77,7 @@ interface SmokeEvidence {
   candidateHashesConverged: boolean;
   approvalHashesConverged: boolean;
   approvalSynthetic: boolean;
+  approvalModeSynthetic: boolean;
   approvalLastGateAction: boolean;
   phase1AfterApproval: boolean;
   openingActorAff1: boolean;
@@ -399,6 +401,7 @@ export async function buildContosoSmokeWorkspace(
       "Offline smoke evidence does not demonstrate live model, Azure, deployment, or runtime behavior.",
     ],
     extensions: {
+      approvalMode: "synthetic",
       syntheticTestEvidence: true,
       realApproval: false,
     },
@@ -654,6 +657,13 @@ async function collectEvidence(workspaceRoot: string): Promise<SmokeEvidence> {
   return {
     frameworkValid: framework.errors.length === 0,
     caseValid: caseValidation.errors.length === 0,
+    validationInvariants: [
+      ...new Set(
+        [...framework.errors, ...caseValidation.errors].map(
+          ({ invariant }) => invariant,
+        ),
+      ),
+    ].sort(),
     aff0Discovered: await fileExists(
       path.join(workspaceRoot, ".github", "agents", "AFF-0-coordinator.agent.md"),
     ),
@@ -684,6 +694,9 @@ async function collectEvidence(workspaceRoot: string): Promise<SmokeEvidence> {
       approvalValue.extensions.realApproval === false &&
       typeof approvalValue.approver === "string" &&
       approvalValue.approver.startsWith("Synthetic Test Human"),
+    approvalModeSynthetic:
+      isRecord(approvalValue.extensions) &&
+      approvalValue.extensions.approvalMode === "synthetic",
     approvalLastGateAction: phase0DecisionIndex >= 0 && !laterPhase0Gate,
     phase1AfterApproval:
       phase0ApprovedTerminal &&
@@ -704,7 +717,8 @@ async function collectEvidence(workspaceRoot: string): Promise<SmokeEvidence> {
     overviewApproved:
       phase0ApprovedTerminal &&
       overview.includes("Synthetic test approval and exited") &&
-      overview.includes("This is not a real human or architecture approval"),
+      overview.includes("Approval assurance:") &&
+      overview.includes("no human decision was made"),
     routeReady:
       lifecycle.phases.find(({ id }) => id === "0")?.next === "1" &&
       phase0ApprovedTerminal &&
@@ -842,6 +856,10 @@ export async function verifyContosoSmokeWorkspace(
     ],
     ["Automatic human approval", evidence.approvalSynthetic],
     [
+      "Approval evidence that could pass as a human decision",
+      evidence.approvalModeSynthetic,
+    ],
+    [
       "C-level claims of deployment or runtime readiness",
       evidence.actionsNotPerformed.includes(
         "C-level claims of deployment or runtime readiness",
@@ -850,7 +868,9 @@ export async function verifyContosoSmokeWorkspace(
   ]);
 
   if (!evidence.frameworkValid || !evidence.caseValid) {
-    throw new SmokeError("Framework or generated case validation failed.");
+    throw new SmokeError(
+      `Framework or generated case validation failed: ${evidence.validationInvariants.join(", ")}.`,
+    );
   }
   if (!evidence.renderSkillDiscovered) {
     throw new SmokeError("render-case-html packaging was not discovered.");

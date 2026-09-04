@@ -6,6 +6,7 @@ import {
   allReviews,
   asApproval,
   bindingSet,
+  latestApprovals,
   latestReviews,
   type Approval,
 } from "./review-records.js";
@@ -18,7 +19,7 @@ export function validateApprovals(records: LoadedRecord[]): ValidationError[] {
   const approvals = records
     .map(asApproval)
     .filter((record): record is Approval => record !== undefined);
-  const latestApprovals = new Map<string, Approval>();
+  const currentApprovals = latestApprovals(approvals);
   const errors: ValidationError[] = [];
 
   for (const approval of approvals) {
@@ -30,22 +31,25 @@ export function validateApprovals(records: LoadedRecord[]): ValidationError[] {
         remediation: `Store it beneath approvals/phase-${approval.phaseId}/.`,
       });
     }
-    const current = latestApprovals.get(approval.phaseId);
-    if (
-      !current ||
-      Date.parse(approval.decidedAt) > Date.parse(current.decidedAt)
-    ) {
-      latestApprovals.set(approval.phaseId, approval);
-    } else if (
-      Date.parse(approval.decidedAt) === Date.parse(current.decidedAt)
-    ) {
-      errors.push({
-        file: `${current.file}; ${approval.file}`,
-        invariant: "approval-binding",
-        message: "Two approvals for the same phase have the same decision time.",
-        remediation:
-          "Keep immutable decisions with distinct RFC 3339 instants so current state is deterministic.",
-      });
+  }
+
+  for (const current of currentApprovals.values()) {
+    const currentInstant = Date.parse(current.decidedAt);
+    for (const approval of approvals) {
+      if (
+        approval.phaseId === current.phaseId &&
+        approval !== current &&
+        Date.parse(approval.decidedAt) === currentInstant
+      ) {
+        errors.push({
+          file: `${current.file}; ${approval.file}`,
+          invariant: "approval-binding",
+          message:
+            "Two approvals for the same phase have the same decision time.",
+          remediation:
+            "Keep immutable decisions with distinct RFC 3339 instants so current state is deterministic.",
+        });
+      }
     }
   }
 
@@ -119,7 +123,7 @@ export function validateApprovals(records: LoadedRecord[]): ValidationError[] {
     }
   }
 
-  for (const approval of latestApprovals.values()) {
+  for (const approval of currentApprovals.values()) {
     if (approval.decision !== "APPROVED") {
       continue;
     }

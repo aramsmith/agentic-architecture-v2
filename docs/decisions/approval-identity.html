@@ -1,0 +1,382 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; img-src data:; script-src 'none'; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="generator" content="session decision record">
+<title>Approval identity — design discussion and decisions</title>
+<style>
+:root{
+  --ink:#1f2937; --muted:#4b5563; --faint:#6b7280;
+  --border:#d1d5db; --soft:#f3f4f6; --page:#ffffff;
+  --accent:#374151; --warn:#92400e; --warnbg:#fffbeb; --warnborder:#fcd34d;
+  --good:#065f46; --goodbg:#ecfdf5; --goodborder:#6ee7b7;
+  --bad:#991b1b; --badbg:#fef2f2; --badborder:#fca5a5;
+}
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--page); color:var(--ink);
+  font:16px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+}
+.skip-link{position:absolute;left:-9999px;top:0;background:var(--ink);color:#fff;padding:.6rem 1rem;z-index:10}
+.skip-link:focus{left:0}
+.wrap{max-width:62rem;margin:0 auto;padding:0 1.5rem}
+header.page{border-bottom:1px solid var(--border);background:var(--soft);padding:2.5rem 0 2rem}
+header.page h1{margin:0 0 .5rem;font-size:1.9rem;line-height:1.25}
+header.page p.sub{margin:0;color:var(--muted)}
+dl.meta{display:flex;flex-wrap:wrap;gap:.35rem 2rem;margin:1.25rem 0 0;font-size:.9rem}
+dl.meta div{display:flex;gap:.5rem}
+dl.meta dt{color:var(--faint);margin:0}
+dl.meta dd{margin:0;font-weight:600}
+main{padding:2.5rem 0 1rem}
+h2{margin:2.75rem 0 .85rem;font-size:1.35rem;padding-bottom:.4rem;border-bottom:1px solid var(--border)}
+h2:first-child{margin-top:0}
+h3{margin:1.75rem 0 .5rem;font-size:1.05rem}
+p{margin:0 0 1rem}
+ul,ol{margin:0 0 1rem;padding-left:1.35rem}
+li{margin:.3rem 0}
+code{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:.88em;background:var(--soft);padding:.12em .38em;border-radius:.25rem}
+table{width:100%;border-collapse:collapse;margin:0 0 1.25rem;font-size:.94rem}
+caption{text-align:left;font-weight:600;padding-bottom:.5rem;color:var(--muted)}
+th,td{border:1px solid var(--border);padding:.55rem .7rem;text-align:left;vertical-align:top}
+th{background:var(--soft);font-weight:600}
+pre{background:var(--ink);color:#e5e7eb;padding:1rem 1.15rem;border-radius:.4rem;overflow-x:auto;font-size:.85rem;line-height:1.55;margin:0 0 1.25rem}
+pre code{background:none;padding:0;color:inherit;font-size:1em}
+.callout{border:1px solid var(--border);background:var(--soft);padding:1rem 1.15rem;border-radius:.3rem;margin:0 0 1.25rem}
+.callout p:last-child{margin-bottom:0}
+.callout.warn{background:var(--warnbg);border-color:var(--warnborder)}
+.callout.good{background:var(--goodbg);border-color:var(--goodborder)}
+.callout.bad{background:var(--badbg);border-color:var(--badborder)}
+.callout h3{margin-top:0}
+.callout.warn h3{color:var(--warn)}
+.callout.good h3{color:var(--good)}
+.callout.bad h3{color:var(--bad)}
+.tag{display:inline-block;font-size:.72rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;padding:.16rem .5rem;border-radius:.22rem;border:1px solid var(--border);background:#fff;color:var(--muted)}
+.tag.settled{background:var(--goodbg);border-color:var(--goodborder);color:var(--good)}
+.tag.deferred{background:var(--soft);color:var(--faint)}
+.tag.open{background:var(--warnbg);border-color:var(--warnborder);color:var(--warn)}
+footer.page{border-top:1px solid var(--border);margin-top:3rem;padding:1.5rem 0 2.5rem;color:var(--faint);font-size:.88rem}
+</style>
+</head>
+<body>
+<a class="skip-link" href="#content">Skip to main content</a>
+
+<header class="page">
+  <div class="wrap">
+    <p class="tag settled">Decisions settled — implementation started</p>
+    <h1>Approval identity in Agentic Architecture v2</h1>
+    <p class="sub">A design discussion about what an AFF human approval actually proves, and what it should prove.</p>
+    <dl class="meta">
+      <div><dt>Date</dt><dd>4 September 2026</dd></div>
+      <div><dt>Repository</dt><dd>aramsmith/agentic-architecture-v2</dd></div>
+      <div><dt>Scope</dt><dd>Solo architect topology</dd></div>
+      <div><dt>Schema impact</dt><dd>None</dd></div>
+    </dl>
+  </div>
+</header>
+
+<main id="content">
+<div class="wrap">
+
+<h2>Why this discussion happened</h2>
+
+<p>A full audit of the repository produced one finding that outranked the rest. The framework's headline
+claim is <strong>human-final governance</strong> — the human architect owns every material decision and
+approves every phase. The machinery does not support that claim.</p>
+
+<p>An approval record's <code>approver</code> field is defined in the schema as
+<code>{ "type": "string", "minLength": 1 }</code>. The validator reads it and never checks it against
+anything. <code>"Human architect"</code> and <code>"z"</code> are equally valid.</p>
+
+<div class="callout bad">
+  <h3>The proof already sits in the repository</h3>
+  <p>The Contoso smoke harness programmatically writes an approval record. It is schema-valid. Its hashes
+  converge with both reviewer records. It passes every check in the validator. It says
+  <code>"decision": "APPROVED"</code>. No human touched it.</p>
+  <p>It is benign only because it <em>volunteers</em> three labels saying so —
+  <code>syntheticTestEvidence</code>, <code>realApproval: false</code>, and an approver string beginning
+  <code>"Synthetic Test Human"</code>. Remove those voluntary declarations and it is indistinguishable
+  from a real approval.</p>
+</div>
+
+<p>Compounding this: <code>AFF-0</code> holds <code>edit</code> and <code>execute</code> on the case
+folder. The operating contract states that <em>agents cannot approve for the human</em>. That is prose.
+Nothing enforced it.</p>
+
+<h2>What the discussion changed</h2>
+
+<p>Two positions were tested and abandoned during the conversation. Recording them matters as much as
+recording the conclusions.</p>
+
+<table>
+  <caption>Positions revised in the course of the discussion</caption>
+  <thead>
+    <tr><th>Initial position</th><th>Why it was wrong</th><th>Replaced by</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>If cases never leave the laptop, identity is close to worthless.</td>
+      <td>Framed against the wrong threat. The question is not whether the architect is honest — they
+      are, and they own everything. The question is what stops an <em>agent</em> writing the approval.</td>
+      <td>Identity is worth having precisely because agents hold write access to the case.</td>
+    </tr>
+    <tr>
+      <td>Add a second human reviewer for four-eyes assurance.</td>
+      <td>Two unverified name strings are worth what one is. With genuinely one architect available, a
+      mandatory second approver produces a rubber stamp — a control that reliably fails while appearing
+      to pass.</td>
+      <td>Team topology deferred entirely. Duo review would come free with a shared repository, and is
+      unavailable and unhelpful without one.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>Topology — settled first, because everything depends on it</h2>
+
+<p>Three deployment patterns were considered: a solo architect on a laptop; a team working in a forked
+repository; and a mix.</p>
+
+<div class="callout warn">
+  <h3>The team pattern was forbidden by the framework's own contract</h3>
+  <p>A team needs somewhere to share case state. <code>.gitignore</code> excludes <code>cases/*</code>;
+  the operating contract says <em>"Case data is local-only and must not be committed or pushed"</em>; the
+  README says <em>"never commit or push it"</em>. A forking team has no supported mechanism at all —
+  divergent private case folders, a broken append-only journal, and no convergence.</p>
+</div>
+
+<p><strong>Decision: solo only.</strong> Cases stay off GitHub because they may contain sensitive data.
+The team pattern is deferred to a later version rather than left as an unbuilt aspiration.</p>
+
+<p>This has a direct consequence. In a shared repository, GitHub would already solve identity — a merged
+pull request approved by a named account under branch protection is stronger and better audited than any
+key managed on a laptop. That option is not available here, so the identity has to be built.</p>
+
+<h2>Threat model</h2>
+
+<table>
+  <caption>What this design does and does not defend against</caption>
+  <thead><tr><th>Threat</th><th>In scope</th><th>Note</th></tr></thead>
+  <tbody>
+    <tr><td>An agent fabricating or silently altering an approval</td><td><strong>Yes</strong></td><td>Demonstrated by the smoke harness</td></tr>
+    <tr><td>A runaway loop or unconsidered approval</td><td><strong>Yes</strong></td><td>Approval becomes a deliberate, separate human act</td></tr>
+    <tr><td>Proving identity to an outside party</td><td>No</td><td>Unavailable in solo mode — there is no independent authority</td></tr>
+    <tr><td>The architect delegating their own authority</td><td>No</td><td>Permitted. If the human commands it, it executes</td></tr>
+    <tr><td>Malware or a keylogger on the machine</td><td>No</td><td>If the machine is compromised, the case data is already lost</td></tr>
+  </tbody>
+</table>
+
+<h2>The core principle</h2>
+
+<div class="callout good">
+  <h3>Verification, not access control</h3>
+  <p>The instinct is to stop agents writing the approval file. That cannot be enforced: agents run as the
+  same Windows user, and file permissions are per-user — an ACL that blocks the agent blocks the human
+  too. A read-only attribute is removed with one command.</p>
+  <p>So the problem is inverted. <strong>Anything may write an approval; only a correctly signed one
+  counts.</strong> This is exactly the pattern the framework already uses for artefacts: edits are not
+  prevented, they are made to fail validation. The same idea, applied one level up — from artefacts to
+  decisions.</p>
+</div>
+
+<h2>Mechanism, verified before adoption</h2>
+
+<p>The load-bearing claim — that an agent reading the key file gains nothing — was tested rather than
+assumed:</p>
+
+<pre><code>key file starts:              -----BEGIN ENCRYPTED PRIVATE KEY-----
+ciphertext on disk:           true
+sign without passphrase   -&gt;  blocked
+wrong passphrase          -&gt;  blocked
+correct passphrase        -&gt;  signed, verify = true
+tampered payload          -&gt;  verify = false</code></pre>
+
+<p>Node 26.5.1 supports Ed25519 key generation, passphrase-encrypted private keys, and detached signing
+natively. The repository currently has <strong>no cryptography dependency and needs none</strong>.
+Signing reuses <code>json-canonicalize</code>, already present and already trusted for hashing.</p>
+
+<h2>Settled decisions</h2>
+
+<table>
+  <caption>The design, as agreed</caption>
+  <thead><tr><th style="width:30%">Decision</th><th>Outcome</th></tr></thead>
+  <tbody>
+    <tr><td>Mechanism</td><td>Ed25519 key pair; private key encrypted with a passphrase</td></tr>
+    <tr><td>Passphrase</td><td><strong>Never stored.</strong> Held in the architect's head, typed at approval time. Mandatory — no unencrypted key option</td></tr>
+    <tr><td>Key location</td><td>User profile, outside the case folder and outside the agents' contracted work area</td></tr>
+    <tr><td>Key creation</td><td>Once per architect, not once per case</td></tr>
+    <tr><td>Approver label</td><td>Bound to the key and chosen once at creation; role suggested as the default, a personal name permitted</td></tr>
+    <tr><td>Approval command</td><td>Run by the human, in their own terminal, <strong>outside any agent session</strong>. Agents may never invoke it or request the passphrase</td></tr>
+    <tr><td>Who verifies</td><td>The deterministic validator — never the model's judgement</td></tr>
+    <tr><td>Signed payload</td><td>The whole approval record, canonicalised, minus the signature itself — including the key fingerprint and the mode</td></tr>
+    <tr><td>Rejections</td><td>Signed as well. One rule, no exceptions</td></tr>
+    <tr><td>Trust anchor</td><td>Key fingerprint recorded in each approval's <code>extensions</code>; every approval in a case must share one fingerprint</td></tr>
+    <tr><td>Downgrade</td><td>Once one approval in a case is signed, every later one must be. Irreversible</td></tr>
+    <tr><td>Lost passphrase</td><td>Recorded key rotation, surfaced in the solution overview</td></tr>
+    <tr><td>Modes</td><td><code>synthetic</code> · <code>self-asserted</code> · <code>human-verified</code></td></tr>
+    <tr><td>Display</td><td>Derived from <strong>verification</strong>, never from the claimed field</td></tr>
+    <tr><td>Scope</td><td>Phase approvals only. Phases 7 and 8 remain blocked and documented — no schema version bump</td></tr>
+    <tr><td>Machine policy</td><td>Creating an approval key sets <code>requireSignedApprovals</code> on that machine, so an unsigned real decision is rejected. Added after testing showed an agent never needed to forge a signature — it could simply omit one</td></tr>
+  </tbody>
+</table>
+
+<h3>Why the signature covers the whole record</h3>
+
+<p>Signing only the artefact hashes would leave the verdict unprotected. A valid signature over a hash
+set could be lifted and attached to a modified record — flipping <code>REJECTED</code> to
+<code>APPROVED</code>, changing the phase, or backdating the decision — and it would still verify. The
+evidence would be cryptographically signed while the decision was not.</p>
+
+<h3>Why display must derive from verification</h3>
+
+<p>If the rendered views read the <em>claimed</em> mode, the control is theatre: an agent writes
+<code>approvalMode: "human-verified"</code> with no signature, and the solution overview displays
+"Human verified". The label must be the result of checking, never the assertion being checked.</p>
+
+<h2>How it runs in practice</h2>
+
+<p><strong>Once, ever:</strong></p>
+
+<pre><code>&gt; npm run identity:create
+Passphrase:         ********
+Confirm passphrase: ********
+
+Created  C:\Users\arsmith\.aff\identity\architect.key   (ENCRYPTED)
+         C:\Users\arsmith\.aff\identity\architect.pub
+Fingerprint  SHA256:aB3f9c...
+
+Keep the passphrase in your head. It is not stored anywhere.</code></pre>
+
+<p><strong>After each phase — the architect, their own terminal, no agent running:</strong></p>
+
+<pre><code>&gt; npm run approve -- --case cases/acme-permits --phase 1
+
+Phase 1 — Requirements
+Artefacts (4)      acme-requirements.md              sha256 4f2a…
+                   acme-requirements.html            sha256 9c81…
+                   acme-requirements-catalogue.json  sha256 22de…
+                   acme-interview-decisions.json     sha256 7b04…
+
+AFF-A  Rubber Duck              CONFORMS-WITH-GAPS   2 MINOR
+AFF-B  Security and Compliance  CONFORMS
+Convergence   both reviewers cover the identical 4 hashes
+Residual gaps 1  "Data residency unconfirmed — owner: Aram, due Phase 3"
+
+Approve, reject, or cancel? approve
+Passphrase: ********
+
+Signed approval written to approvals/phase-1/acme-phase-1-approval.json</code></pre>
+
+<p>The agent then reads the approval, but the gate is <code>npm run validate</code>: signature valid,
+fingerprint matching the trusted key, hashes converged, predecessor phase approved. An agent that
+fabricates an approval produces a record with no valid signature, and validation fails.</p>
+
+<h2>Accepted limits</h2>
+
+<div class="callout warn">
+  <p><strong>Delegation is permitted.</strong> If the architect types the passphrase because an agent
+  asked, that is authority exercised, not forgery. No system prevents an authorised person from
+  delegating. What the design does is make the act deliberate, one phase at a time, with the evidence on
+  screen.</p>
+  <p><strong>A determined agent could still rebuild a forged history</strong> by overwriting the key
+  store and re-signing every approval — there is no external anchor on a single laptop. But that moves
+  forgery from writing one JSON file to destroying the architect's identity file and regenerating the
+  entire chain: <em>conspicuous and detectable</em> rather than trivial. For solo work, that is the right
+  ceiling.</p>
+  <p><strong>Removing every signature from a case was not detectable</strong> in the first signing
+  build. Continuity protected a case that still held a verified decision, but stripping them all left
+  records that looked as though the case was never signed. This was found by test rather than reasoning,
+  and closed by a per-machine policy: creating an approval key sets <code>requireSignedApprovals</code>,
+  so an unsigned real decision fails on that machine. A machine that has never held a key has no
+  expectation to measure against, so the offline evaluation is unaffected.</p>
+  <p><strong>The passphrase must never be typed into an agent conversation.</strong> An agent that asks
+  for it is phishing, whether or not it intends to be.</p>
+</div>
+
+<h2>Delivery</h2>
+
+<table>
+  <caption>Two increments</caption>
+  <thead><tr><th style="width:8rem">Increment</th><th>Contents</th><th style="width:8rem">Status</th></tr></thead>
+  <tbody>
+    <tr>
+      <td><strong>A — Honesty</strong></td>
+      <td>Three approval modes; display derived from verification; assertion that the Contoso harness can
+      only ever emit <code>synthetic</code>; documentation corrected to state what an approval proves. No
+      cryptography, no schema change.</td>
+      <td><span class="tag settled">Delivered</span></td>
+    </tr>
+    <tr>
+      <td><strong>B — Signing</strong></td>
+      <td>Key creation, the approve command, signature generation and verification, fingerprint chain,
+      no-downgrade rule, recorded key rotation.</td>
+      <td><span class="tag settled">Delivered</span></td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>Implementation note discovered during build</h3>
+
+<p>The agreed display target was "both phase HTML and the solution overview". Phase HTML is generated by
+the phase agent <em>before</em> review and approval exist, so there is no approval to show. Worse, adding
+approval state to it later would change the document's hash and invalidate the approval bound to it — a
+circular dependency. The solution overview carries the per-phase mode; the phase document instead states
+plainly that it is generated evidence carrying no approval.</p>
+
+<h2>Deferred, deliberately</h2>
+
+<ul>
+  <li><strong>Team topology</strong> — forking, shared cases, GitHub-backed identity and PR-based duo review. Requires replacing the blanket ban on committing case data with a data-classification rule.</li>
+  <li><strong>Deployment authorisation</strong> — Phases 7 and 8 declare prerequisites (<code>scoped-attempt-authorisation</code>, <code>scoped-test-attempt-authorisation</code>, <code>phase-7-succeeded</code>) that have no record type. They currently fail closed. Building them needs schema contract <code>1.0.0</code> → <code>1.1.0</code>.</li>
+  <li><strong>Proof the architect read the evidence</strong> — a confirmation token derived from the converged hashes. Deferred until there is evidence the control is needed.</li>
+  <li><strong>Separate Windows account for agents</strong> — the only hard write-prevention boundary. Rejected as disproportionate for solo work.</li>
+</ul>
+
+<h2>Already shipped in this session</h2>
+
+<table>
+  <caption>Committed before this discussion concluded</caption>
+  <thead><tr><th>Change</th><th>Why</th></tr></thead>
+  <tbody>
+    <tr>
+      <td><strong>Phase order enforced from case records</strong></td>
+      <td>The lifecycle manifest declared phase prerequisites that nothing ever evaluated. A case could
+      record and approve a later phase with no approved predecessor and pass validation.</td>
+    </tr>
+    <tr>
+      <td><strong>Text files pinned to LF</strong></td>
+      <td>Windows checkouts rewrote files to CRLF while the generator emits LF, so
+      <code>docs:check</code> reported permanent false drift on the documented primary platform. Linux CI
+      never saw it.</td>
+    </tr>
+    <tr>
+      <td><strong>Tool least privilege and hardened HTML</strong></td>
+      <td>Agent capability grants were unvalidated — reviewers may now never hold <code>execute</code> or
+      <code>agent</code>. Generated documents gained a restrictive Content-Security-Policy. A duplicated
+      profile-discovery loop was producing twelve errors for one fault, and skipped the check entirely
+      when no agent Markdown was present.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>Still open from the audit</h2>
+
+<p>One item remains unaddressed and is knowingly accepted for now: the validator proves the internal
+consistency of the current working tree, not the immutability of history. There is no hash chain,
+signature over the record sequence, or external anchor. Increment B narrows this for approvals
+specifically; it does not close it for the case as a whole.</p>
+
+</div>
+</main>
+
+<footer class="page">
+  <div class="wrap">
+    <p>Record of a design discussion held on 4 September 2026. This is not an AFF case artefact, carries
+    no phase approval, and is not evidence under the AFF contract. Decisions recorded here are the
+    architect's; recommendations were proposed and either accepted, revised, or rejected in
+    conversation.</p>
+  </div>
+</footer>
+
+</body>
+</html>

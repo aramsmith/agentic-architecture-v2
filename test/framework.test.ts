@@ -164,6 +164,87 @@ describe("framework validation", () => {
     );
   });
 
+  it("rejects a reviewer granted command execution", async () => {
+    const root = await copyFramework();
+    const profilePath = path.join(
+      root,
+      ".github",
+      "agents",
+      "AFF-A-rubber-duck.agent.md",
+    );
+    const profile = await readFile(profilePath, "utf8");
+    await writeFile(
+      profilePath,
+      profile.replace(
+        "tools: [read, search, edit, web]",
+        "tools: [read, search, edit, web, execute]",
+      ),
+    );
+
+    const result = await validateFramework(root);
+
+    expect(result.errors).toContainEqual(
+      expect.objectContaining({
+        file: ".github/agents/AFF-A-rubber-duck.agent.md",
+        invariant: "tool-least-privilege",
+      }),
+    );
+  });
+
+  it("rejects an unsupported tool capability", async () => {
+    const root = await copyFramework();
+    const profilePath = path.join(
+      root,
+      ".github",
+      "agents",
+      "AFF-2-togafarchitecture.agent.md",
+    );
+    const profile = await readFile(profilePath, "utf8");
+    await writeFile(
+      profilePath,
+      profile.replace(
+        "tools: [read, search, edit, web]",
+        "tools: [read, search, edit, web, deploy]",
+      ),
+    );
+
+    const result = await validateFramework(root);
+
+    expect(result.errors).toContainEqual(
+      expect.objectContaining({
+        file: ".github/agents/AFF-2-togafarchitecture.agent.md",
+        invariant: "tool-least-privilege",
+      }),
+    );
+  });
+
+  it("rejects an MCP tool the profile does not declare", async () => {
+    const root = await copyFramework();
+    const profilePath = path.join(
+      root,
+      ".github",
+      "agents",
+      "AFF-3-design.agent.md",
+    );
+    const profile = await readFile(profilePath, "utf8");
+    await writeFile(
+      profilePath,
+      profile.replace(
+        "microsoft-learn/microsoft_docs_fetch]",
+        "microsoft-learn/microsoft_docs_fetch, microsoft-learn/microsoft_code_sample_search]",
+      ),
+    );
+
+    const result = await validateFramework(root);
+
+    expect(result.errors).toContainEqual(
+      expect.objectContaining({
+        file: ".github/agents/AFF-3-design.agent.md",
+        invariant: "tool-least-privilege",
+      }),
+    );
+  });
+
   it("rejects an unsupported lifecycle schema version", async () => {
     const root = await copyFramework();
     const lifecyclePath = path.join(root, ".github", "agents", "AFF-LIFECYCLE.json");
@@ -243,6 +324,49 @@ describe("framework validation", () => {
         }),
       ]),
     );
+    expect(
+      result.errors.filter(
+        (error) =>
+          error.invariant === "supported-profile-location" &&
+          error.file === ".github/skills/legacy/skill.md",
+      ),
+      "one misplaced skill must report exactly one error",
+    ).toHaveLength(1);
+  });
+
+  it("validates skill placement when no agent Markdown is present", async () => {
+    const root = await copyFramework();
+    const agentsDirectory = path.join(root, ".github", "agents");
+    const { mkdir, readdir, rm: remove } = await import("node:fs/promises");
+    for (const entry of await readdir(agentsDirectory)) {
+      if (entry.endsWith(".md")) {
+        await remove(path.join(agentsDirectory, entry));
+      }
+    }
+    const unsupportedSkill = path.join(
+      root,
+      ".github",
+      "skills",
+      "legacy",
+      "skill.md",
+    );
+    await mkdir(path.dirname(unsupportedSkill), { recursive: true });
+    await writeFile(
+      unsupportedSkill,
+      "---\nname: legacy\ndescription: Legacy location\n---\n",
+    );
+
+    const result = await validateFramework(root);
+
+    expect(
+      result.errors.filter(
+        (error) => error.invariant === "supported-profile-location",
+      ),
+    ).toEqual([
+      expect.objectContaining({
+        file: ".github/skills/legacy/skill.md",
+      }),
+    ]);
   });
 
   it("reports malformed repository JSON inputs", async () => {

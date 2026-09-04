@@ -1,4 +1,5 @@
 import { isRecord } from "../common/json.js";
+import { verifyApprovalSignature } from "../identity/signature.js";
 import type { LoadedRecord } from "./records.js";
 
 export interface Binding {
@@ -26,6 +27,10 @@ export interface Approval {
   artifactHashes: Binding[];
   reviewRecords: Binding[];
   syntheticTestEvidence: boolean;
+  signatureVerified: boolean;
+  keyFingerprint?: string;
+  keyRotation?: { previousKeyFingerprint: string; reason: string };
+  claimedMode?: string;
 }
 
 export interface CandidateEvent {
@@ -34,6 +39,12 @@ export interface CandidateEvent {
   artifactPrefix: string;
   sequence: number;
   artifacts: Binding[];
+}
+
+export interface PhaseEntryEvent {
+  file: string;
+  phaseId: string;
+  sequence: number;
 }
 
 function isBinding(value: unknown): value is Binding {
@@ -98,6 +109,27 @@ export function asApproval(record: LoadedRecord): Approval | undefined {
       isRecord(value.extensions) &&
       value.extensions.syntheticTestEvidence === true &&
       value.extensions.realApproval === false,
+    signatureVerified: verifyApprovalSignature(value).verified,
+    ...(isRecord(value.extensions) &&
+    typeof value.extensions.keyFingerprint === "string"
+      ? { keyFingerprint: value.extensions.keyFingerprint }
+      : {}),
+    ...(isRecord(value.extensions) &&
+    isRecord(value.extensions.keyRotation) &&
+    typeof value.extensions.keyRotation.previousKeyFingerprint === "string" &&
+    typeof value.extensions.keyRotation.reason === "string"
+      ? {
+          keyRotation: {
+            previousKeyFingerprint:
+              value.extensions.keyRotation.previousKeyFingerprint,
+            reason: value.extensions.keyRotation.reason,
+          },
+        }
+      : {}),
+    ...(isRecord(value.extensions) &&
+    typeof value.extensions.approvalMode === "string"
+      ? { claimedMode: value.extensions.approvalMode }
+      : {}),
   };
 }
 
@@ -168,6 +200,54 @@ export function latestCandidateEvents(
     }
   }
   return latest;
+}
+
+export function latestApprovals(approvals: Approval[]): Map<string, Approval> {
+  const latest = new Map<string, Approval>();
+  for (const approval of approvals) {
+    const current = latest.get(approval.phaseId);
+    if (
+      !current ||
+      Date.parse(approval.decidedAt) > Date.parse(current.decidedAt)
+    ) {
+      latest.set(approval.phaseId, approval);
+    }
+  }
+  return latest;
+}
+
+export function asPhaseEntryEvent(
+  record: LoadedRecord,
+): PhaseEntryEvent | undefined {
+  const value = record.value;
+  if (
+    value.recordType !== "run-journal-event" ||
+    value.eventType !== "PHASE-ENTERED" ||
+    typeof value.phaseId !== "string" ||
+    typeof value.sequence !== "number"
+  ) {
+    return undefined;
+  }
+  return {
+    file: record.file,
+    phaseId: value.phaseId,
+    sequence: value.sequence,
+  };
+}
+
+export function firstPhaseEntries(
+  records: LoadedRecord[],
+): Map<string, PhaseEntryEvent> {
+  const first = new Map<string, PhaseEntryEvent>();
+  for (const event of records
+    .map(asPhaseEntryEvent)
+    .filter((value): value is PhaseEntryEvent => value !== undefined)) {
+    const current = first.get(event.phaseId);
+    if (!current || event.sequence < current.sequence) {
+      first.set(event.phaseId, event);
+    }
+  }
+  return first;
 }
 
 export const phaseArtifactNames: Readonly<Record<string, readonly string[]>> = {

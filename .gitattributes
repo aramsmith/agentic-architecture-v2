@@ -1,0 +1,17 @@
+# Normalise every text file to LF in the repository and in the working tree.
+#
+# Generated documentation, canonical SHA-256 bindings, and drift checks compare
+# byte sequences. Without this, a Windows checkout rewrites text files to CRLF
+# and `npm run docs:check` reports false drift that Linux CI never sees.
+* text=auto eol=lf
+
+# Binary case and documentation assets must never be line-ending normalised.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.pdf binary
+*.ico binary
+*.woff binary
+*.woff2 binary

@@ -11,6 +11,7 @@ export interface ProfileFrontmatter {
   tools?: string[];
   userInvocable?: boolean;
   disableModelInvocation?: boolean;
+  mcpServers?: Record<string, unknown>;
 }
 
 export interface ParsedProfile {
@@ -224,6 +225,9 @@ export async function parseProfile(
       tools,
       userInvocable,
       disableModelInvocation,
+      ...(isRecord(parsed["mcp-servers"])
+        ? { mcpServers: parsed["mcp-servers"] }
+        : {}),
     },
     errors,
   };
