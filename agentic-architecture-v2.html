@@ -4,199 +4,238 @@
 <meta charset="utf-8">
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; img-src 'self' data:; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="description" content="Agentic Architecture v2 — a human-centred architecture workflow where an AI crew prepares and challenges the work, and the architect signs every decision.">
+<meta name="description" content="Agentic Architecture v2 — an AI crew prepares and challenges the architecture. The human architect signs every decision.">
 <title>Agentic Architecture v2 — the architect stays in the middle</title>
 <script>
 (() => {
   const requested = new URLSearchParams(window.location.search).get("theme");
   const theme = requested === "dark" || requested === "light"
     ? requested
-    : (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+    : (window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark");
   document.documentElement.setAttribute("data-theme", theme);
 })();
 </script>
 <style>
 :root{
-  --ink:#0f172a; --body:#334155; --muted:#64748b; --faint:#94a3b8;
-  --page:#ffffff; --surface:#f8fafc; --raised:#ffffff; --border:#e2e8f0; --border-firm:#cbd5e1;
-  --accent:#1e40af; --accent-soft:#eff6ff; --accent-line:#bfdbfe;
-  --good:#166534; --good-soft:#f0fdf4; --good-line:#bbf7d0;
-  --warn:#92400e; --warn-soft:#fffbeb; --warn-line:#fde68a;
-  --shadow:0 1px 2px rgba(15,23,42,.04), 0 8px 24px -12px rgba(15,23,42,.12);
-  --radius:10px;
+  --bg:#08080a; --bg-2:#0d0d11; --panel:#111116; --panel-2:#16161d;
+  --line:rgba(255,255,255,.09); --line-2:rgba(255,255,255,.16);
+  --ink:#f4f4f6; --body:#b4b4c0; --muted:#7f7f8f; --faint:#5a5a68;
+  --violet:#8b7cff; --violet-dim:rgba(139,124,255,.14);
+  --lime:#c7f73e; --lime-dim:rgba(199,247,62,.13);
+  --cyan:#4fd8e8;
+  --glow-a:rgba(139,124,255,.42); --glow-b:rgba(199,247,62,.30);
+  --radius:14px;
 }
-:root[data-theme="dark"]{
-  --ink:#f1f5f9; --body:#cbd5e1; --muted:#94a3b8; --faint:#64748b;
-  --page:#0b1220; --surface:#111a2e; --raised:#152037; --border:#243149; --border-firm:#33415c;
-  --accent:#93c5fd; --accent-soft:#13233f; --accent-line:#2c4a7c;
-  --good:#86efac; --good-soft:#0f2a1c; --good-line:#1f5136;
-  --warn:#fcd34d; --warn-soft:#2c2410; --warn-line:#5a4718;
-  --shadow:0 1px 2px rgba(0,0,0,.3), 0 12px 32px -16px rgba(0,0,0,.7);
+:root[data-theme="light"]{
+  --bg:#fbfbfd; --bg-2:#ffffff; --panel:#ffffff; --panel-2:#f5f5f8;
+  --line:rgba(10,10,20,.10); --line-2:rgba(10,10,20,.18);
+  --ink:#0d0d14; --body:#4a4a58; --muted:#6d6d7d; --faint:#9a9aa8;
+  --violet:#5b46e0; --violet-dim:rgba(91,70,224,.10);
+  --lime:#5c7a05; --lime-dim:rgba(124,164,10,.14);
+  --cyan:#0d8fa1;
+  --glow-a:rgba(91,70,224,.20); --glow-b:rgba(124,164,10,.16);
 }
 *,*::before,*::after{box-sizing:border-box}
-html{scroll-behavior:smooth}
-@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}
-  *,*::before,*::after{animation-duration:.001ms !important;animation-iteration-count:1 !important;transition-duration:.001ms !important}}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
 body{
-  margin:0;background:var(--page);color:var(--body);
-  font:16px/1.65 ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
-  -webkit-font-smoothing:antialiased;
+  margin:0;background:var(--bg);color:var(--body);
+  font:16px/1.62 "Inter var",Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  -webkit-font-smoothing:antialiased;overflow-x:hidden;
 }
-h1,h2,h3,h4{color:var(--ink);line-height:1.2;margin:0;letter-spacing:-.011em}
+h1,h2,h3,h4{margin:0;color:var(--ink);line-height:1.08;letter-spacing:-.028em;font-weight:600}
 p{margin:0}
-a{color:var(--accent);text-underline-offset:.18em}
-a:hover{text-decoration-thickness:2px}
-code{font-family:ui-monospace,SFMono-Regular,"Cascadia Mono",Consolas,monospace;font-size:.875em;
-  background:var(--surface);border:1px solid var(--border);border-radius:5px;padding:.08em .38em}
-.skip-link{position:absolute;left:-9999px;top:0;z-index:99;background:var(--ink);color:var(--page);padding:.7rem 1.1rem;border-radius:0 0 var(--radius) 0}
+a{color:inherit}
+ul,ol{margin:0}
+code{font-family:ui-monospace,SFMono-Regular,"Cascadia Mono",Consolas,monospace;font-size:.86em;
+  color:var(--ink);background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:.1em .4em}
+:focus-visible{outline:2px solid var(--violet);outline-offset:3px;border-radius:6px}
+.skip-link{position:absolute;left:-9999px;top:0;z-index:99;background:var(--ink);color:var(--bg);padding:.75rem 1.2rem}
 .skip-link:focus{left:0}
-:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:4px}
-.wrap{width:min(72rem,100% - 3rem);margin-inline:auto}
-.stack>*+*{margin-top:var(--gap,1rem)}
+.wrap{width:min(76rem,100% - 2.5rem);margin-inline:auto}
+.center{text-align:center}
 
-/* ---------- top bar ---------- */
-.topbar{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--page) 88%,transparent);
-  backdrop-filter:saturate(1.6) blur(10px);border-bottom:1px solid var(--border)}
-.topbar-inner{display:flex;align-items:center;gap:1.25rem;padding:.85rem 0;flex-wrap:wrap}
-.brand{display:flex;align-items:center;gap:.6rem;font-weight:650;color:var(--ink);text-decoration:none;letter-spacing:-.02em}
-.brand .mark{width:26px;height:26px;flex:none}
+/* ---------------- top bar ---------------- */
+.topbar{position:sticky;top:0;z-index:40;border-bottom:1px solid var(--line);
+  background:color-mix(in srgb,var(--bg) 78%,transparent);backdrop-filter:blur(14px) saturate(1.5)}
+.topbar-inner{display:flex;align-items:center;gap:1rem;padding:.8rem 0;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:.55rem;color:var(--ink);text-decoration:none;
+  font-weight:600;letter-spacing:-.03em;font-size:.98rem}
+.brand-orb{width:22px;height:22px;border-radius:50%;flex:none;
+  background:radial-gradient(circle at 32% 28%,#fff,var(--violet) 46%,#2a1f6b 100%)}
 nav.primary{margin-left:auto}
-nav.primary ul{display:flex;gap:.35rem;list-style:none;margin:0;padding:0;flex-wrap:wrap}
-nav.primary a{display:inline-block;padding:.4rem .7rem;border-radius:7px;color:var(--muted);
-  text-decoration:none;font-size:.9rem;font-weight:520}
-nav.primary a:hover{background:var(--surface);color:var(--ink)}
-.btn{font:inherit;font-size:.875rem;font-weight:530;color:var(--body);background:var(--raised);
-  border:1px solid var(--border-firm);border-radius:7px;padding:.42rem .8rem;cursor:pointer;
-  transition:background .15s,color .15s,border-color .15s}
-.btn:hover{background:var(--surface);color:var(--ink)}
-.btn[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--page)}
-:root[data-theme="dark"] .btn[aria-pressed="true"]{color:#0b1220}
+nav.primary ul{display:flex;gap:.15rem;list-style:none;margin:0;padding:0;flex-wrap:wrap}
+nav.primary a{display:inline-block;padding:.42rem .72rem;border-radius:8px;color:var(--muted);
+  text-decoration:none;font-size:.875rem;font-weight:500;transition:color .18s,background .18s}
+nav.primary a:hover{color:var(--ink);background:var(--panel-2)}
+.btn{font:inherit;font-size:.83rem;font-weight:520;color:var(--body);background:var(--panel);
+  border:1px solid var(--line-2);border-radius:8px;padding:.44rem .82rem;cursor:pointer;
+  transition:color .18s,background .18s,border-color .18s}
+.btn:hover{color:var(--ink);background:var(--panel-2)}
+.btn[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--bg)}
 
-/* ---------- hero ---------- */
-.hero{padding:5rem 0 4rem;border-bottom:1px solid var(--border);
-  background:radial-gradient(80rem 32rem at 50% -8rem,var(--surface),transparent 70%)}
-.eyebrow{display:inline-flex;align-items:center;gap:.5rem;font-size:.76rem;font-weight:650;
-  letter-spacing:.08em;text-transform:uppercase;color:var(--accent);
-  background:var(--accent-soft);border:1px solid var(--accent-line);border-radius:999px;padding:.3rem .8rem}
-.hero h1{font-size:clamp(2.1rem,5.2vw,3.4rem);margin-top:1.25rem;max-width:20ch}
-.hero .lede{font-size:clamp(1.05rem,2vw,1.25rem);color:var(--body);max-width:62ch;margin-top:1.25rem}
-.hero-actions{display:flex;gap:.75rem;flex-wrap:wrap;margin-top:2rem}
-.cta{display:inline-block;font-weight:580;font-size:.95rem;padding:.7rem 1.25rem;border-radius:8px;text-decoration:none;border:1px solid transparent}
-.cta.solid{background:var(--accent);color:var(--page);box-shadow:var(--shadow)}
-:root[data-theme="dark"] .cta.solid{color:#0b1220}
-.cta.ghost{border-color:var(--border-firm);color:var(--ink);background:var(--raised)}
-.cta:hover{opacity:.92}
-.pillars{display:grid;gap:1rem;grid-template-columns:repeat(auto-fit,minmax(15rem,1fr));margin-top:3.5rem}
-.pillar{background:var(--raised);border:1px solid var(--border);border-radius:var(--radius);padding:1.15rem 1.25rem}
-.pillar h3{font-size:.95rem;margin-bottom:.35rem}
-.pillar p{font-size:.9rem;color:var(--muted)}
+/* ---------------- hero ---------------- */
+.hero{position:relative;padding:5.5rem 0 4rem;overflow:hidden}
+.hero::before{content:"";position:absolute;inset:-30% 20% auto;height:46rem;pointer-events:none;
+  background:radial-gradient(50% 50% at 50% 50%,var(--glow-a),transparent 70%);filter:blur(30px);opacity:.75}
+.hero::after{content:"";position:absolute;top:14rem;right:-10rem;width:34rem;height:34rem;pointer-events:none;
+  background:radial-gradient(50% 50% at 50% 50%,var(--glow-b),transparent 70%);filter:blur(40px);opacity:.5}
+.hero-inner{position:relative;z-index:1}
+.tag{display:inline-flex;align-items:center;gap:.5rem;font-size:.74rem;font-weight:600;
+  letter-spacing:.1em;text-transform:uppercase;color:var(--ink);
+  border:1px solid var(--line-2);background:var(--panel);border-radius:999px;padding:.36rem .85rem}
+.dot{width:.42rem;height:.42rem;border-radius:50%;background:var(--lime)}
+h1.display{font-size:clamp(2.4rem,7vw,4.6rem);margin-top:1.5rem;max-width:16ch;font-weight:600}
+h1.display .accent{background:linear-gradient(100deg,var(--violet),var(--cyan) 55%,var(--lime));
+  -webkit-background-clip:text;background-clip:text;color:transparent}
+.lede{font-size:clamp(1.02rem,1.7vw,1.2rem);color:var(--body);max-width:58ch;margin-top:1.5rem}
+.hero-actions{display:flex;gap:.7rem;flex-wrap:wrap;margin-top:2.25rem}
+.cta{display:inline-block;font-size:.92rem;font-weight:560;padding:.78rem 1.4rem;border-radius:10px;
+  text-decoration:none;border:1px solid transparent;transition:transform .18s,box-shadow .18s,opacity .18s}
+.cta.solid{background:var(--ink);color:var(--bg);box-shadow:0 10px 28px -14px rgba(0,0,0,.7)}
+.cta.ghost{border-color:var(--line-2);color:var(--ink);background:var(--panel)}
+.cta:hover{transform:translateY(-2px)}
+.metrics{display:flex;gap:2.5rem;flex-wrap:wrap;margin-top:3.25rem;padding-top:2rem;border-top:1px solid var(--line)}
+.metric .n{font-size:1.7rem;font-weight:600;color:var(--ink);letter-spacing:-.03em;line-height:1}
+.metric .l{font-size:.8rem;color:var(--muted);margin-top:.35rem}
 
-/* ---------- sections ---------- */
-section{padding:4.5rem 0;border-bottom:1px solid var(--border)}
-.section-head{max-width:60ch;margin-bottom:2.5rem}
-.section-head .kicker{font-size:.76rem;font-weight:650;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
-.section-head h2{font-size:clamp(1.5rem,3vw,2.05rem);margin-top:.7rem}
-.section-head p{margin-top:.85rem;color:var(--muted)}
+/* ---------------- orbital stage ---------------- */
+.orbital{position:relative;padding:2rem 0 5rem}
+.stage{position:relative;width:min(100%,44rem);aspect-ratio:1/1;margin:0 auto;
+  perspective:1500px;perspective-origin:50% 46%;
+  --R:clamp(112px,30vw,236px);--Rm:clamp(88px,23vw,182px);
+  --tilt:66deg;--spin:52s;--moonA:15s;--moonB:21s}
+.stage.is-paused *{animation-play-state:paused !important}
+@media (prefers-reduced-motion:reduce){.stage *{animation-play-state:paused !important}}
+.plane{position:absolute;inset:0;transform-style:preserve-3d;transform:rotateX(var(--tilt))}
+.guide{position:absolute;left:50%;top:50%;border-radius:50%;border:1px solid var(--line);
+  transform:translate(-50%,-50%)}
+.guide.g1{width:calc(var(--R) * 2);height:calc(var(--R) * 2)}
+.guide.g2{width:calc(var(--Rm) * 2);height:calc(var(--Rm) * 2);border-style:dashed;opacity:.6}
+.orbit{position:absolute;left:50%;top:50%;width:0;height:0;transform-style:preserve-3d;
+  animation:orbit var(--spin) linear infinite}
+@keyframes orbit{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+.slot{position:absolute;transform-style:preserve-3d;transform:rotate(var(--a)) translateX(var(--R))}
+.despin{transform-style:preserve-3d;animation:despin var(--spin) linear infinite}
+@keyframes despin{from{transform:rotate(0deg)}to{transform:rotate(-360deg)}}
+.face{transform-style:preserve-3d;transform:rotate(calc(-1 * var(--a))) rotateX(calc(-1 * var(--tilt)));
+  display:flex;flex-direction:column;align-items:center;gap:.4rem;width:8rem;margin:-4rem 0 0 -4rem}
 
-/* ---------- steps ---------- */
-.steps{display:grid;gap:1.1rem}
-.step{background:var(--raised);border:1px solid var(--border);border-radius:var(--radius);
-  padding:1.5rem 1.6rem;box-shadow:var(--shadow)}
-.step-head{display:flex;align-items:baseline;gap:.9rem;flex-wrap:wrap}
-.step-num{font-variant-numeric:tabular-nums;font-weight:680;font-size:.8rem;letter-spacing:.06em;
-  color:var(--accent);background:var(--accent-soft);border:1px solid var(--accent-line);
-  border-radius:6px;padding:.18rem .5rem;flex:none}
-.step h3{font-size:1.1rem}
-.step .when{margin-left:auto;font-size:.78rem;color:var(--faint);font-weight:520}
-.step>p,.step>ol,.step>ul{margin-top:.9rem;font-size:.95rem}
-.step ol,.step ul{padding-left:1.25rem}
-.step li+li{margin-top:.4rem}
-pre{margin:1rem 0 0;background:var(--ink);color:#e2e8f0;border-radius:8px;padding:1rem 1.15rem;
-  overflow-x:auto;font-size:.83rem;line-height:1.62;font-family:ui-monospace,SFMono-Regular,Consolas,monospace}
-:root[data-theme="dark"] pre{background:#060b16;border:1px solid var(--border)}
+.orb{border-radius:50%;flex:none;position:relative;
+  width:var(--size,clamp(38px,8vw,58px));height:var(--size,clamp(38px,8vw,58px));
+  background:
+    radial-gradient(circle at 32% 26%,rgba(255,255,255,.92),rgba(255,255,255,.18) 20%,transparent 46%),
+    radial-gradient(circle at 72% 78%,var(--tint),transparent 62%),
+    linear-gradient(150deg,var(--c1),var(--c2));
+  box-shadow:inset -8px -11px 22px rgba(0,0,0,.6),inset 5px 6px 14px rgba(255,255,255,.10),0 0 22px var(--halo);
+}
+.orb.phase{--c1:#3b3b4d;--c2:#17171f;--tint:rgba(139,124,255,.5);--halo:rgba(139,124,255,.28)}
+.orb.optional{--c1:#2f2f3a;--c2:#141419;--tint:rgba(255,255,255,.16);--halo:rgba(255,255,255,.10)}
+.orb.moon{--size:clamp(24px,5vw,34px);--c1:#dff58c;--c2:#7a9410;--tint:rgba(255,255,255,.5);--halo:var(--glow-b)}
+.orb.moon.b{--c1:#a9ecf5;--c2:#12707e;--halo:rgba(79,216,232,.34)}
+.orb-id{position:absolute;inset:0;display:grid;place-items:center;font-size:.72rem;font-weight:650;
+  color:#fff;letter-spacing:.02em;text-shadow:0 1px 3px rgba(0,0,0,.6)}
+.orb-name{font-size:.7rem;color:var(--muted);text-align:center;letter-spacing:.01em;line-height:1.25}
+
+.moons{position:absolute;inset:0;transform-style:preserve-3d}
+.moon-plane{position:absolute;inset:0;transform-style:preserve-3d}
+.moon-plane.a{transform:rotateX(22deg) rotateY(14deg)}
+.moon-plane.b{transform:rotateX(-28deg) rotateY(-20deg)}
+.moon-orbit{position:absolute;left:50%;top:50%;width:0;height:0;transform-style:preserve-3d}
+.moon-orbit.a{animation:orbit var(--moonA) linear infinite}
+.moon-orbit.b{animation:orbit var(--moonB) linear infinite reverse}
+.moon-slot{position:absolute;transform:translateX(var(--Rm));transform-style:preserve-3d}
+.moon-face{display:flex;flex-direction:column;align-items:center;gap:.3rem;width:7rem;margin:-3rem 0 0 -3.5rem}
+.moon-face.a{animation:despin var(--moonA) linear infinite}
+.moon-face.b{animation:despin var(--moonB) linear infinite reverse}
+.moon-label{font-size:.66rem;color:var(--faint);text-align:center;white-space:nowrap}
+
+.core{position:absolute;left:50%;top:50%;display:grid;place-items:center;
+  width:clamp(112px,25vw,178px);height:clamp(112px,25vw,178px);margin:calc(-1 * clamp(56px,12.5vw,89px)) 0 0 calc(-1 * clamp(56px,12.5vw,89px));
+  border-radius:50%;
+  background:
+    radial-gradient(circle at 34% 28%,rgba(255,255,255,.96),rgba(255,255,255,.2) 22%,transparent 50%),
+    linear-gradient(150deg,var(--violet),#3a2a9c 60%,#1a1140);
+  box-shadow:inset -12px -16px 34px rgba(0,0,0,.55),0 0 60px var(--glow-a),0 0 120px var(--glow-a);
+  animation:breathe 7s ease-in-out infinite}
+@keyframes breathe{0%,100%{box-shadow:inset -12px -16px 34px rgba(0,0,0,.55),0 0 50px var(--glow-a),0 0 100px var(--glow-a)}
+  50%{box-shadow:inset -12px -16px 34px rgba(0,0,0,.55),0 0 74px var(--glow-a),0 0 150px var(--glow-a)}}
+.core svg{width:44%;height:44%;fill:#fff;opacity:.96;filter:drop-shadow(0 2px 6px rgba(0,0,0,.45))}
+.core-label{position:absolute;bottom:-2.4rem;left:50%;transform:translateX(-50%);white-space:nowrap;
+  font-size:.68rem;letter-spacing:.16em;text-transform:uppercase;color:var(--ink);font-weight:600}
+.stage-caption{margin-top:3.5rem;text-align:center;font-size:.85rem;color:var(--muted)}
+.stage-controls{display:flex;justify-content:center;margin-top:1.1rem}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+
+/* ---------------- sections ---------------- */
+section{padding:5.5rem 0;border-top:1px solid var(--line)}
+.head{max-width:56ch;margin-bottom:3rem}
+.kicker{font-size:.73rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--violet)}
+.head h2{font-size:clamp(1.75rem,3.6vw,2.7rem);margin-top:.9rem}
+.head p{margin-top:1rem;color:var(--muted);font-size:1.02rem}
+
+.steps{display:grid;gap:1rem}
+.step{position:relative;background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:1.7rem 1.8rem;
+  transition:border-color .2s,transform .2s}
+.step:hover{border-color:var(--line-2);transform:translateY(-2px)}
+.step-head{display:flex;align-items:center;gap:.9rem;flex-wrap:wrap}
+.step-num{font-variant-numeric:tabular-nums;font-size:.74rem;font-weight:650;letter-spacing:.1em;
+  color:var(--violet);background:var(--violet-dim);border:1px solid var(--line-2);border-radius:6px;padding:.2rem .52rem}
+.step h3{font-size:1.12rem}
+.step .when{margin-left:auto;font-size:.76rem;color:var(--faint)}
+.step>p,.step>ol{margin-top:1rem;font-size:.94rem}
+.step ol{padding-left:1.2rem}
+.step li+li{margin-top:.35rem}
+pre{margin:1.1rem 0 0;background:var(--bg-2);border:1px solid var(--line);color:var(--ink);
+  border-radius:10px;padding:1.05rem 1.2rem;overflow-x:auto;font-size:.82rem;line-height:1.65;
+  font-family:ui-monospace,SFMono-Regular,Consolas,monospace}
 pre code{background:none;border:0;padding:0;color:inherit;font-size:1em}
-.prompt{color:#64748b;user-select:none}
-.safe{display:flex;gap:.6rem;align-items:flex-start;margin-top:1rem;padding:.75rem .95rem;
-  background:var(--good-soft);border:1px solid var(--good-line);border-radius:8px;font-size:.88rem;color:var(--good)}
-.caution{display:flex;gap:.6rem;align-items:flex-start;margin-top:1rem;padding:.75rem .95rem;
-  background:var(--warn-soft);border:1px solid var(--warn-line);border-radius:8px;font-size:.88rem;color:var(--warn)}
-.safe strong,.caution strong{font-weight:660}
+.prompt{color:var(--violet);user-select:none}
+.note{display:block;margin-top:1.1rem;padding:.85rem 1.05rem;border-radius:10px;font-size:.87rem;border:1px solid}
+.note.safe{background:var(--lime-dim);border-color:rgba(199,247,62,.28);color:var(--ink)}
+.note.warn{background:var(--violet-dim);border-color:rgba(139,124,255,.3);color:var(--ink)}
+:root[data-theme="light"] .note.safe{border-color:rgba(124,164,10,.35)}
 
-/* ---------- ring ---------- */
-.ring-layout{display:grid;gap:2.5rem;grid-template-columns:minmax(0,1fr)}
-@media (min-width:62rem){.ring-layout{grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);align-items:center}}
-.ring-frame{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:1.25rem}
-.ring-diagram{width:100%;height:auto;display:block}
-.ring-node circle{fill:var(--raised);stroke:var(--border-firm);stroke-width:2}
-.ring-node text{fill:var(--ink);font-size:21px;font-weight:640;text-anchor:middle;
-  font-family:ui-sans-serif,-apple-system,"Segoe UI",sans-serif}
-.ring-node .node-label{font-size:12.5px;font-weight:500;fill:var(--muted)}
-.ring-node.optional circle{stroke-dasharray:5 4;fill:var(--surface)}
-.ring-node.review circle{fill:var(--accent-soft);stroke:var(--accent-line)}
-.ring-node.review text{fill:var(--accent)}
-.centre circle{fill:var(--accent);stroke:none}
-.centre text{fill:#ffffff;font-size:19px;font-weight:660;text-anchor:middle}
-:root[data-theme="dark"] .centre text{fill:#0b1220}
-.orbit{fill:none;stroke:var(--border);stroke-width:1.5}
-.orbit.inner{stroke-dasharray:3 6}
-.spoke{stroke:var(--border-firm);stroke-width:1.5;opacity:.5}
-.is-animated .spoke{stroke-dasharray:260;stroke-dashoffset:260;animation:draw .9s ease-out forwards}
-.is-animated .ring-node{opacity:0;animation:pop .5s ease-out forwards}
-@keyframes draw{to{stroke-dashoffset:0}}
-@keyframes pop{from{opacity:0;transform:scale(.9)}to{opacity:1;transform:scale(1)}}
-.ring-node{transform-origin:center;transform-box:fill-box}
-.legend{list-style:none;margin:1.25rem 0 0;padding:0;display:flex;gap:1.25rem;flex-wrap:wrap;font-size:.83rem;color:var(--muted)}
-.legend li{display:flex;align-items:center;gap:.45rem}
-.swatch{width:.85rem;height:.85rem;border-radius:50%;border:2px solid var(--border-firm);background:var(--raised);flex:none}
-.swatch.optional{border-style:dashed}
-.swatch.review{background:var(--accent-soft);border-color:var(--accent-line)}
-.swatch.human{background:var(--accent);border-color:var(--accent)}
+.seq{list-style:none;counter-reset:s;padding:0;display:grid;gap:.55rem}
+.seq li{counter-increment:s;display:flex;gap:.95rem;align-items:center;background:var(--panel);
+  border:1px solid var(--line);border-radius:10px;padding:.9rem 1.15rem;font-size:.93rem}
+.seq li::before{content:counter(s);flex:none;width:1.65rem;height:1.65rem;border-radius:50%;display:grid;
+  place-items:center;font-size:.75rem;font-weight:650;background:var(--panel-2);border:1px solid var(--line-2);color:var(--muted)}
+.seq li.you{border-color:rgba(199,247,62,.35);background:var(--lime-dim)}
+.seq li.you::before{background:var(--lime);border-color:var(--lime);color:#0b0b0d}
+.seq .who{font-weight:600;color:var(--ink)}
 
-/* ---------- sequence ---------- */
-.sequence{list-style:none;counter-reset:seq;margin:0;padding:0;display:grid;gap:.65rem}
-.sequence li{counter-increment:seq;display:flex;gap:.9rem;align-items:flex-start;
-  background:var(--raised);border:1px solid var(--border);border-radius:8px;padding:.85rem 1.05rem}
-.sequence li::before{content:counter(seq);flex:none;width:1.6rem;height:1.6rem;border-radius:50%;
-  display:grid;place-items:center;font-size:.78rem;font-weight:680;
-  background:var(--surface);border:1px solid var(--border-firm);color:var(--muted)}
-.sequence li.human{border-color:var(--accent-line);background:var(--accent-soft)}
-.sequence li.human::before{background:var(--accent);border-color:var(--accent);color:#fff}
-:root[data-theme="dark"] .sequence li.human::before{color:#0b1220}
-.sequence .who{font-weight:600;color:var(--ink)}
-.sequence .what{color:var(--muted);font-size:.92rem}
-
-/* ---------- roster ---------- */
-.filters{display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:1.5rem}
-.generated-route{font-size:.9rem;color:var(--muted);margin-bottom:1.25rem}
-.roster{display:grid;gap:1rem;grid-template-columns:repeat(auto-fill,minmax(16.5rem,1fr))}
-.agent-card{background:var(--raised);border:1px solid var(--border);border-radius:var(--radius);padding:1.1rem 1.2rem}
-.agent-card[hidden]{display:none}
-.agent-card[data-track="optional"]{border-style:dashed}
-.agent-card[data-track="review"]{background:var(--accent-soft);border-color:var(--accent-line)}
-.agent-meta{display:flex;align-items:center;justify-content:space-between;gap:.75rem;margin-bottom:.55rem}
-.agent-id{font-size:.72rem;font-weight:700;letter-spacing:.07em;color:var(--muted)}
-.model{font-size:.72rem;font-family:ui-monospace,Consolas,monospace;color:var(--faint)}
-.agent-card h3{font-size:.98rem}
-.agent-card p{margin-top:.4rem;font-size:.85rem;color:var(--muted)}
-.agent-card code{font-size:.78rem}
-
-/* ---------- table ---------- */
-.table-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:var(--radius);background:var(--raised)}
-table{width:100%;border-collapse:collapse;font-size:.92rem;min-width:34rem}
-th,td{text-align:left;padding:.85rem 1.1rem;border-bottom:1px solid var(--border);vertical-align:top}
-thead th{background:var(--surface);font-size:.76rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:650}
+.table-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--radius);background:var(--panel)}
+table{width:100%;border-collapse:collapse;font-size:.9rem;min-width:38rem}
+th,td{text-align:left;padding:.95rem 1.15rem;border-bottom:1px solid var(--line);vertical-align:top}
+thead th{background:var(--panel-2);font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:600}
 tbody tr:last-child td{border-bottom:0}
 
-/* ---------- principles ---------- */
-.grid-2{display:grid;gap:1rem;grid-template-columns:repeat(auto-fit,minmax(18rem,1fr))}
-.tile{background:var(--raised);border:1px solid var(--border);border-radius:var(--radius);padding:1.2rem 1.3rem}
-.tile h3{font-size:.95rem;margin-bottom:.4rem}
-.tile p{font-size:.89rem;color:var(--muted)}
+.filters{display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:1.6rem}
+.generated-route{font-size:.88rem;color:var(--muted);margin-bottom:1.4rem}
+.roster{display:grid;gap:.9rem;grid-template-columns:repeat(auto-fill,minmax(16rem,1fr))}
+.agent-card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:1.15rem 1.25rem;
+  transition:border-color .2s,transform .2s}
+.agent-card:hover{border-color:var(--line-2);transform:translateY(-2px)}
+.agent-card[hidden]{display:none}
+.agent-card[data-track="optional"]{border-style:dashed}
+.agent-card[data-track="review"]{background:var(--violet-dim)}
+.agent-meta{display:flex;justify-content:space-between;align-items:center;gap:.75rem;margin-bottom:.6rem}
+.agent-id{font-size:.7rem;font-weight:680;letter-spacing:.1em;color:var(--violet)}
+.model{font-size:.7rem;font-family:ui-monospace,Consolas,monospace;color:var(--faint)}
+.agent-card h3{font-size:.96rem}
+.agent-card p{margin-top:.45rem;font-size:.83rem;color:var(--muted)}
+.agent-card code{font-size:.76rem}
 
-/* ---------- footer ---------- */
-footer.page{padding:3rem 0 4rem;color:var(--muted);font-size:.88rem}
-footer.page p+p{margin-top:.75rem}
-.foot-links{display:flex;gap:1.25rem;flex-wrap:wrap;margin-top:1.25rem}
+.tiles{display:grid;gap:.9rem;grid-template-columns:repeat(auto-fit,minmax(17rem,1fr))}
+.tile{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:1.3rem 1.4rem}
+.tile h3{font-size:.95rem;margin-bottom:.45rem}
+.tile p{font-size:.86rem;color:var(--muted)}
+
+footer.page{padding:3.5rem 0 5rem;border-top:1px solid var(--line);color:var(--muted);font-size:.86rem}
+footer.page p+p{margin-top:.7rem}
+.foot-links{display:flex;gap:1.4rem;flex-wrap:wrap;margin-top:1.4rem}
+.foot-links a{color:var(--ink);text-decoration:none;border-bottom:1px solid var(--line-2);padding-bottom:2px}
+.foot-links a:hover{border-color:var(--violet)}
 </style>
 </head>
 <body>
@@ -204,87 +243,125 @@ footer.page p+p{margin-top:.75rem}
 
 <header class="topbar">
   <div class="wrap topbar-inner">
-    <a class="brand" href="#top">
-      <svg class="mark" viewBox="0 0 24 24" role="img" aria-labelledby="markTitle">
-        <title id="markTitle">Agentic Architecture</title>
-        <circle cx="12" cy="12" r="10.2" fill="none" stroke="currentColor" stroke-width="1.4" opacity=".35"/>
-        <circle cx="12" cy="12" r="4.6" fill="currentColor"/>
-      </svg>
-      Agentic Architecture v2
-    </a>
+    <a class="brand" href="#top"><span class="brand-orb" aria-hidden="true"></span>Agentic Architecture v2</a>
     <nav class="primary" aria-label="Page navigation">
       <ul>
         <li><a href="#evaluate">Get started</a></li>
-        <li><a href="#architecture">Architecture</a></li>
+        <li><a href="#architecture">System</a></li>
         <li><a href="#assurance">Assurance</a></li>
         <li><a href="#roster">Crew</a></li>
-        <li><a href="#operate">Operate</a></li>
+        <li><a href="#operate">Principles</a></li>
       </ul>
     </nav>
-    <button class="btn" type="button" id="themeToggle" aria-pressed="false">Dark mode</button>
+    <button class="btn" type="button" id="themeToggle" aria-pressed="false">Light</button>
   </div>
 </header>
 
 <main id="main">
 
-<div id="top" class="hero">
-  <div class="wrap">
-    <p class="eyebrow">Human-centred architecture workflow</p>
-    <h1>The crew prepares. The architect decides.</h1>
+<div class="hero" id="top">
+  <div class="wrap hero-inner">
+    <p class="tag"><span class="dot" aria-hidden="true"></span>Human-centred architecture workflow</p>
+    <h1 class="display">The crew prepares.<br>The architect <span class="accent">decides</span>.</h1>
     <p class="lede">
-      Agentic Architecture v2 turns an architecture brief into approved requirements, a TOGAF
-      architecture, an implementation-ready Azure design, a build plan, deployable code, and a board
-      presentation. Eleven specialist agents prepare and challenge the work. Every phase stops at a gate
-      only you can open — with a key no agent can use.
+      Eleven specialist agents turn a brief into requirements, a TOGAF architecture, an Azure design, a
+      build plan, code, and a board presentation. Every phase stops at a gate only you can open — with a
+      key no agent can use.
     </p>
     <div class="hero-actions">
       <a class="cta solid" href="#evaluate">Start in ten minutes</a>
-      <a class="cta ghost" href="#architecture">See how it works</a>
+      <a class="cta ghost" href="#architecture">See the system</a>
     </div>
-
-    <div class="pillars">
-      <div class="pillar">
-        <h3>Signed decisions</h3>
-        <p>Approvals are signed with a passphrase-protected key. An agent can write an approval file; it
-        cannot produce a valid one.</p>
-      </div>
-      <div class="pillar">
-        <h3>Independent challenge</h3>
-        <p>A rubber-duck reviewer on a different model challenges every phase, then a security and
-        compliance reviewer assures it.</p>
-      </div>
-      <div class="pillar">
-        <h3>Evidence-bound</h3>
-        <p>Both reviewers must cover identical artifact hashes. Editing reviewed work invalidates the
-        review that covered it.</p>
-      </div>
-      <div class="pillar">
-        <h3>Fails closed</h3>
-        <p>Missing evidence, independence, scope, order, or approval stops progression. Nothing proceeds
-        on optimism.</p>
-      </div>
+    <div class="metrics">
+      <div class="metric"><div class="n">9</div><div class="l">Phases, 7 on the standard route</div></div>
+      <div class="metric"><div class="n">2</div><div class="l">Independent reviewers</div></div>
+      <div class="metric"><div class="n">1</div><div class="l">Signature that opens every gate</div></div>
+      <div class="metric"><div class="n">0</div><div class="l">Automatic deployments</div></div>
     </div>
   </div>
 </div>
 
+<!-- ============ ORBITAL SYSTEM ============ -->
+<section id="architecture" style="border-top:0;padding-top:0">
+  <div class="wrap orbital">
+    <div class="stage" id="architectureRing" role="img" aria-labelledby="ringTitle ringDesc">
+      <h2 id="ringTitle" class="sr-only">The human architect at the centre of nine phases and two reviewers</h2>
+      <p id="ringDesc" class="sr-only">Nine phase agents orbit the human architect at the centre. Two independent reviewers travel on their own tilted orbits, passing every phase in turn. Every gate returns to the centre, because every phase requires a signed human decision.</p>
+
+      <div class="plane">
+        <div class="guide g1"></div>
+        <div class="guide g2"></div>
+        <div class="orbit">
+          <div class="slot" style="--a:0deg"><div class="despin"><div class="face">
+            <span class="orb phase"><span class="orb-id">P0</span></span><span class="orb-name">Coordinate</span></div></div></div>
+          <div class="slot" style="--a:40deg"><div class="despin"><div class="face">
+            <span class="orb phase"><span class="orb-id">P1</span></span><span class="orb-name">Requirements</span></div></div></div>
+          <div class="slot" style="--a:80deg"><div class="despin"><div class="face">
+            <span class="orb phase"><span class="orb-id">P2</span></span><span class="orb-name">TOGAF</span></div></div></div>
+          <div class="slot" style="--a:120deg"><div class="despin"><div class="face">
+            <span class="orb phase"><span class="orb-id">P3</span></span><span class="orb-name">Azure design</span></div></div></div>
+          <div class="slot" style="--a:160deg"><div class="despin"><div class="face">
+            <span class="orb phase"><span class="orb-id">P4</span></span><span class="orb-name">Build plan</span></div></div></div>
+          <div class="slot" style="--a:200deg"><div class="despin"><div class="face">
+            <span class="orb phase"><span class="orb-id">P5</span></span><span class="orb-name">Coding</span></div></div></div>
+          <div class="slot" style="--a:240deg"><div class="despin"><div class="face">
+            <span class="orb phase"><span class="orb-id">P6</span></span><span class="orb-name">Presentation</span></div></div></div>
+          <div class="slot" style="--a:280deg"><div class="despin"><div class="face">
+            <span class="orb phase optional"><span class="orb-id">P7</span></span><span class="orb-name">Deployment</span></div></div></div>
+          <div class="slot" style="--a:320deg"><div class="despin"><div class="face">
+            <span class="orb phase optional"><span class="orb-id">P8</span></span><span class="orb-name">Testing</span></div></div></div>
+        </div>
+      </div>
+
+      <div class="moons">
+        <div class="moon-plane a">
+          <div class="moon-orbit a">
+            <div class="moon-slot"><div class="moon-face a">
+              <span class="orb moon"><span class="orb-id">A</span></span>
+              <span class="moon-label">Rubber Duck</span></div></div>
+          </div>
+        </div>
+        <div class="moon-plane b">
+          <div class="moon-orbit b">
+            <div class="moon-slot"><div class="moon-face b">
+              <span class="orb moon b"><span class="orb-id">B</span></span>
+              <span class="moon-label">Security</span></div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="core">
+        <svg viewBox="0 0 24 24" role="presentation" aria-hidden="true" focusable="false">
+          <circle cx="12" cy="7.2" r="3.6"/>
+          <path d="M12 12.4c-4.1 0-7.4 2.6-7.4 5.8 0 .9.7 1.6 1.6 1.6h11.6c.9 0 1.6-.7 1.6-1.6 0-3.2-3.3-5.8-7.4-5.8z"/>
+        </svg>
+        <span class="core-label">Human architect</span>
+      </div>
+    </div>
+
+    <p class="stage-caption">
+      Nine phases orbit you. The two reviewers travel their own paths, passing every phase in turn —
+      challenging the work before it ever reaches your gate.
+    </p>
+    <div class="stage-controls">
+      <button class="btn" type="button" id="motionToggle" aria-pressed="false">Pause motion</button>
+    </div>
+  </div>
+</section>
+
 <!-- ============ GET STARTED ============ -->
 <section id="evaluate">
   <div class="wrap">
-    <div class="section-head">
+    <div class="head">
       <p class="kicker">Start-up manual</p>
       <h2>Five stages. Each one is a safe place to stop.</h2>
-      <p>Stage one needs nothing but Node.js — no GitHub Copilot, no Azure, no credentials, no key. You
-      can prove the framework is sound before committing to anything.</p>
+      <p>Stage one needs nothing but Node.js — no GitHub Copilot, no Azure, no credentials, no key. Prove
+      the framework is sound before committing to anything.</p>
     </div>
 
     <div class="steps">
-
       <article class="step">
-        <div class="step-head">
-          <span class="step-num">01</span>
-          <h3>Install and prove it works</h3>
-          <span class="when">Offline · ~10 minutes</span>
-        </div>
+        <div class="step-head"><span class="step-num">01</span><h3>Install and prove it works</h3><span class="when">Offline · ~10 min</span></div>
         <p>Prerequisites: Git, Node.js 22 or later, npm, Windows PowerShell.</p>
 <pre><code><span class="prompt">&gt;</span> git clone https://github.com/aramsmith/agentic-architecture-v2.git
 <span class="prompt">&gt;</span> Set-Location .\agentic-architecture-v2
@@ -292,20 +369,15 @@ footer.page p+p{margin-top:.75rem}
 <span class="prompt">&gt;</span> npm run validate -- --framework-only
 <span class="prompt">&gt;</span> npm run smoke:contoso -- --keep-output .\.aff-smoke\contoso-review</code></pre>
         <p>The framework validates, every offline assertion passes, and the report records
-        <strong>zero live model calls</strong> and zero Azure actions. Open the generated
-        <code>solution-overview.html</code> and you will see its approval labelled as synthetic test
-        evidence — because no human made it.</p>
-        <p class="safe"><strong>Safe stop point.</strong> This proves the framework is internally
-        consistent. It does not prove model quality, Azure access, deployment, runtime behaviour, or real
-        human approval.</p>
+        <strong>zero live model calls</strong> and zero Azure actions. The generated overview labels its
+        approval as synthetic test evidence — because no human made it.</p>
+        <span class="note safe"><strong>Safe stop point.</strong> This proves internal consistency. It
+        does not prove model quality, Azure access, deployment, runtime behaviour, or real human
+        approval.</span>
       </article>
 
       <article class="step">
-        <div class="step-head">
-          <span class="step-num">02</span>
-          <h3>Create your approval identity</h3>
-          <span class="when">Once, ever</span>
-        </div>
+        <div class="step-head"><span class="step-num">02</span><h3>Create your approval identity</h3><span class="when">Once, ever</span></div>
         <p>This is the key that signs every phase decision you make.</p>
 <pre><code><span class="prompt">&gt;</span> npm run identity:create</code></pre>
         <p>You choose a <strong>label</strong> — a role such as <code>Accountable architect</code> keeps a
@@ -313,16 +385,11 @@ footer.page p+p{margin-top:.75rem}
         written to disk and cannot be recovered. It is the one secret an agent sharing your machine
         cannot read.</p>
         <p>Creating the key also switches on a policy for this machine: a real human decision must be
-        signed. Skip this stage and approvals still work, but they are recorded as
-        <code>self-asserted</code>.</p>
+        signed. Skip this stage and approvals still work, but they read <code>self-asserted</code>.</p>
       </article>
 
       <article class="step">
-        <div class="step-head">
-          <span class="step-num">03</span>
-          <h3>Connect GitHub Copilot</h3>
-          <span class="when">Needed for real cases</span>
-        </div>
+        <div class="step-head"><span class="step-num">03</span><h3>Connect GitHub Copilot</h3><span class="when">For real cases</span></div>
         <p>Open Copilot CLI from the repository root, then confirm discovery:</p>
         <ol>
           <li><code>/agent</code> — confirm <code>AFF-0-coordinator</code> is listed.</li>
@@ -331,35 +398,25 @@ footer.page p+p{margin-top:.75rem}
         <p>Agents load from <code>.github/agents/</code> and skills from <code>.github/skills/</code>, the
         locations GitHub documents for
         <a href="https://docs.github.com/en/copilot/how-tos/copilot-cli/customize-copilot/create-custom-agents-for-cli">custom agents</a>
-        and <a href="https://docs.github.com/en/copilot/how-tos/copilot-cli/customize-copilot/add-skills">project skills</a>.
-        Restart the CLI after changing an agent; use <code>/skills reload</code> after changing a skill.</p>
-        <p class="safe"><strong>Safe stop point.</strong> Discovery proves packaging only. It says nothing
-        about model quality, reviewer convergence, or production fitness.</p>
+        and <a href="https://docs.github.com/en/copilot/how-tos/copilot-cli/customize-copilot/add-skills">project skills</a>.</p>
+        <span class="note safe"><strong>Safe stop point.</strong> Discovery proves packaging only — not
+        model quality, reviewer convergence, or production fitness.</span>
       </article>
 
       <article class="step">
-        <div class="step-head">
-          <span class="step-num">04</span>
-          <h3>Start your first case</h3>
-          <span class="when">Per engagement</span>
-        </div>
+        <div class="step-head"><span class="step-num">04</span><h3>Start your first case</h3><span class="when">Per engagement</span></div>
 <pre><code><span class="prompt">&gt;</span> New-Item -ItemType Directory .\cases\&lt;case-name&gt;\input</code></pre>
         <p>Add the architecture brief and supporting evidence, then invoke
         <code>AFF-0-coordinator</code>. Do not start with AFF-1 — Phase 0 establishes the source
         inventory, model plan, shared records, interview preparation, and review routing.</p>
-        <p class="caution"><strong>Never commit case data.</strong> Case folders stay local and are
-        ignored by Git. Never include credentials, tokens, or unnecessary personal or regulated data.</p>
+        <span class="note warn"><strong>Never commit case data.</strong> Case folders stay local and are
+        ignored by Git. Never include credentials, tokens, or unnecessary personal or regulated data.</span>
       </article>
 
       <article class="step">
-        <div class="step-head">
-          <span class="step-num">05</span>
-          <h3>Approve each phase, one at a time</h3>
-          <span class="when">Repeat to Phase 6</span>
-        </div>
+        <div class="step-head"><span class="step-num">05</span><h3>Approve each phase, one at a time</h3><span class="when">Repeat to Phase 6</span></div>
         <ol>
-          <li><strong>Read</strong> the phase document, both reviewer records, the decisions, and the
-          residual risks.</li>
+          <li><strong>Read</strong> the phase document, both reviewer records, decisions, and residual risks.</li>
           <li><strong>Decide</strong> — in your own terminal, with no agent session running.</li>
           <li><strong>Confirm</strong> the case still holds, then continue.</li>
         </ol>
@@ -369,104 +426,9 @@ footer.page p+p{margin-top:.75rem}
         approve, reject, or cancel, and finally for your passphrase. It refuses to offer a decision the
         evidence does not support. A phase cannot be entered, evidenced, or approved until its
         predecessor holds an approved decision.</p>
-        <p class="caution"><strong>Never type your passphrase into an agent conversation.</strong> An
-        agent that asks for it is phishing you, whatever its intent. Agents prepare, challenge, and
-        evidence the work. You decide, alone.</p>
+        <span class="note warn"><strong>Never type your passphrase into an agent conversation.</strong>
+        An agent that asks for it is phishing you, whatever its intent.</span>
       </article>
-
-    </div>
-  </div>
-</section>
-
-<!-- ============ ARCHITECTURE ============ -->
-<section id="architecture">
-  <div class="wrap">
-    <div class="section-head">
-      <p class="kicker">The shape of the work</p>
-      <h2>The human architect stays at the centre.</h2>
-      <p>Nine phases form the outer ring. Two independent reviewers sit inside it. Every relationship
-      terminates at the centre, because every phase gate is yours.</p>
-    </div>
-
-    <div class="ring-layout">
-      <div class="ring-frame">
-        <svg class="ring-diagram is-animated" id="architectureRing" viewBox="0 0 900 900" role="img" aria-labelledby="ringTitle ringDesc">
-          <title id="ringTitle">The human architect at the centre of nine phases and two reviewers</title>
-          <desc id="ringDesc">Nine phase agents form an outer ring, two independent reviewers sit on an inner ring, and the human architect holds the centre. Every phase connects to the centre because every gate requires a signed human decision.</desc>
-
-          <circle class="orbit" cx="450" cy="450" r="320"/>
-          <circle class="orbit inner" cx="450" cy="450" r="210"/>
-
-          <g class="spokes">
-            <line class="spoke" x1="450" y1="450" x2="450" y2="130"/>
-            <line class="spoke" x1="450" y1="450" x2="656" y2="205"/>
-            <line class="spoke" x1="450" y1="450" x2="765" y2="394"/>
-            <line class="spoke" x1="450" y1="450" x2="727" y2="610"/>
-            <line class="spoke" x1="450" y1="450" x2="559" y2="751"/>
-            <line class="spoke" x1="450" y1="450" x2="341" y2="751"/>
-            <line class="spoke" x1="450" y1="450" x2="173" y2="610"/>
-            <line class="spoke" x1="450" y1="450" x2="135" y2="394"/>
-            <line class="spoke" x1="450" y1="450" x2="244" y2="205"/>
-          </g>
-
-          <g class="ring-node" style="animation-delay:.05s">
-            <circle cx="450" cy="130" r="56"/><text x="450" y="126">P0</text><text class="node-label" x="450" y="148">Coordinate</text>
-          </g>
-          <g class="ring-node" style="animation-delay:.1s">
-            <circle cx="656" cy="205" r="56"/><text x="656" y="201">P1</text><text class="node-label" x="656" y="223">Requirements</text>
-          </g>
-          <g class="ring-node" style="animation-delay:.15s">
-            <circle cx="765" cy="394" r="56"/><text x="765" y="390">P2</text><text class="node-label" x="765" y="412">TOGAF</text>
-          </g>
-          <g class="ring-node" style="animation-delay:.2s">
-            <circle cx="727" cy="610" r="56"/><text x="727" y="606">P3</text><text class="node-label" x="727" y="628">Azure design</text>
-          </g>
-          <g class="ring-node" style="animation-delay:.25s">
-            <circle cx="559" cy="751" r="56"/><text x="559" y="747">P4</text><text class="node-label" x="559" y="769">Build plan</text>
-          </g>
-          <g class="ring-node" style="animation-delay:.3s">
-            <circle cx="341" cy="751" r="56"/><text x="341" y="747">P5</text><text class="node-label" x="341" y="769">Coding</text>
-          </g>
-          <g class="ring-node" style="animation-delay:.35s">
-            <circle cx="173" cy="610" r="56"/><text x="173" y="606">P6</text><text class="node-label" x="173" y="628">Presentation</text>
-          </g>
-          <g class="ring-node optional" style="animation-delay:.4s">
-            <circle cx="135" cy="394" r="56"/><text x="135" y="390">P7</text><text class="node-label" x="135" y="412">Deployment</text>
-          </g>
-          <g class="ring-node optional" style="animation-delay:.45s">
-            <circle cx="244" cy="205" r="56"/><text x="244" y="201">P8</text><text class="node-label" x="244" y="223">Testing</text>
-          </g>
-
-          <g class="ring-node review" style="animation-delay:.55s">
-            <circle cx="302" cy="599" r="52"/><text x="302" y="595">A</text><text class="node-label" x="302" y="617">Rubber duck</text>
-          </g>
-          <g class="ring-node review" style="animation-delay:.6s">
-            <circle cx="598" cy="599" r="52"/><text x="598" y="595">B</text><text class="node-label" x="598" y="617">Security</text>
-          </g>
-
-          <g class="ring-node centre" style="animation-delay:.7s">
-            <circle cx="450" cy="450" r="104"/>
-            <text x="450" y="438">HUMAN</text>
-            <text x="450" y="464">ARCHITECT</text>
-          </g>
-        </svg>
-      </div>
-
-      <div class="stack" style="--gap:1.25rem">
-        <p>Read the numbered phases in order. The standard route ends at Phase 6 with a board
-        presentation. <strong>Phases 7 and 8 are never automatic</strong> — deployment and runtime
-        testing each require a separate, deliberate human invocation.</p>
-        <p>The two reviewers never author, fix, waive, or approve the work they review. The rubber duck
-        runs on a different model from the phase agent, so the challenge is genuinely independent rather
-        than the same reasoning agreeing with itself.</p>
-        <ul class="legend">
-          <li><span class="swatch" aria-hidden="true"></span> Standard route</li>
-          <li><span class="swatch optional" aria-hidden="true"></span> Human invocation only</li>
-          <li><span class="swatch review" aria-hidden="true"></span> Independent reviewer</li>
-          <li><span class="swatch human" aria-hidden="true"></span> You</li>
-        </ul>
-        <p><button class="btn" type="button" id="replayRing">Replay diagram</button></p>
-      </div>
     </div>
   </div>
 </section>
@@ -474,65 +436,51 @@ footer.page p+p{margin-top:.75rem}
 <!-- ============ ASSURANCE ============ -->
 <section id="assurance">
   <div class="wrap">
-    <div class="section-head">
+    <div class="head">
       <p class="kicker">Phase assurance</p>
       <h2>Independent challenge. Shared evidence. Human authority.</h2>
       <p>Every invoked phase runs this sequence. Any material change invalidates the reviews that covered
       the earlier version, and the gate reopens.</p>
     </div>
 
-    <ol class="sequence">
-      <li><span><span class="who">Phase agent</span> — <span class="what">creates the candidate and records its hashes.</span></span></li>
-      <li><span><span class="who">Rubber Duck Reviewer</span> — <span class="what">challenges logic, traceability, and unsupported claims, on a different model.</span></span></li>
-      <li><span><span class="who">Phase agent</span> — <span class="what">resolves accepted findings.</span></span></li>
-      <li><span><span class="who">Security and Compliance Reviewer</span> — <span class="what">assures security, privacy, sovereignty, and compliance.</span></span></li>
-      <li><span><span class="who">Phase agent</span> — <span class="what">resolves accepted findings again.</span></span></li>
-      <li><span><span class="who">Both reviewers</span> — <span class="what">re-review until their final verdicts cover identical, unchanged artifact hashes.</span></span></li>
-      <li class="human"><span><span class="who">You</span> — <span class="what">read the evidence and sign the decision with your key. Nothing proceeds until you do.</span></span></li>
+    <ol class="seq">
+      <li><span><span class="who">Phase agent</span> — creates the candidate and records its hashes.</span></li>
+      <li><span><span class="who">Rubber Duck Reviewer</span> — challenges logic and unsupported claims, on a different model.</span></li>
+      <li><span><span class="who">Phase agent</span> — resolves accepted findings.</span></li>
+      <li><span><span class="who">Security and Compliance Reviewer</span> — assures security, privacy, sovereignty, compliance.</span></li>
+      <li><span><span class="who">Phase agent</span> — resolves accepted findings again.</span></li>
+      <li><span><span class="who">Both reviewers</span> — re-review until their final verdicts cover identical, unchanged hashes.</span></li>
+      <li class="you"><span><span class="who">You</span> — read the evidence and sign the decision with your key. Nothing proceeds until you do.</span></li>
     </ol>
 
-    <div class="section-head" style="margin-top:3.5rem">
+    <div class="head" style="margin-top:4rem">
       <h2>What an approval actually proves</h2>
-      <p>Every decision carries one of three modes. The validator derives the mode from the evidence —
-      never from what the record claims about itself.</p>
+      <p>The validator derives the mode from the evidence — never from what the record claims about
+      itself.</p>
     </div>
 
     <div class="table-wrap">
       <table>
-        <thead>
-          <tr><th scope="col">Mode</th><th scope="col">What it means</th><th scope="col">How it is reached</th></tr>
-        </thead>
+        <thead><tr><th scope="col">Mode</th><th scope="col">What it means</th><th scope="col">How it is reached</th></tr></thead>
         <tbody>
-          <tr>
-            <td><code>human-verified</code></td>
-            <td>Signed by your approval key and unchanged since.</td>
-            <td>You ran the approval command and unlocked your key with a passphrase.</td>
-          </tr>
-          <tr>
-            <td><code>self-asserted</code></td>
-            <td>Recorded without verification of who decided.</td>
-            <td>A decision on a machine holding no approval key. Rejected where a key exists.</td>
-          </tr>
-          <tr>
-            <td><code>synthetic</code></td>
-            <td>Generated by the offline harness. No human decision was made.</td>
-            <td>Produced only by the Contoso smoke test, which cannot emit anything else.</td>
-          </tr>
+          <tr><td><code>human-verified</code></td><td>Signed by your approval key and unchanged since.</td><td>You ran the approval command and unlocked your key.</td></tr>
+          <tr><td><code>self-asserted</code></td><td>Recorded without verification of who decided.</td><td>A decision on a machine holding no key. Rejected where a key exists.</td></tr>
+          <tr><td><code>synthetic</code></td><td>Generated by the offline harness. No human decision was made.</td><td>Produced only by the Contoso smoke test, which cannot emit anything else.</td></tr>
         </tbody>
       </table>
     </div>
 
-    <p class="caution" style="max-width:70ch"><strong>Stated plainly.</strong> Verification is not access
-    control. An agent may still write an approval file — it simply cannot produce a valid signature
-    without a passphrase that is never stored. And a human who types that passphrase because an agent
-    asked has delegated their authority, which is not forgery. No system prevents that.</p>
+    <span class="note warn" style="max-width:72ch"><strong>Stated plainly.</strong> Verification is not
+    access control. An agent may still write an approval file — it simply cannot produce a valid
+    signature without a passphrase that is never stored. And a human who types that passphrase because an
+    agent asked has delegated their authority, which is not forgery.</span>
   </div>
 </section>
 
 <!-- ============ ROSTER ============ -->
 <section id="roster">
   <div class="wrap">
-    <div class="section-head">
+    <div class="head">
       <p class="kicker">The crew</p>
       <h2>A specialist team with sharp boundaries.</h2>
       <p>Generated from the lifecycle manifest, so this roster cannot drift from what the framework
@@ -609,62 +557,30 @@ footer.page p+p{margin-top:.75rem}
   </div>
 </section>
 
-<!-- ============ OPERATE ============ -->
+<!-- ============ PRINCIPLES ============ -->
 <section id="operate">
   <div class="wrap">
-    <div class="section-head">
+    <div class="head">
       <p class="kicker">Operating principles</p>
       <h2>What the framework refuses to do.</h2>
-      <p>These are enforced by a deterministic validator, not by agent good behaviour.</p>
+      <p>Enforced by a deterministic validator, not by agent good behaviour.</p>
     </div>
 
-    <div class="grid-2">
-      <div class="tile">
-        <h3>Human-final governance</h3>
-        <p>Agents prepare and challenge; you decide and sign. On a machine holding an approval key, an
-        unsigned decision is rejected.</p>
-      </div>
-      <div class="tile">
-        <h3>Enforced phase order</h3>
-        <p>A phase cannot be entered, evidenced, or approved until its predecessor holds an approved
-        decision. The order is checked from the records.</p>
-      </div>
-      <div class="tile">
-        <h3>Independent review</h3>
-        <p>The rubber duck must run on a different model from the phase agent. If no independent model is
-        available, the gate stays shut.</p>
-      </div>
-      <div class="tile">
-        <h3>Least privilege</h3>
-        <p>Every agent declares its capabilities. Reviewers may never run commands or drive other agents,
-        and the validator enforces it.</p>
-      </div>
-      <div class="tile">
-        <h3>No invented facts</h3>
-        <p>Unknowns become explicit decisions, blockers, or owned assumptions with a named human owner —
-        never confident filler.</p>
-      </div>
-      <div class="tile">
-        <h3>Safe rendering</h3>
-        <p>Case HTML is generated deterministically, never authored by a model. Remote content, scripts,
-        and unsafe SVG are rejected outright.</p>
-      </div>
-      <div class="tile">
-        <h3>Azure-ready, never reckless</h3>
-        <p>Bicep-first, parameterised environments, private databases. Phase 5 validates locally and
-        never deploys.</p>
-      </div>
-      <div class="tile">
-        <h3>No stored credentials</h3>
-        <p>Interactive Azure sign-in or an approved managed identity. GitHub OIDC is outside this
-        solution, and nothing is kept in the case.</p>
-      </div>
+    <div class="tiles">
+      <div class="tile"><h3>Human-final governance</h3><p>Agents prepare and challenge; you decide and sign. On a machine holding an approval key, an unsigned decision is rejected.</p></div>
+      <div class="tile"><h3>Enforced phase order</h3><p>A phase cannot be entered, evidenced, or approved until its predecessor holds an approved decision.</p></div>
+      <div class="tile"><h3>Independent review</h3><p>The rubber duck must run on a different model from the phase agent. If none is available, the gate stays shut.</p></div>
+      <div class="tile"><h3>Least privilege</h3><p>Every agent declares its capabilities. Reviewers may never run commands or drive other agents.</p></div>
+      <div class="tile"><h3>No invented facts</h3><p>Unknowns become explicit decisions, blockers, or owned assumptions with a named human owner.</p></div>
+      <div class="tile"><h3>Safe rendering</h3><p>Case HTML is generated deterministically, never authored by a model. Remote content and unsafe SVG are rejected.</p></div>
+      <div class="tile"><h3>Azure-ready, never reckless</h3><p>Bicep-first, parameterised environments, private databases. Phase 5 validates locally and never deploys.</p></div>
+      <div class="tile"><h3>No stored credentials</h3><p>Interactive sign-in or an approved managed identity. GitHub OIDC is outside this solution.</p></div>
     </div>
 
-    <div class="section-head" style="margin-top:3.5rem">
+    <div class="head" style="margin-top:4rem">
       <h2>Case data never leaves your machine</h2>
       <p>Real case folders are ignored by Git by design. Only the template and the synthetic Contoso case
-      are in the repository. Keep customer material local, and never commit or push it.</p>
+      live in the repository. Keep customer material local, and never commit or push it.</p>
     </div>
   </div>
 </section>
@@ -673,8 +589,7 @@ footer.page p+p{margin-top:.75rem}
 
 <footer class="page">
   <div class="wrap">
-    <p>Agentic Architecture v2 — a human-centred architecture workflow for GitHub Copilot.
-    Licensed under Apache 2.0.</p>
+    <p>Agentic Architecture v2 — a human-centred architecture workflow for GitHub Copilot. Apache 2.0.</p>
     <p>This site describes the framework. It is not architecture advice, not a support commitment, and
     not evidence under the AFF contract.</p>
     <div class="foot-links">
@@ -690,24 +605,24 @@ footer.page p+p{margin-top:.75rem}
 (() => {
   const root = document.documentElement;
   const toggle = document.getElementById("themeToggle");
-  const syncToggle = () => {
-    const dark = root.getAttribute("data-theme") === "dark";
-    toggle.setAttribute("aria-pressed", String(dark));
-    toggle.textContent = dark ? "Light mode" : "Dark mode";
+  const syncTheme = () => {
+    const dark = root.getAttribute("data-theme") !== "light";
+    toggle.setAttribute("aria-pressed", String(!dark));
+    toggle.textContent = dark ? "Light" : "Dark";
   };
-  syncToggle();
+  syncTheme();
   toggle.addEventListener("click", () => {
-    root.setAttribute("data-theme", root.getAttribute("data-theme") === "dark" ? "light" : "dark");
-    syncToggle();
+    root.setAttribute("data-theme", root.getAttribute("data-theme") === "light" ? "dark" : "light");
+    syncTheme();
   });
 
-  const ring = document.getElementById("architectureRing");
-  const replay = document.getElementById("replayRing");
-  if (ring && replay) {
-    replay.addEventListener("click", () => {
-      ring.classList.remove("is-animated");
-      void ring.getBoundingClientRect();
-      ring.classList.add("is-animated");
+  const stage = document.getElementById("architectureRing");
+  const motion = document.getElementById("motionToggle");
+  if (stage && motion) {
+    motion.addEventListener("click", () => {
+      const paused = stage.classList.toggle("is-paused");
+      motion.setAttribute("aria-pressed", String(paused));
+      motion.textContent = paused ? "Resume motion" : "Pause motion";
     });
   }
 
