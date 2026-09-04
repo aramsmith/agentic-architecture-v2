@@ -10,6 +10,7 @@ import { validateRecordIdentity } from "./identity.js";
 import { validateImplementationGraphs } from "./implementation.js";
 import { validateRunJournals } from "./journal.js";
 import { validateModelPlans, validateReviewModels } from "./models.js";
+import { validatePhaseSequence } from "./sequence.js";
 
 export async function validateCase(
   repositoryRoot: string,
@@ -50,6 +51,7 @@ export async function validateLoadedCase(
       ...hashErrors,
       ...validateReviewConvergence(loaded.records),
       ...validateApprovals(loaded.records),
+      ...validatePhaseSequence(loaded.records, lifecycle),
     ],
   };
 }

@@ -66,6 +66,7 @@ interface Expectations {
 interface SmokeEvidence {
   frameworkValid: boolean;
   caseValid: boolean;
+  validationInvariants: string[];
   aff0Discovered: boolean;
   renderSkillDiscovered: boolean;
   grillSkillDiscovered: boolean;
@@ -654,6 +655,13 @@ async function collectEvidence(workspaceRoot: string): Promise<SmokeEvidence> {
   return {
     frameworkValid: framework.errors.length === 0,
     caseValid: caseValidation.errors.length === 0,
+    validationInvariants: [
+      ...new Set(
+        [...framework.errors, ...caseValidation.errors].map(
+          ({ invariant }) => invariant,
+        ),
+      ),
+    ].sort(),
     aff0Discovered: await fileExists(
       path.join(workspaceRoot, ".github", "agents", "AFF-0-coordinator.agent.md"),
     ),
@@ -850,7 +858,9 @@ export async function verifyContosoSmokeWorkspace(
   ]);
 
   if (!evidence.frameworkValid || !evidence.caseValid) {
-    throw new SmokeError("Framework or generated case validation failed.");
+    throw new SmokeError(
+      `Framework or generated case validation failed: ${evidence.validationInvariants.join(", ")}.`,
+    );
   }
   if (!evidence.renderSkillDiscovered) {
     throw new SmokeError("render-case-html packaging was not discovered.");

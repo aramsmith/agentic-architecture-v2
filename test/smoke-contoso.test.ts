@@ -240,7 +240,7 @@ describe("offline Contoso smoke journey", () => {
     );
 
     await expect(verifyContosoSmokeWorkspace(workspaceRoot)).rejects.toThrow(
-      /Phase 7 cannot start automatically|Phase 8 cannot start/u,
+      /validation failed: .*phase-sequence/u,
     );
   });
 

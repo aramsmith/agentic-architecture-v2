@@ -14,7 +14,7 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "test": "vitest run",
-    "test:contracts": "vitest run test/schema.test.ts test/framework.test.ts test/case.test.ts",
+    "test:contracts": "vitest run test/schema.test.ts test/framework.test.ts test/case.test.ts test/sequence.test.ts",
     "test:governance": "vitest run test/repository-governance.test.ts",
     "test:adoption": "vitest run test/adoption.test.ts",
     "test:renderer": "vitest run test/render.test.ts test/render-cli.test.ts",

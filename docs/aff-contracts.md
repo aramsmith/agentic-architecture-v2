@@ -64,6 +64,24 @@ Hash bindings use lower-case SHA-256 over these canonical bytes:
 Paths in records use `/`, are relative to the case root, and cannot contain parent traversal. Editing
 an artifact after review changes its canonical hash and invalidates the review and approval bindings.
 
+## Phase sequence
+
+The `phase-sequence` invariant enforces the lifecycle order against case records instead of trusting
+agent behaviour. For every phase that has a human approval, an `ARTIFACTS-RECORDED` candidate, or a
+`PHASE-ENTERED` journal event, the validator requires that:
+
+- the preceding phase in `standardRoute` holds a latest human approval with decision `APPROVED`;
+- every `approved-phase-<id>` entry in the phase's `requires` list holds the same;
+- an approval instant is never earlier than the approval instant of a phase it depends on.
+
+A phase therefore cannot be entered, evidenced, or approved before its predecessor is approved.
+
+Phases 7 and 8 additionally declare `scoped-attempt-authorisation`, `scoped-test-attempt-authorisation`,
+and `phase-7-succeeded`. These have no catalogued record type in contract `1.0.0`, so the validator
+cannot verify them and **fails closed**: entering Phase 7 or Phase 8 reports a `phase-sequence` error
+until the prerequisite is either catalogued as a case record or removed from
+`.github/agents/AFF-LIFECYCLE.json`.
+
 ## Schema catalogue
 
 | Record | `recordType` | Contracted location |

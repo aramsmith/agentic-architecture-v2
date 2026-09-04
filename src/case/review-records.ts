@@ -36,6 +36,12 @@ export interface CandidateEvent {
   artifacts: Binding[];
 }
 
+export interface PhaseEntryEvent {
+  file: string;
+  phaseId: string;
+  sequence: number;
+}
+
 function isBinding(value: unknown): value is Binding {
   return (
     isRecord(value) &&
@@ -168,6 +174,54 @@ export function latestCandidateEvents(
     }
   }
   return latest;
+}
+
+export function latestApprovals(approvals: Approval[]): Map<string, Approval> {
+  const latest = new Map<string, Approval>();
+  for (const approval of approvals) {
+    const current = latest.get(approval.phaseId);
+    if (
+      !current ||
+      Date.parse(approval.decidedAt) > Date.parse(current.decidedAt)
+    ) {
+      latest.set(approval.phaseId, approval);
+    }
+  }
+  return latest;
+}
+
+export function asPhaseEntryEvent(
+  record: LoadedRecord,
+): PhaseEntryEvent | undefined {
+  const value = record.value;
+  if (
+    value.recordType !== "run-journal-event" ||
+    value.eventType !== "PHASE-ENTERED" ||
+    typeof value.phaseId !== "string" ||
+    typeof value.sequence !== "number"
+  ) {
+    return undefined;
+  }
+  return {
+    file: record.file,
+    phaseId: value.phaseId,
+    sequence: value.sequence,
+  };
+}
+
+export function firstPhaseEntries(
+  records: LoadedRecord[],
+): Map<string, PhaseEntryEvent> {
+  const first = new Map<string, PhaseEntryEvent>();
+  for (const event of records
+    .map(asPhaseEntryEvent)
+    .filter((value): value is PhaseEntryEvent => value !== undefined)) {
+    const current = first.get(event.phaseId);
+    if (!current || event.sequence < current.sequence) {
+      first.set(event.phaseId, event);
+    }
+  }
+  return first;
 }
 
 export const phaseArtifactNames: Readonly<Record<string, readonly string[]>> = {

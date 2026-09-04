@@ -5,6 +5,19 @@ All notable user-visible changes are recorded here. Versions follow the separate
 
 ## [Unreleased]
 
+### Added
+
+- A `phase-sequence` contract invariant. Case validation now enforces lifecycle order from the records
+  themselves: a phase cannot be entered, evidenced, or approved until its predecessor holds an approved
+  human decision, and approval instants must follow lifecycle order.
+- Fail-closed handling for Phase 7 and Phase 8 prerequisites that have no catalogued record type
+  (`scoped-attempt-authorisation`, `scoped-test-attempt-authorisation`, and `phase-7-succeeded`).
+
+### Changed
+
+- The Contoso smoke harness now names the contract invariants that failed instead of reporting a
+  generic validation message.
+
 ## [1.0.0] - 2026-09-04
 
 ### Added
