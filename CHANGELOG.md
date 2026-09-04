@@ -5,6 +5,8 @@ All notable user-visible changes are recorded here. Versions follow the separate
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-09-04
+
 ### Added
 
 - A `phase-sequence` contract invariant. Case validation now enforces lifecycle order from the records
