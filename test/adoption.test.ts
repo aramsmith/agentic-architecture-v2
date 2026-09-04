@@ -157,8 +157,8 @@ describe("architect adoption and release surfaces", () => {
 
     expect(changelog).toContain("## [Unreleased]");
     expect(changelog).toContain("## [1.0.0] - 2026-09-04");
-    expect(release).toContain(
-      "A changelog entry alone does not create the corresponding GitHub tag or release.",
+    expect(release).toMatch(
+      /A changelog entry alone does not create the\s+corresponding GitHub tag or release\./u,
     );
     expect(release).toContain("npm run docs:check");
     expect(release).toContain("Repository validation and CodeQL pass");
