@@ -366,5 +366,7 @@ Except where a component includes its own licence file, this repository is licen
 [Apache License 2.0](LICENSE). Component-level licences remain applicable to their components;
 `.github/skills/grill-me/LICENSE` applies to the `grill-me` skill.
 
-The published overview embeds the Inter typeface so the page stays self-contained. Inter is licensed
-under the SIL Open Font License 1.1; see [`licenses/inter/OFL.txt`](licenses/inter/OFL.txt).
+The published overview embeds its typefaces so the page stays self-contained: Inter for body text and
+JetBrains Mono for headings, labels, and controls. Both are licensed under the SIL Open Font License 1.1;
+see [`licenses/inter/OFL.txt`](licenses/inter/OFL.txt) and
+[`licenses/jetbrains-mono/OFL.txt`](licenses/jetbrains-mono/OFL.txt).
