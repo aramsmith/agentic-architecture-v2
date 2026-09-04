@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Report a security vulnerability privately
+    url: https://github.com/aramsmith/agentic-architecture-v2/security/advisories/new
+    about: Do not disclose suspected vulnerabilities, secrets, or customer data in a public issue.
+  - name: Read the support boundaries
+    url: https://github.com/aramsmith/agentic-architecture-v2/blob/main/SUPPORT.md
+    about: Check supported questions, safe diagnostics, and non-support boundaries before filing.

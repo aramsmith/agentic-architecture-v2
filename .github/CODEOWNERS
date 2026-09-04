@@ -1,0 +1,30 @@
+# Governance, community health, and repository policy
+/LICENSE @aramsmith
+/SECURITY.md @aramsmith
+/CONTRIBUTING.md @aramsmith
+/CODE_OF_CONDUCT.md @aramsmith
+/SUPPORT.md @aramsmith
+/.github/CODEOWNERS @aramsmith
+/.github/ISSUE_TEMPLATE/ @aramsmith
+/.github/pull_request_template.md @aramsmith
+
+# AFF contracts, profiles, skills, and automation
+/.github/agents/ @aramsmith
+/.github/skills/ @aramsmith
+/.github/workflows/ @aramsmith
+/schemas/ @aramsmith
+/package.json @aramsmith
+/package-lock.json @aramsmith
+/tsconfig.json @aramsmith
+/vitest.config.ts @aramsmith
+/.gitignore @aramsmith
+
+# Validator, renderer, smoke, and approval/hash safety logic
+/src/ @aramsmith
+/test/ @aramsmith
+/docs/aff-contracts.md @aramsmith
+/docs/aff-renderer.md @aramsmith
+
+# Case scaffolding and synthetic expectations
+/cases/_template/ @aramsmith
+/cases/contoso-permit-services/ @aramsmith

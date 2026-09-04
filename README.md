@@ -7,6 +7,14 @@ implementation plan, deployable code, and a C-level presentation.
 The human architect remains accountable for every material decision and is the final approver of every
 phase. Deployment and runtime testing are optional and always require separate human invocation.
 
+## Repository guidance
+
+- [Contributing](CONTRIBUTING.md)
+- [Security reporting](SECURITY.md)
+- [Support boundaries](SUPPORT.md)
+- [Code of Conduct](CODE_OF_CONDUCT.md)
+- [Licence](LICENSE)
+
 ## Interactive solution overview
 
 - **[Open the interactive HTML solution overview](https://aramsmith.github.io/agentic-architecture-v2/agentic-architecture-v2.html)**
@@ -271,3 +279,9 @@ agentic-architecture-v2.html
 
 Real case folders are intentionally ignored by Git. Only the case template and synthetic Contoso case
 are allowed into the repository. Keep real customer case data local and never commit or push it.
+
+## Licence
+
+Except where a component includes its own licence file, this repository is licensed under the
+[Apache License 2.0](LICENSE). Component-level licences remain applicable to their components;
+`.github/skills/grill-me/LICENSE` applies to the `grill-me` skill.
