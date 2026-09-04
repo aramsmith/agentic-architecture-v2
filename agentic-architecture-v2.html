@@ -39,7 +39,8 @@
 html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
 body{
   margin:0;background:var(--bg);color:var(--body);
-  font:16px/1.62 "Inter var",Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  font:16px/1.62 "Inter var","Inter","SF Pro Display","Segoe UI Variable Display","Segoe UI",system-ui,-apple-system,BlinkMacSystemFont,Roboto,Helvetica,Arial,sans-serif;
+  font-feature-settings:"cv11" 1,"ss01" 1,"calt" 1;
   -webkit-font-smoothing:antialiased;overflow-x:hidden;
 }
 h1,h2,h3,h4{margin:0;color:var(--ink);line-height:1.08;letter-spacing:-.028em;font-weight:600}
@@ -97,13 +98,23 @@ h1.display .accent{background:linear-gradient(100deg,var(--violet),var(--cyan) 5
 .metrics{display:flex;gap:2.5rem;flex-wrap:wrap;margin-top:3.25rem;padding-top:2rem;border-top:1px solid var(--line)}
 .metric .n{font-size:1.7rem;font-weight:600;color:var(--ink);letter-spacing:-.03em;line-height:1}
 .metric .l{font-size:.8rem;color:var(--muted);margin-top:.35rem}
+.creators{display:flex;align-items:center;gap:.85rem;flex-wrap:wrap;margin-top:1.6rem;font-size:.85rem;color:var(--muted)}
+.creators .by{letter-spacing:.1em;text-transform:uppercase;font-size:.7rem;font-weight:600;color:var(--faint)}
+.creators a{display:inline-flex;align-items:center;gap:.45rem;color:var(--ink);text-decoration:none;
+  border:1px solid var(--line-2);background:var(--panel);border-radius:999px;padding:.3rem .78rem .3rem .35rem;
+  transition:border-color .2s,box-shadow .2s}
+.creators a:hover{border-color:rgba(139,124,255,.55);box-shadow:0 8px 22px -14px var(--glow-a)}
+.avatar{width:1.35rem;height:1.35rem;border-radius:50%;display:grid;place-items:center;flex:none;
+  font-size:.62rem;font-weight:700;color:#0b0b0d;letter-spacing:.02em;
+  background:radial-gradient(circle at 32% 28%,#fff,var(--violet) 58%,#3a2a9c)}
+.avatar.two{background:radial-gradient(circle at 32% 28%,#fff,var(--lime) 58%,#7a9410)}
 
 /* ---------------- orbital stage ---------------- */
 .orbital{position:relative;padding:2rem 0 5rem}
-.stage{position:relative;width:min(100%,44rem);aspect-ratio:1/1;margin:0 auto;
-  perspective:1500px;perspective-origin:50% 46%;
-  --R:clamp(112px,30vw,236px);--Rm:clamp(88px,23vw,182px);
-  --tilt:66deg;--spin:52s;--moonA:15s;--moonB:21s}
+.stage{position:relative;width:min(100%,46rem);aspect-ratio:1/1;margin:0 auto;
+  perspective:1500px;perspective-origin:50% 46%;transform-style:preserve-3d;
+  --R:clamp(104px,27vw,214px);--Rm:clamp(152px,39vw,308px);
+  --tilt:66deg;--spin:52s;--moonA:18s;--moonB:26s}
 .stage.is-paused *{animation-play-state:paused !important}
 @media (prefers-reduced-motion:reduce){.stage *{animation-play-state:paused !important}}
 .plane{position:absolute;inset:0;transform-style:preserve-3d;transform:rotateX(var(--tilt))}
@@ -138,8 +149,8 @@ h1.display .accent{background:linear-gradient(100deg,var(--violet),var(--cyan) 5
 
 .moons{position:absolute;inset:0;transform-style:preserve-3d}
 .moon-plane{position:absolute;inset:0;transform-style:preserve-3d}
-.moon-plane.a{transform:rotateX(22deg) rotateY(14deg)}
-.moon-plane.b{transform:rotateX(-28deg) rotateY(-20deg)}
+.moon-plane.a{transform:rotateX(24deg) rotateY(16deg)}
+.moon-plane.b{transform:rotateX(-30deg) rotateY(-22deg)}
 .moon-orbit{position:absolute;left:50%;top:50%;width:0;height:0;transform-style:preserve-3d}
 .moon-orbit.a{animation:orbit var(--moonA) linear infinite}
 .moon-orbit.b{animation:orbit var(--moonB) linear infinite reverse}
@@ -149,8 +160,8 @@ h1.display .accent{background:linear-gradient(100deg,var(--violet),var(--cyan) 5
 .moon-face.b{animation:despin var(--moonB) linear infinite reverse}
 .moon-label{font-size:.66rem;color:var(--faint);text-align:center;white-space:nowrap}
 
-.core{position:absolute;left:50%;top:50%;display:grid;place-items:center;
-  width:clamp(112px,25vw,178px);height:clamp(112px,25vw,178px);margin:calc(-1 * clamp(56px,12.5vw,89px)) 0 0 calc(-1 * clamp(56px,12.5vw,89px));
+.core{position:absolute;left:50%;top:50%;display:grid;place-items:center;transform-style:preserve-3d;
+  width:clamp(104px,22vw,158px);height:clamp(104px,22vw,158px);margin:calc(-1 * clamp(52px,11vw,79px)) 0 0 calc(-1 * clamp(52px,11vw,79px));
   border-radius:50%;
   background:
     radial-gradient(circle at 34% 28%,rgba(255,255,255,.96),rgba(255,255,255,.2) 22%,transparent 50%),
@@ -174,9 +185,11 @@ section{padding:5.5rem 0;border-top:1px solid var(--line)}
 .head p{margin-top:1rem;color:var(--muted);font-size:1.02rem}
 
 .steps{display:grid;gap:1rem}
-.step{position:relative;background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:1.7rem 1.8rem;
-  transition:border-color .2s,transform .2s}
-.step:hover{border-color:var(--line-2);transform:translateY(-2px)}
+.step{position:relative;background:linear-gradient(158deg,var(--panel-2),var(--panel) 62%);
+  border:1px solid var(--line);border-radius:var(--radius);padding:1.7rem 1.8rem;
+  transition:border-color .22s,transform .22s,box-shadow .22s}
+.step:hover{border-color:rgba(139,124,255,.5);transform:translateY(-3px);
+  box-shadow:0 0 0 1px rgba(139,124,255,.22),0 18px 46px -22px var(--glow-a)}
 .step-head{display:flex;align-items:center;gap:.9rem;flex-wrap:wrap}
 .step-num{font-variant-numeric:tabular-nums;font-size:.74rem;font-weight:650;letter-spacing:.1em;
   color:var(--violet);background:var(--violet-dim);border:1px solid var(--line-2);border-radius:6px;padding:.2rem .52rem}
@@ -196,8 +209,12 @@ pre code{background:none;border:0;padding:0;color:inherit;font-size:1em}
 :root[data-theme="light"] .note.safe{border-color:rgba(124,164,10,.35)}
 
 .seq{list-style:none;counter-reset:s;padding:0;display:grid;gap:.55rem}
-.seq li{counter-increment:s;display:flex;gap:.95rem;align-items:center;background:var(--panel);
-  border:1px solid var(--line);border-radius:10px;padding:.9rem 1.15rem;font-size:.93rem}
+.seq li{counter-increment:s;display:flex;gap:.95rem;align-items:center;
+  background:linear-gradient(158deg,var(--panel-2),var(--panel) 62%);
+  border:1px solid var(--line);border-radius:10px;padding:.9rem 1.15rem;font-size:.93rem;
+  transition:border-color .22s,transform .22s,box-shadow .22s}
+.seq li:hover{border-color:rgba(139,124,255,.5);transform:translateX(3px);
+  box-shadow:0 0 0 1px rgba(139,124,255,.18),0 14px 34px -20px var(--glow-a)}
 .seq li::before{content:counter(s);flex:none;width:1.65rem;height:1.65rem;border-radius:50%;display:grid;
   place-items:center;font-size:.75rem;font-weight:650;background:var(--panel-2);border:1px solid var(--line-2);color:var(--muted)}
 .seq li.you{border-color:rgba(199,247,62,.35);background:var(--lime-dim)}
@@ -213,9 +230,10 @@ tbody tr:last-child td{border-bottom:0}
 .filters{display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:1.6rem}
 .generated-route{font-size:.88rem;color:var(--muted);margin-bottom:1.4rem}
 .roster{display:grid;gap:.9rem;grid-template-columns:repeat(auto-fill,minmax(16rem,1fr))}
-.agent-card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:1.15rem 1.25rem;
-  transition:border-color .2s,transform .2s}
-.agent-card:hover{border-color:var(--line-2);transform:translateY(-2px)}
+.agent-card{background:linear-gradient(158deg,var(--panel-2),var(--panel) 62%);border:1px solid var(--line);
+  border-radius:12px;padding:1.15rem 1.25rem;transition:border-color .22s,transform .22s,box-shadow .22s}
+.agent-card:hover{border-color:rgba(199,247,62,.5);transform:translateY(-3px);
+  box-shadow:0 0 0 1px rgba(199,247,62,.2),0 18px 46px -22px var(--glow-b)}
 .agent-card[hidden]{display:none}
 .agent-card[data-track="optional"]{border-style:dashed}
 .agent-card[data-track="review"]{background:var(--violet-dim)}
@@ -227,7 +245,13 @@ tbody tr:last-child td{border-bottom:0}
 .agent-card code{font-size:.76rem}
 
 .tiles{display:grid;gap:.9rem;grid-template-columns:repeat(auto-fit,minmax(17rem,1fr))}
-.tile{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:1.3rem 1.4rem}
+.abstract-lede{font-size:clamp(1.05rem,2vw,1.3rem);color:var(--ink);max-width:62ch;
+  margin-bottom:2.25rem;line-height:1.5;letter-spacing:-.012em}
+.abstract-foot{margin-top:1.6rem;font-size:.88rem;color:var(--faint);max-width:66ch}
+.tile{background:linear-gradient(158deg,var(--panel-2),var(--panel) 62%);border:1px solid var(--line);
+  border-radius:12px;padding:1.3rem 1.4rem;transition:border-color .22s,transform .22s,box-shadow .22s}
+.tile:hover{border-color:rgba(79,216,232,.5);transform:translateY(-3px);
+  box-shadow:0 0 0 1px rgba(79,216,232,.2),0 18px 46px -22px rgba(79,216,232,.35)}
 .tile h3{font-size:.95rem;margin-bottom:.45rem}
 .tile p{font-size:.86rem;color:var(--muted)}
 
@@ -246,6 +270,7 @@ footer.page p+p{margin-top:.7rem}
     <a class="brand" href="#top"><span class="brand-orb" aria-hidden="true"></span>Agentic Architecture v2</a>
     <nav class="primary" aria-label="Page navigation">
       <ul>
+        <li><a href="#abstract">Overview</a></li>
         <li><a href="#evaluate">Get started</a></li>
         <li><a href="#architecture">System</a></li>
         <li><a href="#assurance">Assurance</a></li>
@@ -272,6 +297,11 @@ footer.page p+p{margin-top:.7rem}
       <a class="cta solid" href="#evaluate">Start in ten minutes</a>
       <a class="cta ghost" href="#architecture">See the system</a>
     </div>
+    <p class="creators">
+      <span class="by">Created by</span>
+      <a href="https://github.com/aramsmith"><span class="avatar" aria-hidden="true">AS</span>@aramsmith</a>
+      <a href="https://github.com/FvanEgmond"><span class="avatar two" aria-hidden="true">FE</span>@FvanEgmond</a>
+    </p>
     <div class="metrics">
       <div class="metric"><div class="n">9</div><div class="l">Phases, 7 on the standard route</div></div>
       <div class="metric"><div class="n">2</div><div class="l">Independent reviewers</div></div>
@@ -349,6 +379,48 @@ footer.page p+p{margin-top:.7rem}
   </div>
 </section>
 
+<!-- ============ ABSTRACT ============ -->
+<section id="abstract">
+  <div class="wrap">
+    <div class="head">
+      <p class="kicker">In short</p>
+      <h2>What this actually is.</h2>
+    </div>
+    <div class="abstract">
+      <p class="abstract-lede">Agentic Architecture v2 is a governed workflow for architects who use AI
+      seriously. You bring a brief. A crew of eleven specialist agents produces the architecture — and a
+      deterministic validator refuses to let it move forward without you.</p>
+      <div class="tiles">
+        <div class="tile">
+          <h3>The problem it solves</h3>
+          <p>AI can draft an architecture in minutes. What it cannot do is be accountable for one. Left
+          unchecked, an agent will produce confident, plausible, unverifiable work — and quietly mark it
+          as reviewed.</p>
+        </div>
+        <div class="tile">
+          <h3>How it works</h3>
+          <p>Nine phases, each producing one authoritative document plus evidence. Two independent
+          reviewers challenge every phase — the first on a different model, so the challenge is genuine
+          rather than self-agreement.</p>
+        </div>
+        <div class="tile">
+          <h3>Where you sit</h3>
+          <p>At every gate. Both reviewers must converge on identical artifact hashes, and then you sign
+          the decision with a key protected by a passphrase no agent can read.</p>
+        </div>
+        <div class="tile">
+          <h3>What you get</h3>
+          <p>Approved requirements, a TOGAF architecture, an implementation-ready Azure design, a build
+          plan, a validated Bicep package, and a board presentation — each with an audit trail bound to
+          its evidence.</p>
+        </div>
+      </div>
+      <p class="abstract-foot">Everything runs locally. Case folders never enter Git, deployment is never
+      automatic, and no claim is made that the framework cannot demonstrate.</p>
+    </div>
+  </div>
+</section>
+
 <!-- ============ GET STARTED ============ -->
 <section id="evaluate">
   <div class="wrap">
@@ -378,6 +450,9 @@ footer.page p+p{margin-top:.7rem}
 
       <article class="step">
         <div class="step-head"><span class="step-num">02</span><h3>Create your approval identity</h3><span class="when">Once, ever</span></div>
+        <span class="note warn"><strong>Why this exists.</strong> An agent has write access to your case
+        folder. Without a key, nothing distinguishes a decision you made from a JSON file an agent wrote
+        — both look like a valid approval. The key gives you something an agent cannot produce.</span>
         <p>This is the key that signs every phase decision you make.</p>
 <pre><code><span class="prompt">&gt;</span> npm run identity:create</code></pre>
         <p>You choose a <strong>label</strong> — a role such as <code>Accountable architect</code> keeps a
@@ -415,6 +490,10 @@ footer.page p+p{margin-top:.7rem}
 
       <article class="step">
         <div class="step-head"><span class="step-num">05</span><h3>Approve each phase, one at a time</h3><span class="when">Repeat to Phase 6</span></div>
+        <span class="note warn"><strong>Why one phase at a time, and why here.</strong> Every later phase
+        is built on this one — an unnoticed error in requirements becomes an Azure design, then code. The
+        gate is the cheapest place to catch it. And the command runs in your terminal, not the agent's,
+        because a passphrase typed into an agent session is a passphrase you have given away.</span>
         <ol>
           <li><strong>Read</strong> the phase document, both reviewer records, decisions, and residual risks.</li>
           <li><strong>Decide</strong> — in your own terminal, with no agent session running.</li>
