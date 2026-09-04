@@ -8,7 +8,12 @@ import { isRecord } from "../common/json.js";
 import type { ValidationError } from "../types.js";
 import type { LoadedRecord } from "./records.js";
 import { isPathContained } from "./path.js";
-import { latestCandidateEvents } from "./review-records.js";
+import {
+  asApproval,
+  latestApprovals,
+  latestCandidateEvents,
+  type Approval,
+} from "./review-records.js";
 
 const textExtensions = new Set([
   ".bicep",
@@ -137,7 +142,6 @@ export async function hashArtifact(absolutePath: string): Promise<string> {
 function currentBindingSources(records: LoadedRecord[]): BindingSource[] {
   const sources: BindingSource[] = [];
   const latestReviews = new Map<string, LoadedRecord>();
-  const latestApprovals = new Map<string, LoadedRecord>();
 
   for (const record of records) {
     const recordType = record.value.recordType;
@@ -168,18 +172,6 @@ function currentBindingSources(records: LoadedRecord[]): BindingSource[] {
         file: record.file,
         value: { reviewRecords: record.value.reviewRecords },
       });
-      const phaseId = record.value.phaseId;
-      const decidedAt = record.value.decidedAt;
-      if (typeof phaseId === "string" && typeof decidedAt === "string") {
-        const current = latestApprovals.get(phaseId);
-        if (
-          !current ||
-          typeof current.value.decidedAt !== "string" ||
-          Date.parse(decidedAt) > Date.parse(current.value.decidedAt)
-        ) {
-          latestApprovals.set(phaseId, record);
-        }
-      }
       continue;
     }
 
@@ -191,10 +183,14 @@ function currentBindingSources(records: LoadedRecord[]): BindingSource[] {
   }
 
   sources.push(...latestReviews.values());
-  for (const approval of latestApprovals.values()) {
+  for (const approval of latestApprovals(
+    records
+      .map(asApproval)
+      .filter((value): value is Approval => value !== undefined),
+  ).values()) {
     sources.push({
       file: approval.file,
-      value: { artifactHashes: approval.value.artifactHashes },
+      value: { artifactHashes: approval.artifactHashes },
     });
   }
   for (const candidate of latestCandidateEvents(records).values()) {

@@ -11,6 +11,7 @@ import {
   parseProfile,
   type ParsedProfile,
 } from "./frontmatter.js";
+import { validateToolGrants } from "./tools.js";
 
 const allowedAgentDocuments = new Set([
   ".github/agents/AFF-OPERATING-CONTRACT.md",
@@ -44,22 +45,19 @@ async function discoverProfiles(
           "Rename the profile to the supported .agent.md filename or move non-profile documentation outside the agents directory.",
       });
     }
+  }
 
-    for (const skillDocument of skillMarkdown) {
-      const file = toRepositoryPath(skillDocument);
-      const segments = file.split("/");
-      if (
-        path.posix.basename(file) !== "SKILL.md" ||
-        segments.length !== 4
-      ) {
-        errors.push({
-          file,
-          invariant: "supported-profile-location",
-          message: "Skill profiles must use .github/skills/<skill-name>/SKILL.md.",
-          remediation:
-            "Rename or move the skill profile to the supported SKILL.md location.",
-        });
-      }
+  for (const skillDocument of skillMarkdown) {
+    const file = toRepositoryPath(skillDocument);
+    const segments = file.split("/");
+    if (path.posix.basename(file) !== "SKILL.md" || segments.length !== 4) {
+      errors.push({
+        file,
+        invariant: "supported-profile-location",
+        message: "Skill profiles must use .github/skills/<skill-name>/SKILL.md.",
+        remediation:
+          "Rename or move the skill profile to the supported SKILL.md location.",
+      });
     }
   }
 
@@ -178,5 +176,6 @@ export async function validateProfiles(
     ...validateUniqueNames(profiles),
     ...validateNamesMatchLocations(profiles),
     ...validateLifecycleProfiles(profiles, lifecycle),
+    ...validateToolGrants(profiles, lifecycle),
   ];
 }

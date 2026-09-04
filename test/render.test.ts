@@ -690,6 +690,16 @@ describe("phase HTML renderer", () => {
     expect(html).not.toMatch(/(?:src|href)="https?:/iu);
   });
 
+  it("declares a fail-closed content security policy on phase HTML", async () => {
+    const html = await renderMarkdown("# Phase 0\n\n## Scope\n\nSafe content.\n");
+
+    expect(html).toContain('<meta http-equiv="Content-Security-Policy"');
+    expect(html).toMatch(/content="default-src 'none';[^"]*script-src 'none'"/u);
+    expect(html).toMatch(/img-src data:/u);
+    expect(html).toMatch(/base-uri 'none'/u);
+    expect(html).toMatch(/form-action 'none'/u);
+  });
+
   it("renders a cumulative overview only from validated journal, review, and approval evidence", async () => {
     const { repositoryRoot, caseRoot } = await createValidatedOverviewCase();
 
@@ -712,6 +722,10 @@ describe("phase HTML renderer", () => {
     expect(html).toContain("Approval record SHA-256");
     expect(html).toContain("aria-selected=");
     expect(html).not.toMatch(/(?:src|href)="https?:/iu);
+    expect(html).toContain('<meta http-equiv="Content-Security-Policy"');
+    expect(html).toMatch(
+      /content="default-src 'none';[^"]*script-src 'unsafe-inline'"/u,
+    );
     const ids = [...html.matchAll(/\sid="([^"]+)"/gu)].map((match) => match[1]);
     expect(new Set(ids).size).toBe(ids.length);
     for (const reference of html.matchAll(

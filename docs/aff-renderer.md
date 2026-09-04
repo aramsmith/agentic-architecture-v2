@@ -34,6 +34,10 @@ All case content is untrusted. The renderer:
 - escapes Mermaid source and labels it as not visually rendered;
 - sanitizes generated Markdown HTML with maintained parser and sanitizer libraries;
 - embeds fixed CSS and, for overview tabs only, a small fixed script with no case-supplied code;
+- declares a restrictive `Content-Security-Policy` meta element in every generated document, so a
+  browser blocks remote loading, framing, form submission, and base-URI rewriting even if sanitisation
+  were ever bypassed. Phase HTML uses `script-src 'none'`; only the tabbed solution overview relaxes
+  this to `'unsafe-inline'` for its fixed navigation script;
 - validates case records and journal-to-approval hash bindings before an overview can look approved;
 - writes through an atomic same-directory replacement.
 

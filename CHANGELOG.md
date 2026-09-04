@@ -12,11 +12,27 @@ All notable user-visible changes are recorded here. Versions follow the separate
   human decision, and approval instants must follow lifecycle order.
 - Fail-closed handling for Phase 7 and Phase 8 prerequisites that have no catalogued record type
   (`scoped-attempt-authorisation`, `scoped-test-attempt-authorisation`, and `phase-7-succeeded`).
+- A `tool-least-privilege` invariant. Agent capability grants are now enforced: `read` is mandatory,
+  only supported capabilities are accepted, every namespaced MCP grant must match a server and tool
+  declared in the same profile, and **AFF-A and AFF-B may never hold `execute` or `agent`**.
+- A restrictive `Content-Security-Policy` on every generated phase document and solution overview, so a
+  browser blocks remote loading, framing, form submission, and base-URI rewriting even if sanitisation
+  were bypassed. Phase HTML uses `script-src 'none'`.
+- A `.gitattributes` file pinning text files to LF in the working tree on every platform.
 
 ### Changed
 
 - The Contoso smoke harness now names the contract invariants that failed instead of reporting a
   generic validation message.
+- `latestApprovals` is defined once in `src/case/review-records.ts` instead of being reimplemented in
+  both the approval and hash-binding validators.
+
+### Fixed
+
+- Skill-location validation ran once per agent Markdown file. A single misplaced skill produced twelve
+  duplicate errors, and the check was skipped entirely when the agents directory held no Markdown.
+- Windows checkouts rewrote text files to CRLF while the documentation generator emits LF, so
+  `npm run docs:check` reported permanent false drift on the documented primary platform.
 
 ## [1.0.0] - 2026-09-04
 

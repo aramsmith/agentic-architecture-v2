@@ -41,6 +41,14 @@ const MAX_METADATA_BYTES = 524_288;
 const MAX_ASSET_BYTES = 5_242_880;
 const MAX_OUTPUT_BYTES = 10_485_760;
 
+const BASE_CONTENT_SECURITY_POLICY =
+  "default-src 'none'; img-src data:; style-src 'unsafe-inline'; connect-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'";
+
+function contentSecurityPolicyMeta(allowInlineScript: boolean): string {
+  const scriptSource = allowInlineScript ? "'unsafe-inline'" : "'none'";
+  return `<meta http-equiv="Content-Security-Policy" content="${BASE_CONTENT_SECURITY_POLICY}; script-src ${scriptSource}">`;
+}
+
 export interface RenderPhaseOptions {
   caseRoot: string;
   phaseId: string;
@@ -988,7 +996,7 @@ export async function renderPhaseHtml(
   );
   const title = rendered.toc[0]?.text ?? `AFF Phase ${options.phaseId}`;
   const html = `<!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="generator" content="aff-render"><meta name="aff-source-sha256" content="${bindings[0]?.sha256 ?? ""}"><title>${escapeHtml(title)}</title><style>${styles}</style></head>
+<html lang="en"><head><meta charset="utf-8">${contentSecurityPolicyMeta(false)}<meta name="viewport" content="width=device-width,initial-scale=1"><meta name="generator" content="aff-render"><meta name="aff-source-sha256" content="${bindings[0]?.sha256 ?? ""}"><title>${escapeHtml(title)}</title><style>${styles}</style></head>
 <body><a class="skip-link" href="#${mainContentId}">Skip to main content</a><header><p>AFF generated view</p><p class="document-title">${escapeHtml(title)}</p>${renderBindings(bindings)}</header>
 <main id="${mainContentId}"><article aria-label="${escapeHtml(title)}">${rendered.body}</article>${renderToc(rendered.toc)}</main>
 <footer>Generated from authoritative case sources. Markdown and structured records remain authoritative.</footer></body></html>
@@ -1406,7 +1414,7 @@ export async function renderSolutionOverview(
     panelId: ids.allocate(`generated-panel-${tab.id}`),
   }));
   const html = `<!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="generator" content="aff-render"><title>AFF solution overview</title><style>${styles}
+<html lang="en"><head><meta charset="utf-8">${contentSecurityPolicyMeta(true)}<meta name="viewport" content="width=device-width,initial-scale=1"><meta name="generator" content="aff-render"><title>AFF solution overview</title><style>${styles}
 .tabs [role="tablist"]{display:flex;flex-wrap:wrap;gap:.5rem;border-bottom:1px solid var(--border);padding-bottom:.5rem}.tabs [role="tab"]{border:1px solid var(--border);background:var(--soft);color:var(--ink);padding:.65rem .9rem;border-radius:.35rem;cursor:pointer}.tabs [role="tab"][aria-selected="true"]{background:var(--accent);color:#fff}.tabs [role="tabpanel"]{padding-top:1rem}.tabs [hidden]{display:none}main.overview{display:block}
 </style></head><body><a class="skip-link" href="#${mainContentId}">Skip to main content</a><header><p>AFF generated cumulative view</p><h1>Solution overview</h1><p>States come only from validated journal events. Missing evidence never implies success.</p></header><main class="overview" id="${mainContentId}"><div class="tabs"><div role="tablist" aria-label="Case phases and independent reviews">${allocatedTabs.map((tab, index) => tabButton(tab.tabId, tab.panelId, tab.label, index === 0)).join("")}</div>${allocatedTabs.map((tab, index) => tabPanel(tab.tabId, tab.panelId, tab.content, index === 0)).join("")}</div></main><footer>Generated from validated case records. Authoritative Markdown, catalogues, journal events, reviews, and approvals remain separate.</footer>${tabScript}</body></html>
 `;

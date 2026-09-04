@@ -37,6 +37,21 @@ Deployment, and Runtime Testing. Agent identifiers remain `AFF-0` through `AFF-8
 Use the reviewer display names **Rubber Duck Reviewer** (`AFF-A`) and
 **Security and Compliance Reviewer** (`AFF-B`). The identifiers remain stable for routing and records.
 
+## Tool policy
+
+Every agent declares an explicit `tools` array and is granted the least capability its phase needs.
+The framework validator enforces this:
+
+- `read` is mandatory; an agent must be able to consult this contract and the case evidence.
+- Only `read`, `search`, `edit`, `execute`, `web`, `agent`, and `todo` are supported capabilities.
+- Any namespaced `<mcp-server>/<tool>` grant must name an MCP server declared in the same profile and
+  a tool listed in that server's own `tools` array.
+- **AFF-A and AFF-B must never hold `execute` or `agent`.** Reviewers challenge the subject and record
+  findings; they never run commands and never drive other agents. Their `edit` capability exists only
+  to write their own review records.
+
+Widening a grant is a contract change: update the profile and run the complete validation sequence.
+
 ## Model policy
 
 All agents use GPT models. The approved default assignments are:
