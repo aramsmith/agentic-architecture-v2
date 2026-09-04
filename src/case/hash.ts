@@ -94,7 +94,7 @@ function canonicalJsonLines(content: string): Buffer {
   return Buffer.from(lines.length === 0 ? "" : `${lines.join("\n")}\n`, "utf8");
 }
 
-function canonicalText(content: Buffer): Buffer {
+export function canonicalTextBytes(content: Buffer): Buffer {
   const decoded = decodeUtf8(content);
   const withoutBom = decoded.startsWith("\uFEFF") ? decoded.slice(1) : decoded;
   return Buffer.from(withoutBom.replace(/\r\n?/gu, "\n"), "utf8");
@@ -112,12 +112,12 @@ export function hashArtifactBytes(
   } else if (extension === ".jsonl") {
     canonical = canonicalJsonLines(decodeUtf8(content));
   } else if (textExtensions.has(extension)) {
-    canonical = canonicalText(content);
+    canonical = canonicalTextBytes(content);
   } else {
     try {
       const decoded = decodeUtf8(content);
       if (!decoded.includes("\0")) {
-        canonical = canonicalText(content);
+        canonical = canonicalTextBytes(content);
       }
     } catch (error: unknown) {
       if (!(error instanceof TypeError)) {

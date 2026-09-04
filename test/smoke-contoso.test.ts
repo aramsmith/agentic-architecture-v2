@@ -10,7 +10,7 @@ import { fileURLToPath } from "node:url";
 
 import { afterEach, describe, expect, it } from "vitest";
 
-import { hashArtifact } from "../src/case/hash.js";
+import { canonicalTextBytes, hashArtifact } from "../src/case/hash.js";
 import { isRecord } from "../src/common/json.js";
 import {
   buildContosoSmokeWorkspace,
@@ -53,6 +53,26 @@ async function mutateJson(
 }
 
 describe("offline Contoso smoke journey", () => {
+  it("uses platform-independent text bytes in governed inventories", async () => {
+    const brief = await readFile(
+      path.join(
+        repositoryRoot,
+        "cases",
+        "contoso-permit-services",
+        "input",
+        "architecture-brief.md",
+      ),
+    );
+    const lf = canonicalTextBytes(brief);
+    const crlf = Buffer.from(
+      brief.toString("utf8").replace(/\r?\n/gu, "\r\n"),
+      "utf8",
+    );
+
+    expect(canonicalTextBytes(crlf)).toEqual(lf);
+    expect(canonicalTextBytes(crlf).byteLength).toBe(lf.byteLength);
+  });
+
   it("proves Phase 0 through the first Phase 1 question without live execution", async () => {
     const retainedOutput = await mkdtemp(path.join(tmpdir(), "aff-contoso-output-"));
     temporaryDirectories.push(retainedOutput);

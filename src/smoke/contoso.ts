@@ -11,7 +11,7 @@ import {
 import { tmpdir } from "node:os";
 import path from "node:path";
 
-import { hashArtifact } from "../case/hash.js";
+import { canonicalTextBytes, hashArtifact } from "../case/hash.js";
 import { validateCase } from "../case/index.js";
 import { bindingSet, type Binding } from "../case/review-records.js";
 import { isRecord } from "../common/json.js";
@@ -279,7 +279,7 @@ export async function buildContosoSmokeWorkspace(
   await mkdir(phaseRoot, { recursive: true });
   const lifecycle = await readLifecycle(workspaceRoot);
   const briefPath = path.join(inputRoot, "architecture-brief.md");
-  const briefDetails = await stat(briefPath);
+  const briefContent = await readFile(briefPath);
   const briefHash = await hashArtifact(briefPath);
 
   await writeJson(path.join(phaseRoot, "contoso-input-inventory.json"), {
@@ -294,7 +294,7 @@ export async function buildContosoSmokeWorkspace(
           path: "input/architecture-brief.md",
           sha256: briefHash,
           mediaType: "text/markdown",
-          sizeBytes: briefDetails.size,
+          sizeBytes: canonicalTextBytes(briefContent).byteLength,
         },
         readable: true,
         normalisationNotes: "Committed synthetic UTF-8 Markdown; no mutation required.",

@@ -42,6 +42,7 @@ Before opening a pull request, run the complete local sequence:
 
 ```powershell
 npm test
+npm run docs:check
 npm run typecheck
 npm run build
 npm run validate -- --framework-only
@@ -53,6 +54,7 @@ During development, these narrower commands can provide faster feedback:
 ```powershell
 npm run test:contracts
 npm run test:governance
+npm run test:adoption
 npm run test:renderer
 npm run test:smoke
 ```
@@ -101,7 +103,7 @@ surface in the same pull request:
 - the agent profile;
 - `.github/agents/AFF-LIFECYCLE.json`;
 - `.github/agents/AFF-OPERATING-CONTRACT.md`;
-- the README roster or model guidance;
+- generated README and website sections by running `npm run docs:generate`;
 - affected schemas, tests, and synthetic expectations.
 
 When changing a skill path, name, trigger, or contract reference, update all profiles, operating

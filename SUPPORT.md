@@ -15,6 +15,9 @@ for:
 
 Search existing issues before filing a new one.
 
+Version support and verified platforms are defined in
+[`docs/compatibility.md`](docs/compatibility.md).
+
 ## Boundaries
 
 Repository maintainers cannot provide:

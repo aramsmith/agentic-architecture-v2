@@ -35,6 +35,12 @@ jobs:
       - name: Run repository governance tests
         run: npm run test:governance
 
+      - name: Check generated adoption documentation
+        run: npm run docs:check
+
+      - name: Run adoption and release tests
+        run: npm run test:adoption
+
       - name: Run contract tests
         run: npm run test:contracts
 
