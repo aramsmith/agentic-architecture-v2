@@ -15,7 +15,8 @@ phase. Deployment and runtime testing are optional and always require separate h
 - [Troubleshooting](docs/troubleshooting.md)
 - [Release process and version policy](docs/release-process.md)
 - [Contracts](docs/aff-contracts.md) and [renderer trust boundary](docs/aff-renderer.md)
-- [Contributing](CONTRIBUTING.md), [support](SUPPORT.md), [security](SECURITY.md), and [licence](LICENSE)
+- [Contributors](CONTRIBUTORS.md), [contributing](CONTRIBUTING.md), [support](SUPPORT.md),
+  [security](SECURITY.md), and [licence](LICENSE)
 
 ## Ten-minute local evaluation
 
