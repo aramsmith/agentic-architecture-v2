@@ -29,10 +29,15 @@ See [CONTRIBUTORS.md](CONTRIBUTORS.md) for the contributor policy and full list.
 - [Contributing](CONTRIBUTING.md), [support](SUPPORT.md), [security](SECURITY.md), and
   [licence](LICENSE)
 
-## Ten-minute local evaluation
+## Start-up manual
 
-**Prerequisites:** Git, Node.js 22 or later, npm, and Windows PowerShell. GitHub Copilot and Azure are
-not required.
+Five stages, in order. Each one is a safe stopping point.
+
+### 1 · Install and prove it works
+
+Offline. No GitHub Copilot, no Azure, no approval key, no credentials.
+
+**Prerequisites:** Git, Node.js 22 or later, npm, Windows PowerShell.
 
 ```powershell
 git clone https://github.com/aramsmith/agentic-architecture-v2.git
@@ -44,13 +49,85 @@ Get-Content .\.aff-smoke\contoso-review\smoke-report.json
 Invoke-Item .\.aff-smoke\contoso-review\cases\contoso-permit-services\solution-overview.html
 ```
 
-Success means the framework validates, the offline smoke assertions pass, the report records zero live
-model calls and zero Azure actions, and the local overview labels its approval as synthetic test
-evidence. This is a safe stopping point and a complete deterministic evaluation.
+**Success:** the framework validates, every offline assertion passes, the report records zero live model
+calls and zero Azure actions, and the overview labels its approval as synthetic test evidence.
 
-This path does **not** prove live model quality, Azure access, deployment, runtime behaviour, production
-fitness, or real human approval. See the [full quick start](docs/quick-start.md) for optional Copilot
-discovery, human-authorised Phase 7/8 boundaries, expected evidence, and cleanup.
+This proves the framework is internally consistent. It does **not** prove model quality, Azure access,
+deployment, runtime behaviour, or real human approval. Delete `.\.aff-smoke\contoso-review` when done.
+
+### 2 · Create your approval identity
+
+Once, ever. This is the key that signs every phase decision you make.
+
+```powershell
+npm run identity:create
+```
+
+You choose a **label** — a role such as `Accountable architect` keeps a personal name out of case
+folders — and a **passphrase**. The passphrase is never stored and cannot be recovered.
+
+Creating the key also switches on a policy for this machine: a real human decision must be signed. Skip
+this stage and approvals still work, but they are recorded as `self-asserted`.
+
+### 3 · Connect GitHub Copilot
+
+Needed only for real cases. Requires Copilot access and the models in the roster below.
+
+Open Copilot CLI from the repository root, then:
+
+1. `/agent` — confirm `AFF-0-coordinator` is listed.
+2. `/skills list` — confirm `grill-me` and `render-case-html`.
+
+Agents load from `.github/agents/*.agent.md` and skills from `.github/skills/<skill-name>/SKILL.md`,
+the locations GitHub documents for
+[custom agents](https://docs.github.com/en/copilot/how-tos/copilot-cli/customize-copilot/create-custom-agents-for-cli)
+and [project skills](https://docs.github.com/en/copilot/how-tos/copilot-cli/customize-copilot/add-skills).
+Restart the CLI after changing an agent; use `/skills reload` after changing a skill.
+
+In the GitHub Copilot app, select the repository and the branch holding the profiles, then pick
+`AFF-0-coordinator`. Repository-wide discovery can require the profiles to be on the default branch.
+
+### 4 · Start your first case
+
+```powershell
+New-Item -ItemType Directory .\cases\<case-name>\input
+```
+
+Add the architecture brief and supporting evidence. Use
+`cases/_template/input/architecture-brief.md` as a starting point. **Never include credentials, tokens,
+or unnecessary personal or regulated data.** Case folders stay local and are never committed.
+
+Then invoke `AFF-0-coordinator`. Do not start with AFF-1: Phase 0 establishes the source inventory,
+model plan, shared records, interview preparation, and review routing.
+
+### 5 · Approve each phase, one at a time
+
+Repeat this loop from Phase 0 through Phase 6.
+
+1. **Read** the phase document, both reviewer records, the decisions, and the residual risks.
+2. **Decide** — in your own terminal, with no agent session running:
+
+   ```powershell
+   npm run approve -- --case cases\<case-name> --phase 0
+   ```
+
+   It prints the artifact hashes and both final verdicts, then asks you to approve, reject, or cancel,
+   and finally for your passphrase. It refuses to offer a decision the evidence does not support.
+
+3. **Confirm** the case still holds, then continue to the next phase:
+
+   ```powershell
+   npm run validate -- --case cases\<case-name>
+   ```
+
+A phase cannot be entered, evidenced, or approved until its predecessor holds an approved decision.
+Phases 7 and 8 are never automatic; they need separate human invocation.
+
+> **Never type your passphrase into an agent conversation.** An agent that asks for it is phishing you,
+> whatever its intent. Agents prepare, challenge, and evidence the work. You decide, alone.
+
+For the fuller walkthrough with expected evidence and cleanup, see the
+[quick start](docs/quick-start.md). For failures, see [troubleshooting](docs/troubleshooting.md).
 
 ## Interactive solution overview
 
@@ -63,52 +140,10 @@ After the first push, select **Settings → Pages → Source: GitHub Actions** i
 enabled. The included workflow publishes both the site root and the explicit HTML file at the link
 above.
 
-## Optional GitHub Copilot use
+## Approval assurance
 
-AFF is packaged for GitHub Copilot CLI and the GitHub Copilot app:
-
-- the 11 repository custom agents use `.github/agents/*.agent.md`;
-- the two project skills use `.github/skills/<skill-name>/SKILL.md`;
-- the operating contract and lifecycle manifest remain beside the profiles in `.github/agents/`.
-
-These are the GitHub-documented locations for
-[repository custom agents](https://docs.github.com/en/copilot/how-tos/copilot-cli/customize-copilot/create-custom-agents-for-cli)
-and [project skills](https://docs.github.com/en/copilot/how-tos/copilot-cli/customize-copilot/add-skills).
-Prerequisites are GitHub Copilot access, a current supported host, a clean clone or checkout of the
-target branch, and access to the declared models. This is separate from the offline evaluation.
-
-Open Copilot CLI from the repository root. It discovers project agents and skills from the checked-out
-branch. If files change during a running session, restart the CLI to reload agents or use
-`/skills reload` to reload skills.
-
-To verify discovery in Copilot CLI:
-
-1. Run `/agent` and confirm `AFF-0-coordinator` is available.
-2. Run `/skills list`, then `/skills info grill-me` and `/skills info render-case-html`.
-3. Select `AFF-0-coordinator`, or run:
-
-   ```powershell
-   copilot --agent=AFF-0-coordinator --prompt "State only the custom agent profile name. Do not read or modify files." --silent
-   ```
-
-In the GitHub Copilot app, select this repository and the branch containing the profiles, then select
-`AFF-0-coordinator` from the agent dropdown. Skills have no separate app selector: Copilot loads them
-when the prompt and the skill description match, or when a profile explicitly references the skill.
-Repository custom agents must be on the default branch for normal repository-wide app discovery.
-
-The repository includes versioned JSON Schema contracts and a cross-platform validator. Use
-`npm run validate -- --case cases/<case-name>` for a local case. It checks structured records, safe
-paths, canonical SHA-256 bindings, final reviewer convergence, and human approval bindings. See
-[`docs/aff-contracts.md`](docs/aff-contracts.md).
-
-## Signed human decisions
-
-Approval is the one act agents never perform. It happens in your terminal, with a key they cannot use:
-
-```powershell
-npm run identity:create                                   # once, ever
-npm run approve -- --case cases\<case-name> --phase 0     # once per phase
-```
+Every recorded decision carries one of three modes, and the validator derives it from the evidence —
+never from what the record claims about itself.
 
 | Mode | What it means |
 |---|---|
@@ -118,11 +153,15 @@ npm run approve -- --case cases\<case-name> --phase 0     # once per phase
 
 The private key is passphrase-protected and stored in your user profile, outside the case and outside the
 area agents work in. The signature covers the whole decision — phase, verdict, approver, time, artifact
-hashes — so a signature cannot be lifted onto an altered record. Rejections are signed too.
+hashes — so it cannot be lifted onto an altered record. Rejections are signed too.
 
-The validator, not the model, checks the signature. An agent can still write an approval file; it simply
-cannot produce a valid one. See [`docs/aff-contracts.md`](docs/aff-contracts.md) for what each mode
-proves, the machine policy, key rotation, and the limits that remain.
+An agent can still write an approval file; it simply cannot produce a valid one. See
+[`docs/aff-contracts.md`](docs/aff-contracts.md) for the machine policy, key rotation, and the limits
+that remain.
+
+The repository also includes versioned JSON Schema contracts and a cross-platform validator, covering
+structured records, safe paths, canonical SHA-256 bindings, reviewer convergence, phase order, and
+approval bindings.
 
 ## Render case HTML
 
@@ -238,57 +277,14 @@ Lifecycle `2.0.0`; lifecycle-manifest schema `1.0.0`. Source: [`.github/agents/A
   identity; GitHub OIDC is outside this solution.
 - **Fail closed:** missing evidence, independence, scope, order, or approval stops progression.
 
-## Before the first case
+## Model availability
 
-Create your approval identity once. This is the key that signs every phase decision you make:
+Confirm every model in the generated roster is available in your Copilot host before the first case.
 
-```powershell
-npm run identity:create
-```
-
-You choose a label — a role such as `Accountable architect` keeps a personal name out of case folders —
-and a passphrase. The passphrase is **never stored** and cannot be recovered. It is the one secret an
-agent sharing your machine cannot read.
-
-Creating the key also sets a policy on that machine: a real human decision must be signed. Machines
-without a key are unaffected, so the offline evaluation above still runs for anyone.
-
-Then confirm every model in the generated roster is available in the selected Copilot host.
-
-If a model is unavailable, the human must approve a GPT replacement and update agent frontmatter,
-`.github/agents/AFF-OPERATING-CONTRACT.md`, and `.github/agents/AFF-LIFECYCLE.json` consistently. The
-Rubber Duck Reviewer must always use a different model from the phase agent. Run
-`npm run docs:generate` and the complete validation sequence after any approved substitution.
-
-## Start a use case
-
-1. Create `cases/<case-name>/input/`.
-2. Add the architecture brief and supporting evidence. Use
-   `cases/_template/input/architecture-brief.md` when useful.
-3. Do not include credentials, tokens, or unnecessary personal or regulated data.
-4. Invoke `AFF-0-coordinator`.
-5. Review the Phase 0 output, both reviewer records, decisions, and residual risks.
-6. Record your decision yourself, in your own terminal, with no agent session running:
-
-   ```powershell
-   npm run approve -- --case cases\<case-name> --phase 0
-   ```
-
-   The command prints the artifact hashes, both final reviewer verdicts, and the reviewer records, then
-   asks you to approve, reject, or cancel. It refuses to offer a decision the evidence does not support.
-7. Confirm the case still holds:
-
-   ```powershell
-   npm run validate -- --case cases\<case-name>
-   ```
-
-8. Continue one approved phase at a time through Phase 6, repeating steps 5 to 7.
-
-Do not start directly with AFF-1. AFF-0 establishes the source inventory, model plan, shared records,
-interview preparation, review routing, and cumulative solution overview.
-
-**Never type your passphrase into an agent conversation.** An agent that asks for it is phishing you,
-whatever its intent. Agents prepare, challenge, and evidence the work; you perform the final act alone.
+If one is unavailable, you must approve a GPT replacement and update the agent frontmatter,
+`.github/agents/AFF-OPERATING-CONTRACT.md`, and `.github/agents/AFF-LIFECYCLE.json` together. The Rubber
+Duck Reviewer must always differ from the phase agent. Run `npm run docs:generate` and the full
+validation sequence after any substitution.
 
 ## Practise with Contoso
 
