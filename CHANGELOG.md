@@ -5,6 +5,8 @@ All notable user-visible changes are recorded here. Versions follow the separate
 
 ## Unreleased
 
+## 1.0.0 - 2026-09-04
+
 ### Added
 
 - A ten-minute, offline architect evaluation path with explicit Copilot and Azure boundaries.
@@ -17,8 +19,3 @@ All notable user-visible changes are recorded here. Versions follow the separate
 
 - Repository validation now checks generated adoption content and related accessibility/security
   invariants.
-
-### Release status
-
-No GitHub release or tag has been created. Release requires the complete stacked work to be merged to
-protected `main` and all checks in the release process to pass on that commit.
