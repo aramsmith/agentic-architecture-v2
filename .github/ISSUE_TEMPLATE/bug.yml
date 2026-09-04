@@ -1,0 +1,66 @@
+name: Bug report
+description: Report a reproducible validator, renderer, smoke, packaging, or framework defect.
+title: "[Bug]: "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Do not include secrets, real customer data, private architecture evidence, or unredacted logs.
+        If this may be a security vulnerability, stop and use the private
+        [security advisory form](https://github.com/aramsmith/agentic-architecture-v2/security/advisories/new).
+  - type: input
+    id: version
+    attributes:
+      label: Affected version
+      description: Provide the commit SHA, tag, or branch and the relevant schema version.
+      placeholder: "Commit abc1234 on main; AFF contract 1.0.0"
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      description: Provide your operating system and Node.js/npm versions.
+      placeholder: "Windows 11; Node.js 22.x; npm 10.x"
+    validations:
+      required: true
+  - type: textarea
+    id: commands
+    attributes:
+      label: Commands and minimal reproduction
+      description: List exact commands and a minimal synthetic reproduction.
+      render: shell
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behaviour
+      description: What should have happened?
+    validations:
+      required: true
+  - type: textarea
+    id: observed
+    attributes:
+      label: Observed behaviour
+      description: What happened instead? Include only sanitised output.
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Safe evidence
+      description: Add sanitised logs, screenshots, test names, or file paths that help reproduce the issue.
+  - type: checkboxes
+    id: safety
+    attributes:
+      label: Safety checks
+      options:
+        - label: I removed secrets, customer data, personal data, subscription details, and private URLs.
+          required: true
+        - label: This is not a security vulnerability requiring private disclosure.
+          required: true
+        - label: I searched existing issues for the same problem.
+          required: true

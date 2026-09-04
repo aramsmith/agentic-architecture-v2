@@ -1,0 +1,145 @@
+{
+  "schemaVersion": "1.0.0",
+  "recordType": "lifecycle-manifest",
+  "version": "2.0.0",
+  "contract": ".github/agents/AFF-OPERATING-CONTRACT.md",
+  "standardRoute": ["0", "1", "2", "3", "4", "5", "6"],
+  "reviewOrder": [
+    "phase-agent",
+    "AFF-A",
+    "phase-agent-remediation",
+    "AFF-B",
+    "phase-agent-remediation",
+    "AFF-A-and-AFF-B-same-hash-convergence",
+    "human-approval"
+  ],
+  "phases": [
+    {
+      "id": "0",
+      "name": "coordination",
+      "displayName": "Phase 0 — Coordinate",
+      "owner": "AFF-0-coordinator",
+      "model": "gpt-5.6-sol",
+      "folder": "0-coordination",
+      "next": "1",
+      "humanInvocableOnly": false
+    },
+    {
+      "id": "1",
+      "name": "requirements",
+      "displayName": "Phase 1 — Requirements",
+      "owner": "AFF-1-requirements",
+      "model": "gpt-5.6-sol",
+      "folder": "1-requirements",
+      "next": "2",
+      "humanInvocableOnly": false
+    },
+    {
+      "id": "2",
+      "name": "togaf-architecture",
+      "displayName": "Phase 2 — TOGAF Architecture",
+      "owner": "AFF-2-togafarchitecture",
+      "model": "gpt-5.6-sol",
+      "folder": "2-togaf-architecture",
+      "next": "3",
+      "humanInvocableOnly": false
+    },
+    {
+      "id": "3",
+      "name": "azure-design",
+      "displayName": "Phase 3 — Azure Design",
+      "owner": "AFF-3-design",
+      "model": "gpt-5.6-sol",
+      "folder": "3-azure-design",
+      "next": "4",
+      "humanInvocableOnly": false
+    },
+    {
+      "id": "4",
+      "name": "implementation-plan",
+      "displayName": "Phase 4 — Implementation Plan",
+      "owner": "AFF-4-implementation-plan",
+      "model": "gpt-5.6-sol",
+      "folder": "4-implementation-plan",
+      "next": "5",
+      "humanInvocableOnly": false
+    },
+    {
+      "id": "5",
+      "name": "coding",
+      "displayName": "Phase 5 — Coding",
+      "owner": "AFF-5-coding",
+      "model": "gpt-5.3-codex",
+      "folder": "5-coding",
+      "next": "6",
+      "humanInvocableOnly": false
+    },
+    {
+      "id": "6",
+      "name": "presentation",
+      "displayName": "Phase 6 — C-level Presentation",
+      "owner": "AFF-6-presentation",
+      "model": "gpt-5.6-sol",
+      "folder": "6-presentation",
+      "next": null,
+      "humanInvocableOnly": false
+    },
+    {
+      "id": "7",
+      "name": "deployment",
+      "displayName": "Phase 7 — Deployment",
+      "owner": "AFF-7-deployer",
+      "model": "gpt-5.6-sol",
+      "folder": "7-deployment",
+      "next": "8",
+      "humanInvocableOnly": true,
+      "requires": ["approved-phase-6", "scoped-attempt-authorisation"]
+    },
+    {
+      "id": "8",
+      "name": "runtime-testing",
+      "displayName": "Phase 8 — Runtime Testing",
+      "owner": "AFF-8-testing",
+      "model": "gpt-5.3-codex",
+      "folder": "8-testing",
+      "next": null,
+      "humanInvocableOnly": true,
+      "requires": [
+        "phase-7-succeeded",
+        "approved-phase-7",
+        "scoped-test-attempt-authorisation"
+      ]
+    }
+  ],
+  "reviewers": [
+    {
+      "id": "AFF-A",
+      "displayName": "Rubber Duck Reviewer",
+      "owner": "AFF-A-rubber-duck",
+      "model": "gpt-5.4",
+      "mustDifferFromPhaseOwner": true
+    },
+    {
+      "id": "AFF-B",
+      "displayName": "Security and Compliance Reviewer",
+      "owner": "AFF-B-security-compliance",
+      "model": "gpt-5.6-sol",
+      "mustDifferFromPhaseOwner": false
+    }
+  ],
+  "artifactRules": {
+    "phaseMarkdown": "<phase-folder>/<artifactPrefix>-<artifact>.md",
+    "phaseHtml": "<phase-folder>/<artifactPrefix>-<artifact>.html",
+    "solutionOverview": "solution-overview.html",
+    "phaseHtmlSelfContained": true,
+    "humanReadableOutputsCompact": true
+  },
+  "executionRules": {
+    "iacDefault": "Bicep",
+    "githubOidcAllowed": false,
+    "storedCredentialsAllowed": false,
+    "phase5DeploymentAllowed": false,
+    "databasePublicAccessAllowed": false,
+    "environmentCodeForksAllowed": false
+  }
+}

@@ -7,6 +7,39 @@ implementation plan, deployable code, and a C-level presentation.
 The human architect remains accountable for every material decision and is the final approver of every
 phase. Deployment and runtime testing are optional and always require separate human invocation.
 
+## Start here
+
+- **[Ten-minute architect quick start](docs/quick-start.md)** — clone to verified synthetic evidence.
+- [Representative Contoso Phase 0 evidence](docs/examples/contoso-phase-0-evidence.md)
+- [Compatibility and support matrix](docs/compatibility.md)
+- [Troubleshooting](docs/troubleshooting.md)
+- [Release process and version policy](docs/release-process.md)
+- [Contracts](docs/aff-contracts.md) and [renderer trust boundary](docs/aff-renderer.md)
+- [Contributing](CONTRIBUTING.md), [support](SUPPORT.md), [security](SECURITY.md), and [licence](LICENSE)
+
+## Ten-minute local evaluation
+
+**Prerequisites:** Git, Node.js 22 or later, npm, and Windows PowerShell. GitHub Copilot and Azure are
+not required.
+
+```powershell
+git clone https://github.com/aramsmith/agentic-architecture-v2.git
+Set-Location .\agentic-architecture-v2
+npm ci --no-audit --no-fund
+npm run validate -- --framework-only
+npm run smoke:contoso -- --keep-output .\.aff-smoke\contoso-review
+Get-Content .\.aff-smoke\contoso-review\smoke-report.json
+Invoke-Item .\.aff-smoke\contoso-review\cases\contoso-permit-services\solution-overview.html
+```
+
+Success means the framework validates, the offline smoke assertions pass, the report records zero live
+model calls and zero Azure actions, and the local overview labels its approval as synthetic test
+evidence. This is a safe stopping point and a complete deterministic evaluation.
+
+This path does **not** prove live model quality, Azure access, deployment, runtime behaviour, production
+fitness, or real human approval. See the [full quick start](docs/quick-start.md) for optional Copilot
+discovery, human-authorised Phase 7/8 boundaries, expected evidence, and cleanup.
+
 ## Interactive solution overview
 
 - **[Open the interactive HTML solution overview](https://aramsmith.github.io/agentic-architecture-v2/agentic-architecture-v2.html)**
@@ -17,6 +50,60 @@ roster, assurance sequence, and short operating manual.
 After the first push, select **Settings → Pages → Source: GitHub Actions** if Pages is not already
 enabled. The included workflow publishes both the site root and the explicit HTML file at the link
 above.
+
+## Optional GitHub Copilot use
+
+AFF is packaged for GitHub Copilot CLI and the GitHub Copilot app:
+
+- the 11 repository custom agents use `.github/agents/*.agent.md`;
+- the two project skills use `.github/skills/<skill-name>/SKILL.md`;
+- the operating contract and lifecycle manifest remain beside the profiles in `.github/agents/`.
+
+These are the GitHub-documented locations for
+[repository custom agents](https://docs.github.com/en/copilot/how-tos/copilot-cli/customize-copilot/create-custom-agents-for-cli)
+and [project skills](https://docs.github.com/en/copilot/how-tos/copilot-cli/customize-copilot/add-skills).
+Prerequisites are GitHub Copilot access, a current supported host, a clean clone or checkout of the
+target branch, and access to the declared models. This is separate from the offline evaluation.
+
+Open Copilot CLI from the repository root. It discovers project agents and skills from the checked-out
+branch. If files change during a running session, restart the CLI to reload agents or use
+`/skills reload` to reload skills.
+
+To verify discovery in Copilot CLI:
+
+1. Run `/agent` and confirm `AFF-0-coordinator` is available.
+2. Run `/skills list`, then `/skills info grill-me` and `/skills info render-case-html`.
+3. Select `AFF-0-coordinator`, or run:
+
+   ```powershell
+   copilot --agent=AFF-0-coordinator --prompt "State only the custom agent profile name. Do not read or modify files." --silent
+   ```
+
+In the GitHub Copilot app, select this repository and the branch containing the profiles, then select
+`AFF-0-coordinator` from the agent dropdown. Skills have no separate app selector: Copilot loads them
+when the prompt and the skill description match, or when a profile explicitly references the skill.
+Repository custom agents must be on the default branch for normal repository-wide app discovery.
+
+The repository includes versioned JSON Schema contracts and a cross-platform validator. Use
+`npm run validate -- --case cases/<case-name>` for a local case. It checks structured records, safe
+paths, canonical SHA-256 bindings, final reviewer convergence, and human approval bindings. See
+[`docs/aff-contracts.md`](docs/aff-contracts.md).
+
+## Render case HTML
+
+Use the deterministic renderer instead of model-authored HTML:
+
+```powershell
+npm run render -- phase --case cases\<case-name> --phase 0 `
+  --source 0-coordination\<artifactPrefix>-coordination.md `
+  --metadata 0-coordination\<artifactPrefix>-input-inventory.json 0-coordination\<artifactPrefix>-model-plan.json `
+  --output 0-coordination\<artifactPrefix>-coordination.html
+
+npm run render -- overview --case cases\<case-name>
+```
+
+See [`docs/aff-renderer.md`](docs/aff-renderer.md) for inputs, trust boundaries, limits, Mermaid behavior,
+accessibility, and error remediation.
 
 ## Architecture ring
 
@@ -74,19 +161,25 @@ verdicts cover the same unchanged artifact hashes.
 
 ## Agent roster
 
-| ID | Display name | Model | Responsibility |
-|---|---|---|---|
-| AFF-0 | Phase 0 — Coordinate | `gpt-5.6-sol` | Normalise inputs, initialise state and models, prepare the interview, route reviews and gates |
-| AFF-1 | Phase 1 — Requirements | `gpt-5.6-sol` | Conduct the human interview and create the governed requirements baseline |
-| AFF-2 | Phase 2 — TOGAF Architecture | `gpt-5.6-sol` | Create the vendor-neutral Business, Data, Application, and Technology Architecture |
-| AFF-3 | Phase 3 — Azure Design | `gpt-5.6-sol` | Map the logical architecture to landing zones, CAF, WAF, Azure services, and controls |
-| AFF-4 | Phase 4 — Implementation Plan | `gpt-5.6-sol` | Produce the dependency-led Bicep plan, validation, rollback, and deployment procedure |
-| AFF-5 | Phase 5 — Coding | `gpt-5.3-codex` | Build and locally validate the complete IaC/application package without deploying |
-| AFF-6 | Phase 6 — C-level Presentation | `gpt-5.6-sol` | Create the evidence-backed DECKIO board narrative and PDF |
-| AFF-7 | Phase 7 — Deployment | `gpt-5.6-sol` | Optionally execute one explicitly authorised Azure deployment attempt |
-| AFF-8 | Phase 8 — Runtime Testing | `gpt-5.3-codex` | Optionally execute one authorised test plan against the approved deployment |
-| AFF-A | Rubber Duck Reviewer | `gpt-5.4` | Challenge correctness, logic, traceability, and unsupported claims with a different GPT model |
-| AFF-B | Security and Compliance Reviewer | `gpt-5.6-sol` | Derive case-specific obligations and review security, privacy, sovereignty, and compliance |
+Do not edit this table directly. Run `npm run docs:generate` after changing the lifecycle manifest.
+
+<!-- BEGIN GENERATED: AFF-LIFECYCLE-ROSTER -->
+Lifecycle `2.0.0`; lifecycle-manifest schema `1.0.0`. Source: [`.github/agents/AFF-LIFECYCLE.json`](.github/agents/AFF-LIFECYCLE.json).
+
+| ID | Agent profile | Display name | Model | Route or gate |
+|---|---|---|---|---|
+| AFF-0 | `AFF-0-coordinator` | Phase 0 — Coordinate | `gpt-5.6-sol` | Standard route to Phase 1 |
+| AFF-1 | `AFF-1-requirements` | Phase 1 — Requirements | `gpt-5.6-sol` | Standard route to Phase 2 |
+| AFF-2 | `AFF-2-togafarchitecture` | Phase 2 — TOGAF Architecture | `gpt-5.6-sol` | Standard route to Phase 3 |
+| AFF-3 | `AFF-3-design` | Phase 3 — Azure Design | `gpt-5.6-sol` | Standard route to Phase 4 |
+| AFF-4 | `AFF-4-implementation-plan` | Phase 4 — Implementation Plan | `gpt-5.6-sol` | Standard route to Phase 5 |
+| AFF-5 | `AFF-5-coding` | Phase 5 — Coding | `gpt-5.3-codex` | Standard route to Phase 6 |
+| AFF-6 | `AFF-6-presentation` | Phase 6 — C-level Presentation | `gpt-5.6-sol` | Standard route end |
+| AFF-7 | `AFF-7-deployer` | Phase 7 — Deployment | `gpt-5.6-sol` | Optional; human invocation only. Requires: approved-phase-6, scoped-attempt-authorisation |
+| AFF-8 | `AFF-8-testing` | Phase 8 — Runtime Testing | `gpt-5.3-codex` | Optional; human invocation only. Requires: phase-7-succeeded, approved-phase-7, scoped-test-attempt-authorisation |
+| AFF-A | `AFF-A-rubber-duck` | Rubber Duck Reviewer | `gpt-5.4` | Independent model required |
+| AFF-B | `AFF-B-security-compliance` | Security and Compliance Reviewer | `gpt-5.6-sol` | Independent assurance role |
+<!-- END GENERATED: AFF-LIFECYCLE-ROSTER -->
 
 ## Core principles
 
@@ -103,15 +196,12 @@ verdicts cover the same unchanged artifact hashes.
 
 ## Before the first case
 
-Confirm these GPT models are available:
-
-- `gpt-5.6-sol` for architecture, coordination, presentation, deployment, and AFF-B;
-- `gpt-5.3-codex` for coding and runtime testing;
-- `gpt-5.4` reserved for the Rubber Duck Reviewer.
+Confirm every model in the generated roster is available in the selected Copilot host.
 
 If a model is unavailable, the human must approve a GPT replacement and update agent frontmatter,
-`agents/AFF-OPERATING-CONTRACT.md`, and `agents/AFF-LIFECYCLE.json` consistently. The Rubber Duck
-Reviewer must always use a different model from the phase agent.
+`.github/agents/AFF-OPERATING-CONTRACT.md`, and `.github/agents/AFF-LIFECYCLE.json` consistently. The
+Rubber Duck Reviewer must always use a different model from the phase agent. Run
+`npm run docs:generate` and the complete validation sequence after any approved substitution.
 
 ## Start a use case
 
@@ -135,7 +225,7 @@ credential, or personal data.
 
 Use `cases/contoso-permit-services/input/` to exercise Phase 0 and the opening of Phase 1 without Azure
 access, deployment, or live testing. Its JSON expectations define the safety and routing conditions
-that must hold.
+that must hold. `npm run smoke:contoso` executes every expectation as an assertion.
 
 ## Outputs
 
@@ -150,21 +240,43 @@ deployment.
 ## Repository structure
 
 ```text
-agents/
-  AFF-OPERATING-CONTRACT.md
-  AFF-LIFECYCLE.json
-  AFF-0...AFF-8 agent profiles
-  AFF-A and AFF-B reviewer profiles
-skills/
-  grill-me/
-  render-case-html/
+.github/
+  agents/
+    AFF-OPERATING-CONTRACT.md
+    AFF-LIFECYCLE.json
+    AFF-0...AFF-8 agent profiles
+    AFF-A and AFF-B reviewer profiles
+  skills/
+    grill-me/
+    render-case-html/
 cases/
   _template/
   contoso-permit-services/
+docs/
+  quick-start.md
+  compatibility.md
+  troubleshooting.md
+  release-process.md
+  migrations/
+  examples/
+  aff-contracts.md
+  aff-renderer.md
+src/
+  docs/
+  render/
+  smoke/
+test/
 agentic-architecture-v2.html
+CHANGELOG.md
 ```
 
 ## Case-data safety
 
 Real case folders are intentionally ignored by Git. Only the case template and synthetic Contoso case
 are allowed into the repository. Keep real customer case data local and never commit or push it.
+
+## Licence
+
+Except where a component includes its own licence file, this repository is licensed under the
+[Apache License 2.0](LICENSE). Component-level licences remain applicable to their components;
+`.github/skills/grill-me/LICENSE` applies to the `grill-me` skill.

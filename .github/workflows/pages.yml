@@ -5,6 +5,9 @@ on:
     branches: [main]
     paths:
       - agentic-architecture-v2.html
+      - docs/compatibility.md
+      - docs/troubleshooting.md
+      - docs/release-process.md
       - .github/workflows/pages.yml
   workflow_dispatch:
 
@@ -15,20 +18,22 @@ permissions:
 
 concurrency:
   group: pages
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   publish:
+    name: Publish Pages
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
       - name: Configure Pages
-        uses: actions/configure-pages@v5
+        uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6.0.0
 
       - name: Prepare static site
         shell: bash
@@ -36,12 +41,16 @@ jobs:
           mkdir -p _site
           cp agentic-architecture-v2.html _site/index.html
           cp agentic-architecture-v2.html _site/agentic-architecture-v2.html
+          mkdir -p _site/docs
+          cp docs/compatibility.md _site/docs/compatibility.md
+          cp docs/troubleshooting.md _site/docs/troubleshooting.md
+          cp docs/release-process.md _site/docs/release-process.md
 
       - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
         with:
           path: _site
 
       - name: Deploy Pages
         id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1

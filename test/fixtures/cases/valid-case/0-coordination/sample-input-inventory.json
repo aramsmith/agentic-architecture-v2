@@ -1,0 +1,20 @@
+{
+  "schemaVersion": "1.0.0",
+  "recordType": "input-inventory",
+  "caseName": "valid-case",
+  "artifactPrefix": "sample",
+  "sources": [
+    {
+      "sourcePath": "input/brief.md",
+      "governedArtifact": {
+        "path": "input/brief.md",
+        "sha256": "50904a5d764a311e74bc26da313d21c2fc4e060e772215d6d419c14c1a8cfd49",
+        "mediaType": "text/markdown",
+        "sizeBytes": 17
+      },
+      "readable": true,
+      "normalisationNotes": "Already Markdown",
+      "sensitivity": "Synthetic"
+    }
+  ]
+}

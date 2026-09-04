@@ -16,4 +16,5 @@ cases/*
 node_modules/
 dist/
 _site/
+.aff-smoke/
 *.log

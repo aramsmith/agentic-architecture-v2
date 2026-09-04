@@ -1,0 +1,63 @@
+name: Documentation or usability problem
+description: Report unclear, incorrect, missing, inaccessible, or hard-to-follow guidance.
+title: "[Docs]: "
+labels:
+  - documentation
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use synthetic examples and sanitised output only. Do not include customer data or secrets.
+        Security issues belong in the private
+        [security advisory form](https://github.com/aramsmith/agentic-architecture-v2/security/advisories/new).
+  - type: input
+    id: location
+    attributes:
+      label: Documentation location
+      description: Link the page or provide the repository path and heading.
+      placeholder: "README.md, Plan 1 quick start"
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: Provide the commit SHA, tag, or branch you read.
+      placeholder: "Commit abc1234 on main"
+    validations:
+      required: true
+  - type: textarea
+    id: task
+    attributes:
+      label: What were you trying to do?
+      description: Include the relevant command or workflow step.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected guidance
+      description: What did you expect the documentation or interface to explain?
+    validations:
+      required: true
+  - type: textarea
+    id: observed
+    attributes:
+      label: Observed problem
+      description: What was unclear, incorrect, missing, inaccessible, or difficult to use?
+    validations:
+      required: true
+  - type: textarea
+    id: suggestion
+    attributes:
+      label: Suggested improvement
+      description: Suggest clearer wording, navigation, example, or interaction if you have one.
+  - type: checkboxes
+    id: safety
+    attributes:
+      label: Safety checks
+      options:
+        - label: I removed secrets, customer data, personal data, subscription details, and private URLs.
+          required: true
+        - label: This is not a security vulnerability requiring private disclosure.
+          required: true

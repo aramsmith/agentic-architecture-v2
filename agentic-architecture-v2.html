@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; img-src 'self' data:; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
   <title>Agentic Architecture v2</title>
   <script>
     (() => {
@@ -312,6 +313,26 @@
     }
     .callout strong { color: var(--cp-accent); }
     .callout p { margin: 6px 0 0; color: var(--cp-text-soft); }
+    .guide-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+    }
+    .guide-card { padding: 22px; }
+    .guide-card p, .guide-card li { color: var(--cp-text-muted); }
+    .guide-card ul { padding-left: 22px; }
+    pre {
+      margin: 14px 0;
+      padding: 16px;
+      overflow-x: auto;
+      border: 1px solid var(--cp-border);
+      border-radius: 0.625rem;
+      background: var(--cp-bg-elevated);
+      color: var(--cp-text);
+      font: 0.86rem/1.55 Consolas, "Courier New", Courier, monospace;
+    }
+    code { font-family: Consolas, "Courier New", Courier, monospace; }
+    .generated-route { color: var(--cp-text-muted); margin: -12px 0 24px; }
     footer { padding: 44px 0; border-top: 1px solid var(--cp-border); color: var(--cp-text-muted); }
     .footer-inner { display: flex; justify-content: space-between; gap: 20px; flex-wrap: wrap; }
     .phase-node { transition: opacity 160ms ease, transform 160ms ease; transform-origin: center; transform-box: fill-box; }
@@ -358,7 +379,7 @@
     @keyframes orbit { to { stroke-dashoffset: -120; } }
 
     @media (max-width: 900px) {
-      .metrics, .roster { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .metrics, .roster, .guide-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       .architecture-grid, .manual { grid-template-columns: 1fr; }
       .manual-aside { position: static; }
       .gate { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -369,7 +390,7 @@
       .shell { width: min(100% - 20px, 1180px); }
       .nav a { display: none; }
       .hero { padding-top: 52px; }
-      .metrics, .roster, .gate { grid-template-columns: 1fr; }
+      .metrics, .roster, .gate, .guide-grid { grid-template-columns: 1fr; }
       .step { grid-template-columns: 44px minmax(0, 1fr); }
     }
     @media print {
@@ -405,9 +426,10 @@
         <span>Agentic Architecture v2</span>
       </div>
       <nav class="nav" aria-label="Page navigation">
+        <a href="#evaluate">Evaluate</a>
         <a href="#architecture">Architecture</a>
         <a href="#roster">Roster</a>
-        <a href="#start">Start</a>
+        <a href="#operate">Operate</a>
         <button class="theme-button" id="themeToggle" type="button" aria-label="Toggle colour theme">Theme</button>
       </nav>
     </div>
@@ -424,7 +446,7 @@
           every gate stays with the human.
         </p>
         <div class="hero-actions">
-          <a class="button" href="#start">Start a use case</a>
+          <a class="button" href="#evaluate">Evaluate in ten minutes</a>
           <a class="button secondary" href="#architecture">Explore the operating model</a>
         </div>
         <div class="metrics" aria-label="Solution highlights">
@@ -432,6 +454,38 @@
           <div class="metric"><strong>2</strong><span>independent reviewers</span></div>
           <div class="metric"><strong>1</strong><span>human approval per phase</span></div>
           <div class="metric"><strong>0</strong><span>automatic deployments</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="evaluate">
+      <div class="shell">
+        <div class="section-head">
+          <span class="eyebrow">Deterministic evaluation</span>
+          <h2>Clone, validate, and inspect a synthetic result.</h2>
+          <p>No Copilot account, model call, Azure subscription, credential, deployment, or real approval is needed.</p>
+        </div>
+        <div class="guide-grid">
+          <article class="panel guide-card">
+            <h3>1. Prerequisites</h3>
+            <p>Use Git, Node.js 22 or later, npm, and Windows PowerShell. Network access is needed only for cloning and installing dependencies.</p>
+          </article>
+          <article class="panel guide-card">
+            <h3>2. Run the evidence path</h3>
+            <pre><code>npm ci --no-audit --no-fund
+npm run validate -- --framework-only
+npm run smoke:contoso -- --keep-output .\.aff-smoke\contoso-review</code></pre>
+          </article>
+          <article class="panel guide-card">
+            <h3>3. Inspect success</h3>
+            <pre><code>Get-Content .\.aff-smoke\contoso-review\smoke-report.json
+Invoke-Item .\.aff-smoke\contoso-review\cases\contoso-permit-services\solution-overview.html</code></pre>
+            <p>Expect zero live model calls, zero Azure actions, an explicitly synthetic approval, and routing readiness for AFF-1.</p>
+          </article>
+        </div>
+        <div class="callout">
+          <strong>Safe stop point</strong>
+          <p>This is a complete local evaluation. It proves repository contracts and deterministic evidence, not live model quality, Azure readiness, deployment, runtime behaviour, or production fitness.</p>
         </div>
       </div>
     </section>
@@ -582,56 +636,70 @@
           <button class="track-button" type="button" data-filter="optional">Optional route</button>
           <button class="track-button" type="button" data-filter="review">Reviewers</button>
         </div>
+<!-- BEGIN GENERATED: AFF-LIFECYCLE-ROSTER -->
+        <p class="generated-route"><strong>Manifest route:</strong> Phase 0 → Phase 1 → Phase 2 → Phase 3 → Phase 4 → Phase 5 → Phase 6. Phases 7 and 8 remain outside the standard route and require explicit human invocation.</p>
         <div class="roster">
           <article class="agent-card" data-track="standard">
             <div class="agent-meta"><span class="agent-id">AFF-0</span><span class="model">gpt-5.6-sol</span></div>
-            <h3>Phase 0 — Coordinate</h3><p>Normalises inputs, prepares the interview, routes the lifecycle, maintains state and the complete overview.</p>
+            <h3>Phase 0 — Coordinate</h3>
+            <p><code>AFF-0-coordinator</code><br>Standard route to Phase 1</p>
           </article>
           <article class="agent-card" data-track="standard">
             <div class="agent-meta"><span class="agent-id">AFF-1</span><span class="model">gpt-5.6-sol</span></div>
-            <h3>Phase 1 — Requirements</h3><p>Runs the human interview and creates the sourced, testable, governed requirements baseline.</p>
+            <h3>Phase 1 — Requirements</h3>
+            <p><code>AFF-1-requirements</code><br>Standard route to Phase 2</p>
           </article>
           <article class="agent-card" data-track="standard">
             <div class="agent-meta"><span class="agent-id">AFF-2</span><span class="model">gpt-5.6-sol</span></div>
-            <h3>Phase 2 — TOGAF Architecture</h3><p>Creates the vendor-neutral Business, Data, Application, and Technology Architecture.</p>
+            <h3>Phase 2 — TOGAF Architecture</h3>
+            <p><code>AFF-2-togafarchitecture</code><br>Standard route to Phase 3</p>
           </article>
           <article class="agent-card" data-track="standard">
             <div class="agent-meta"><span class="agent-id">AFF-3</span><span class="model">gpt-5.6-sol</span></div>
-            <h3>Phase 3 — Azure Design</h3><p>Maps the logical architecture to landing zones, CAF, WAF, Azure services, controls, and build-ready detail.</p>
+            <h3>Phase 3 — Azure Design</h3>
+            <p><code>AFF-3-design</code><br>Standard route to Phase 4</p>
           </article>
           <article class="agent-card" data-track="standard">
             <div class="agent-meta"><span class="agent-id">AFF-4</span><span class="model">gpt-5.6-sol</span></div>
-            <h3>Phase 4 — Implementation Plan</h3><p>Creates the dependency-led Bicep plan, validation approach, rollback, and deployment procedure.</p>
+            <h3>Phase 4 — Implementation Plan</h3>
+            <p><code>AFF-4-implementation-plan</code><br>Standard route to Phase 5</p>
           </article>
           <article class="agent-card" data-track="standard">
             <div class="agent-meta"><span class="agent-id">AFF-5</span><span class="model">gpt-5.3-codex</span></div>
-            <h3>Phase 5 — Coding</h3><p>Builds the complete package, runs local IaC/application checks, and never deploys.</p>
+            <h3>Phase 5 — Coding</h3>
+            <p><code>AFF-5-coding</code><br>Standard route to Phase 6</p>
           </article>
           <article class="agent-card" data-track="standard">
             <div class="agent-meta"><span class="agent-id">AFF-6</span><span class="model">gpt-5.6-sol</span></div>
-            <h3>Phase 6 — C-level Presentation</h3><p>Turns approved evidence into a concise DECKIO board narrative and PDF.</p>
+            <h3>Phase 6 — C-level Presentation</h3>
+            <p><code>AFF-6-presentation</code><br>Standard route end</p>
           </article>
           <article class="agent-card" data-track="optional">
             <div class="agent-meta"><span class="agent-id">AFF-7</span><span class="model">gpt-5.6-sol</span></div>
-            <h3>Phase 7 — Deployment</h3><p>Executes one explicitly scoped Azure deployment attempt and captures observed evidence.</p>
+            <h3>Phase 7 — Deployment</h3>
+            <p><code>AFF-7-deployer</code><br>Optional; human invocation only. Requires: approved-phase-6, scoped-attempt-authorisation</p>
           </article>
           <article class="agent-card" data-track="optional">
             <div class="agent-meta"><span class="agent-id">AFF-8</span><span class="model">gpt-5.3-codex</span></div>
-            <h3>Phase 8 — Runtime Testing</h3><p>Executes one authorised test plan against the exact approved deployment.</p>
+            <h3>Phase 8 — Runtime Testing</h3>
+            <p><code>AFF-8-testing</code><br>Optional; human invocation only. Requires: phase-7-succeeded, approved-phase-7, scoped-test-attempt-authorisation</p>
           </article>
           <article class="agent-card" data-track="review">
             <div class="agent-meta"><span class="agent-id">AFF-A</span><span class="model">gpt-5.4</span></div>
-            <h3>Rubber Duck Reviewer</h3><p>Uses a different GPT model to challenge correctness, logic, traceability, and unsupported claims.</p>
+            <h3>Rubber Duck Reviewer</h3>
+            <p><code>AFF-A-rubber-duck</code><br>Must use a different model from every phase owner.</p>
           </article>
           <article class="agent-card" data-track="review">
             <div class="agent-meta"><span class="agent-id">AFF-B</span><span class="model">gpt-5.6-sol</span></div>
-            <h3>Security and Compliance Reviewer</h3><p>Derives case-specific obligations and independently reviews privacy, sovereignty, and controls.</p>
+            <h3>Security and Compliance Reviewer</h3>
+            <p><code>AFF-B-security-compliance</code><br>Independent assurance role; same-model use is permitted by the lifecycle.</p>
           </article>
         </div>
+<!-- END GENERATED: AFF-LIFECYCLE-ROSTER -->
       </div>
     </section>
 
-    <section id="start">
+    <section id="operate">
       <div class="shell">
         <div class="section-head start-head">
           <span class="eyebrow">Short manual</span>
@@ -651,7 +719,7 @@
           <div class="steps">
             <article class="step">
               <div class="step-number">1</div>
-              <div><h3>Confirm models</h3><p>Verify gpt-5.6-sol, gpt-5.3-codex, and the dedicated AFF-A gpt-5.4 model are available.</p></div>
+              <div><h3>Confirm models</h3><p>Verify every model in the generated roster is available and keep AFF-A on a different model from each phase owner.</p></div>
             </article>
             <article class="step">
               <div class="step-number">2</div>
@@ -681,6 +749,23 @@
             model assignments, reviewer sequencing, human approval, and the opening requirements
             interview without Azure access, credentials, deployment, or live testing.
           </p>
+        </div>
+        <div class="guide-grid">
+          <article class="panel guide-card">
+            <h3>Compatibility</h3>
+            <p>Node.js 22+ is the executable baseline. Windows and Ubuntu are exercised; macOS is expected but not automated. Confirm host and model availability before a live case.</p>
+            <p><a href="docs/compatibility.md">Read the compatibility matrix</a></p>
+          </article>
+          <article class="panel guide-card">
+            <h3>Troubleshooting</h3>
+            <p>Do not bypass lifecycle, hash, path, renderer, or smoke failures. Use the reported invariant and correct the source.</p>
+            <p><a href="docs/troubleshooting.md">Open troubleshooting</a></p>
+          </article>
+          <article class="panel guide-card">
+            <h3>Release boundary</h3>
+            <p>Tool, lifecycle, schema, and repository release versions are separate. Release requires the complete stack on protected main with validation and CodeQL passing.</p>
+            <p><a href="docs/release-process.md">Read the release process</a></p>
+          </article>
         </div>
       </div>
     </section>

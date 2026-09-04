@@ -1,0 +1,39 @@
+{
+  "schemaVersion": "1.0.0",
+  "recordType": "human-approval",
+  "caseName": "valid-case",
+  "artifactPrefix": "sample",
+  "phaseId": "0",
+  "artifactHashes": [
+    {
+      "path": "0-coordination/sample-coordination.md",
+      "sha256": "39c9048f4916f97c9517220dbe0b9b305e566811782856b083df44c99cc26d6c"
+    },
+    {
+      "path": "0-coordination/sample-coordination.html",
+      "sha256": "29a0027a4a669a0718e8cea654a115572e485e0bff434d455fb43ff6af78031f"
+    },
+    {
+      "path": "0-coordination/sample-input-inventory.json",
+      "sha256": "aa7883b59a07e8cfd3368a8902af6281c9982622101f9f5d07f5fb6077436f8b"
+    },
+    {
+      "path": "0-coordination/sample-model-plan.json",
+      "sha256": "5eb77296d5f5caccff718242ed770184e81b655b0af956516510dab552220878"
+    }
+  ],
+  "reviewRecords": [
+    {
+      "path": "reviews/aff-a/0/round-1/sample-aff-a-review.json",
+      "sha256": "1059d5788c3650b9c731905717b736e6492d34d554ae047851b2fee1fe0c4ebd"
+    },
+    {
+      "path": "reviews/aff-b/0/round-1/sample-aff-b-review.json",
+      "sha256": "3d2873b5dfc6656b2e5f941dcb5c7b2f44a072a6fc16c223b8cebe387eca025c"
+    }
+  ],
+  "decision": "APPROVED",
+  "approver": "Human Architect",
+  "decidedAt": "2026-01-01T10:10:00Z",
+  "residualGapAcceptance": []
+}

@@ -1,0 +1,65 @@
+name: Framework or design proposal
+description: Propose a change to AFF contracts, lifecycle, schemas, agents, skills, or architecture.
+title: "[Proposal]: "
+labels:
+  - enhancement
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Proposals must preserve human-final governance and fail-closed safety. Use synthetic examples
+        only. Report vulnerabilities privately through the
+        [security advisory form](https://github.com/aramsmith/agentic-architecture-v2/security/advisories/new).
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem or decision
+      description: What problem, limitation, or architecture decision needs to be addressed?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed change
+      description: Describe the smallest coherent change and how a contributor would use it.
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence and sources
+      description: Cite standards, repository paths, commands, tests, or synthetic examples supporting the proposal.
+    validations:
+      required: true
+  - type: textarea
+    id: impact
+    attributes:
+      label: Contract and lifecycle impact
+      description: Identify affected phases, agents, skills, schemas, versions, routes, hashes, approvals, or docs. Write "None" where justified.
+    validations:
+      required: true
+  - type: textarea
+    id: safety
+    attributes:
+      label: Safety and human-governance impact
+      description: Explain authority boundaries, abuse cases, privacy, secret handling, and how the change fails closed.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: What simpler option or decision to do nothing did you consider?
+    validations:
+      required: true
+  - type: checkboxes
+    id: confirmations
+    attributes:
+      label: Confirmations
+      options:
+        - label: The proposal contains no secrets, real customer data, or confidential architecture evidence.
+          required: true
+        - label: I identified schema/version and documentation impact, or explained why there is none.
+          required: true
+        - label: This is not a security vulnerability requiring private disclosure.
+          required: true

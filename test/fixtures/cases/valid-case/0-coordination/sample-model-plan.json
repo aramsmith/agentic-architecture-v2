@@ -1,0 +1,85 @@
+{
+  "schemaVersion": "1.0.0",
+  "recordType": "model-plan",
+  "caseName": "valid-case",
+  "artifactPrefix": "sample",
+  "assignments": [
+    {
+      "agent": "AFF-0-coordinator",
+      "model": "gpt-5.6-sol",
+      "rationale": "Coordination and orchestration",
+      "available": true,
+      "separationStatus": "NOT-APPLICABLE"
+    },
+    {
+      "agent": "AFF-1-requirements",
+      "model": "gpt-5.6-sol",
+      "rationale": "Requirements interview and baseline",
+      "available": true,
+      "separationStatus": "NOT-APPLICABLE"
+    },
+    {
+      "agent": "AFF-2-togafarchitecture",
+      "model": "gpt-5.6-sol",
+      "rationale": "Architecture synthesis",
+      "available": true,
+      "separationStatus": "NOT-APPLICABLE"
+    },
+    {
+      "agent": "AFF-3-design",
+      "model": "gpt-5.6-sol",
+      "rationale": "Azure design",
+      "available": true,
+      "separationStatus": "NOT-APPLICABLE"
+    },
+    {
+      "agent": "AFF-4-implementation-plan",
+      "model": "gpt-5.6-sol",
+      "rationale": "Implementation planning",
+      "available": true,
+      "separationStatus": "NOT-APPLICABLE"
+    },
+    {
+      "agent": "AFF-5-coding",
+      "model": "gpt-5.3-codex",
+      "rationale": "Code and executable validation",
+      "available": true,
+      "separationStatus": "NOT-APPLICABLE"
+    },
+    {
+      "agent": "AFF-6-presentation",
+      "model": "gpt-5.6-sol",
+      "rationale": "Presentation synthesis",
+      "available": true,
+      "separationStatus": "NOT-APPLICABLE"
+    },
+    {
+      "agent": "AFF-7-deployer",
+      "model": "gpt-5.6-sol",
+      "rationale": "Scoped deployment execution",
+      "available": true,
+      "separationStatus": "NOT-APPLICABLE"
+    },
+    {
+      "agent": "AFF-8-testing",
+      "model": "gpt-5.3-codex",
+      "rationale": "Runtime testing",
+      "available": true,
+      "separationStatus": "NOT-APPLICABLE"
+    },
+    {
+      "agent": "AFF-A-rubber-duck",
+      "model": "gpt-5.4",
+      "rationale": "Independent reasoning challenge",
+      "available": true,
+      "separationStatus": "SATISFIED"
+    },
+    {
+      "agent": "AFF-B-security-compliance",
+      "model": "gpt-5.6-sol",
+      "rationale": "Security and compliance assurance",
+      "available": true,
+      "separationStatus": "NOT-APPLICABLE"
+    }
+  ]
+}
