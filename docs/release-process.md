@@ -1,7 +1,7 @@
 # Release process
 
 AFF uses `v1.0.0` as its initial repository release line. A changelog entry alone does not create the
-corresponding GitHub tag or release. The repository tool package is `1.0.0`, the lifecycle is `2.0.0`,
+corresponding GitHub tag or release. The repository tool package is `1.1.0`, the lifecycle is `2.0.0`,
 and the schema contract is `1.0.0`; these versions describe different contracts and must not be collapsed
 into one number.
 
