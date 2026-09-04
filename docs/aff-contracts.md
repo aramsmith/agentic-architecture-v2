@@ -105,10 +105,52 @@ phase. Phase HTML is generated before review and approval exist — and adding a
 would change its hash and invalidate the approval bound to it — so a phase document instead states that
 it carries no approval of its own.
 
-> **Current limit.** `human-verified` is not yet reachable: signature verification is not implemented, so
-> no record can resolve to it. Until then every real approval is `self-asserted`. An AFF approval proves
-> that reviewer verdicts converged on identical artifact hashes and that the record is internally
-> consistent. It does not prove who made the decision, or that a human made it at all.
+## Approver identity
+
+The architect creates one Ed25519 key pair, once, outside any case:
+
+```powershell
+npm run identity:create
+```
+
+The private key is written to `%USERPROFILE%\.aff\identity\architect.key`, encrypted with a passphrase
+that is **never stored**. The label chosen at creation travels with every decision that key signs, so the
+approver is not retyped per approval. The key lives outside the case and outside the work area agents are
+contracted to, so an agent touching it is an unmistakable contract violation.
+
+Record a decision with:
+
+```powershell
+npm run approve -- --case cases/<case-name> --phase <id>
+```
+
+Run it yourself, in your own terminal, **outside any agent session**. It prints the artifact hashes, both
+final reviewer verdicts, and the reviewer records; refuses to offer a decision the evidence does not
+support; then asks for the passphrase and writes a signed record. Approvals and rejections are both
+signed — a decision is a decision.
+
+The signature covers the canonical JSON of the whole approval record with only `extensions.signature`
+removed, so the phase, decision, approver, decision time, artifact hashes, reviewer records, key
+fingerprint, and declared mode are all protected. Signing the artifact hashes alone would let a valid
+signature be lifted onto a modified record.
+
+Two continuity rules follow:
+
+- **No downgrade.** Once a case holds a verified decision, every decision recorded from that moment must
+  also be verified.
+- **One key per case.** A decision signed by a different key than the case is anchored to is rejected
+  unless it records an explicit `extensions.keyRotation` naming the previous fingerprint and the reason.
+  A forgotten passphrase cannot be cryptographically bridged, so a rotation is a visible break in the
+  chain rather than a silent substitution.
+
+> **What this does not do.** Verification is not access control. An agent may still write an approval
+> file; it simply cannot produce a valid signature without the passphrase, so its record fails
+> validation. Two limits remain, and are accepted deliberately: a human who types the passphrase on an
+> agent's request has delegated their authority, which is not forgery; and an actor who removes every
+> signature from a case leaves records that look as though the case was never signed. On a single machine
+> the records and any local anchor are equally writable, so a fully consistent rewrite is not detectable.
+> The control moves forgery from writing one JSON file to destroying the architect's identity and
+> regenerating the entire chain.
 
 ## Schema catalogue
 

@@ -19,10 +19,12 @@ export function isApprovalMode(value: string): value is ApprovalMode {
 /**
  * Resolves the assurance an approval actually carries from its recorded
  * evidence. It never reads the declared mode: a claim is the thing being
- * checked, not the check. "human-verified" becomes reachable only when
- * signature verification is added, so no record can assert it today.
+ * checked, not the check.
  */
 export function resolveApprovalMode(approval: Approval): ApprovalMode {
+  if (approval.signatureVerified) {
+    return "human-verified";
+  }
   return approval.syntheticTestEvidence ? "synthetic" : "self-asserted";
 }
 
@@ -67,6 +69,65 @@ export function validateApprovalModes(
         message: `Approval declares assurance mode "${claimed}" but its recorded evidence supports only "${resolved}".`,
         remediation:
           "Declare the mode the evidence supports. A stronger claim is never accepted on the strength of the claim itself.",
+      });
+    }
+  }
+
+  return [...errors, ...validateSignatureContinuity(records)];
+}
+
+/**
+ * Once any approval in a case is signed, every later approval must be signed by
+ * the same key. Without this an agent could simply omit the signature and fall
+ * back to the weaker self-asserted mode, which would defeat the whole control.
+ */
+function validateSignatureContinuity(
+  records: LoadedRecord[],
+): ValidationError[] {
+  const approvals = records
+    .map(asApproval)
+    .filter((value): value is Approval => value !== undefined)
+    .sort(
+      (left, right) =>
+        Date.parse(left.decidedAt) - Date.parse(right.decidedAt) ||
+        (left.file < right.file ? -1 : left.file > right.file ? 1 : 0),
+    );
+  const signed = approvals.filter(({ signatureVerified }) => signatureVerified);
+  if (signed.length === 0) {
+    return [];
+  }
+
+  const errors: ValidationError[] = [];
+  const anchor = signed[0];
+  const anchorFingerprint = anchor?.keyFingerprint;
+  const firstSignedAt = anchor ? Date.parse(anchor.decidedAt) : 0;
+
+  for (const approval of approvals) {
+    if (!approval.signatureVerified) {
+      if (Date.parse(approval.decidedAt) >= firstSignedAt) {
+        errors.push({
+          file: approval.file,
+          invariant,
+          message:
+            "This case records verified approvals, but this decision carries no verified signature.",
+          remediation:
+            "Sign every decision once a case has one signed decision. Assurance is never allowed to weaken over the life of a case.",
+        });
+      }
+      continue;
+    }
+    if (
+      anchorFingerprint &&
+      approval.keyFingerprint &&
+      approval.keyFingerprint !== anchorFingerprint &&
+      !approval.keyRotation
+    ) {
+      errors.push({
+        file: approval.file,
+        invariant,
+        message: `This decision is signed by key ${approval.keyFingerprint}, but the case is anchored to ${anchorFingerprint}.`,
+        remediation:
+          "Use the case's established approval key, or record an explicit key rotation in extensions.keyRotation naming the previous fingerprint and the reason.",
       });
     }
   }

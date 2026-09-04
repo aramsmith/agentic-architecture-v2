@@ -1,4 +1,5 @@
 import { isRecord } from "../common/json.js";
+import { verifyApprovalSignature } from "../identity/signature.js";
 import type { LoadedRecord } from "./records.js";
 
 export interface Binding {
@@ -26,6 +27,9 @@ export interface Approval {
   artifactHashes: Binding[];
   reviewRecords: Binding[];
   syntheticTestEvidence: boolean;
+  signatureVerified: boolean;
+  keyFingerprint?: string;
+  keyRotation?: { previousKeyFingerprint: string; reason: string };
   claimedMode?: string;
 }
 
@@ -105,6 +109,23 @@ export function asApproval(record: LoadedRecord): Approval | undefined {
       isRecord(value.extensions) &&
       value.extensions.syntheticTestEvidence === true &&
       value.extensions.realApproval === false,
+    signatureVerified: verifyApprovalSignature(value).verified,
+    ...(isRecord(value.extensions) &&
+    typeof value.extensions.keyFingerprint === "string"
+      ? { keyFingerprint: value.extensions.keyFingerprint }
+      : {}),
+    ...(isRecord(value.extensions) &&
+    isRecord(value.extensions.keyRotation) &&
+    typeof value.extensions.keyRotation.previousKeyFingerprint === "string" &&
+    typeof value.extensions.keyRotation.reason === "string"
+      ? {
+          keyRotation: {
+            previousKeyFingerprint:
+              value.extensions.keyRotation.previousKeyFingerprint,
+            reason: value.extensions.keyRotation.reason,
+          },
+        }
+      : {}),
     ...(isRecord(value.extensions) &&
     typeof value.extensions.approvalMode === "string"
       ? { claimedMode: value.extensions.approvalMode }

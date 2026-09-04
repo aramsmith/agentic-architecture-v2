@@ -119,10 +119,14 @@ approver, and time. Store it beneath `approvals/phase-<id>/` as a `human-approva
 Approval is the handoff; agents cannot approve for the human.
 
 Every approval declares its assurance in `extensions.approvalMode`, and the declaration must match what
-the evidence supports. Be clear about what the current contract proves: an approval demonstrates that
-both reviewers converged on identical artifact hashes and that the record is internally consistent. It
-does **not** demonstrate who made the decision, or that a human made it. Until signature verification
-exists, every real approval is `self-asserted`, and no agent may declare a stronger mode on a record.
+the evidence supports. A `human-verified` decision is signed by the architect's approval key, which is
+protected by a passphrase held only in the architect's head. **No agent may run the approval command,
+and no agent may ever ask for the passphrase.** An agent that requests it is phishing, whatever its
+intent. Agents prepare, challenge, and evidence the work; the human performs the final act alone, in
+their own terminal, outside any agent session.
+
+An unsigned approval remains valid and is labelled `self-asserted`. It proves reviewer convergence on
+identical hashes and record integrity, but not who decided or that a human decided.
 
 ## Evidence and change control
 

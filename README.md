@@ -99,6 +99,20 @@ The repository includes versioned JSON Schema contracts and a cross-platform val
 paths, canonical SHA-256 bindings, final reviewer convergence, and human approval bindings. See
 [`docs/aff-contracts.md`](docs/aff-contracts.md).
 
+## Sign your approvals
+
+Create your approval key once, then record each phase decision yourself:
+
+```powershell
+npm run identity:create
+npm run approve -- --case cases\<case-name> --phase 0
+```
+
+The private key is passphrase-protected and stored outside the case. **Run the approval command in your
+own terminal, never through an agent, and never type the passphrase into an agent conversation.** An
+unsigned approval still works and is labelled `self-asserted`; a signed one is `human-verified`. See
+[`docs/aff-contracts.md`](docs/aff-contracts.md) for what each proves and what it does not.
+
 ## Render case HTML
 
 Use the deterministic renderer instead of model-authored HTML:

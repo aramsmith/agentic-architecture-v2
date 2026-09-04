@@ -128,6 +128,100 @@ describe("approval assurance mode", () => {
     expect(validateApprovalModes([approvalRecord()])).toEqual([]);
   });
 
+  it("rejects a later decision that drops the signature the case already established", async () => {
+    const { mkdtemp, rm } = await import("node:fs/promises");
+    const { tmpdir } = await import("node:os");
+    const home = await mkdtemp(path.join(tmpdir(), "aff-continuity-"));
+    try {
+      const { createIdentity, readEncryptedPrivateKey } = await import(
+        "../src/identity/keys.js"
+      );
+      const { signApproval } = await import("../src/identity/signature.js");
+      const passphrase = "correct horse battery staple";
+      const created = await createIdentity({
+        label: "Accountable architect",
+        passphrase,
+        home,
+      });
+      const encrypted = await readEncryptedPrivateKey(home);
+
+      const signedPhase0 = approvalRecord();
+      signedPhase0.file = "approvals/phase-0/sample-approval.json";
+      signedPhase0.value = signApproval(
+        { ...signedPhase0.value, phaseId: "0", decidedAt: "2026-01-01T10:00:00Z" },
+        encrypted,
+        passphrase,
+        created.publicKeyPem,
+      );
+
+      const unsignedPhase1 = approvalRecord();
+      unsignedPhase1.file = "approvals/phase-1/sample-approval.json";
+      unsignedPhase1.value = {
+        ...unsignedPhase1.value,
+        phaseId: "1",
+        decidedAt: "2026-01-02T10:00:00Z",
+      };
+
+      const errors = validateApprovalModes([signedPhase0, unsignedPhase1]);
+
+      expect(errors).toHaveLength(1);
+      expect(errors[0]?.file).toBe("approvals/phase-1/sample-approval.json");
+      expect(errors[0]?.message).toContain("carries no verified signature");
+    } finally {
+      await rm(home, { recursive: true, force: true });
+    }
+  });
+
+  it("rejects a decision signed by a key the case is not anchored to", async () => {
+    const { mkdtemp, rm } = await import("node:fs/promises");
+    const { tmpdir } = await import("node:os");
+    const first = await mkdtemp(path.join(tmpdir(), "aff-key-a-"));
+    const second = await mkdtemp(path.join(tmpdir(), "aff-key-b-"));
+    try {
+      const { createIdentity, readEncryptedPrivateKey } = await import(
+        "../src/identity/keys.js"
+      );
+      const { signApproval } = await import("../src/identity/signature.js");
+      const passphrase = "correct horse battery staple";
+      const keyA = await createIdentity({
+        label: "Accountable architect",
+        passphrase,
+        home: first,
+      });
+      const keyB = await createIdentity({
+        label: "Someone else",
+        passphrase,
+        home: second,
+      });
+
+      const phase0 = approvalRecord();
+      phase0.file = "approvals/phase-0/sample-approval.json";
+      phase0.value = signApproval(
+        { ...phase0.value, phaseId: "0", decidedAt: "2026-01-01T10:00:00Z" },
+        await readEncryptedPrivateKey(first),
+        passphrase,
+        keyA.publicKeyPem,
+      );
+
+      const phase1 = approvalRecord();
+      phase1.file = "approvals/phase-1/sample-approval.json";
+      phase1.value = signApproval(
+        { ...phase1.value, phaseId: "1", decidedAt: "2026-01-02T10:00:00Z" },
+        await readEncryptedPrivateKey(second),
+        passphrase,
+        keyB.publicKeyPem,
+      );
+
+      const errors = validateApprovalModes([phase0, phase1]);
+
+      expect(errors).toHaveLength(1);
+      expect(errors[0]?.message).toContain("the case is anchored to");
+    } finally {
+      await rm(first, { recursive: true, force: true });
+      await rm(second, { recursive: true, force: true });
+    }
+  });
+
   it("describes each mode without overstating it", () => {
     expect(approvalModeLabel("self-asserted")).toContain(
       "without verification of the approver",

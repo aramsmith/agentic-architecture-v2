@@ -23,6 +23,12 @@ All notable user-visible changes are recorded here. Versions follow the separate
   in `extensions.approvalMode`, and the new `approval-mode` invariant rejects any declaration the
   recorded evidence does not support. The solution overview reports the resolved mode per phase.
 - An executable assertion that the Contoso harness can only ever emit `synthetic` approval evidence.
+- Signed human approvals. `npm run identity:create` creates one passphrase-protected Ed25519 key per
+  architect, outside any case. `npm run approve -- --case <path> --phase <id>` presents the artifact
+  hashes and both final reviewer verdicts, refuses decisions the evidence does not support, and writes a
+  signed record. Approvals and rejections are both signed.
+- Signature continuity: once a case holds a verified decision every later decision must also be verified,
+  and a decision signed by a different key is rejected unless it records an explicit `keyRotation`.
 
 ### Changed
 

@@ -282,6 +282,10 @@ fabricates an approval produces a record with no valid signature, and validation
   forgery from writing one JSON file to destroying the architect's identity file and regenerating the
   entire chain: <em>conspicuous and detectable</em> rather than trivial. For solo work, that is the right
   ceiling.</p>
+  <p><strong>Removing every signature from a case is not detectable.</strong> Continuity protects a case
+  that still holds a verified decision. Strip them all and the records look as though the case was never
+  signed, because on one machine the records and any local anchor are equally writable. This was
+  confirmed by test after the signing work landed, and is accepted rather than papered over.</p>
   <p><strong>The passphrase must never be typed into an agent conversation.</strong> An agent that asks
   for it is phishing, whether or not it intends to be.</p>
 </div>
@@ -297,13 +301,13 @@ fabricates an approval produces a record with no valid signature, and validation
       <td>Three approval modes; display derived from verification; assertion that the Contoso harness can
       only ever emit <code>synthetic</code>; documentation corrected to state what an approval proves. No
       cryptography, no schema change.</td>
-      <td><span class="tag open">In progress</span></td>
+      <td><span class="tag settled">Delivered</span></td>
     </tr>
     <tr>
       <td><strong>B — Signing</strong></td>
       <td>Key creation, the approve command, signature generation and verification, fingerprint chain,
       no-downgrade rule, recorded key rotation.</td>
-      <td><span class="tag deferred">Next</span></td>
+      <td><span class="tag settled">Delivered</span></td>
     </tr>
   </tbody>
 </table>
