@@ -30,6 +30,7 @@
 /test/ @aramsmith
 /docs/aff-contracts.md @aramsmith
 /docs/aff-renderer.md @aramsmith
+/docs/decisions/ @aramsmith
 
 # Case scaffolding and synthetic expectations
 /cases/_template/ @aramsmith

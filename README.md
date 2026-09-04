@@ -22,6 +22,8 @@ See [CONTRIBUTORS.md](CONTRIBUTORS.md) for the contributor policy and full list.
 - [Troubleshooting](docs/troubleshooting.md)
 - [Release process and version policy](docs/release-process.md)
 - [Contracts](docs/aff-contracts.md) and [renderer trust boundary](docs/aff-renderer.md)
+- [Approval identity decision record](docs/decisions/approval-identity.html) — what a human approval
+  proves, and what it does not
 - [Contributing](CONTRIBUTING.md), [support](SUPPORT.md), [security](SECURITY.md), and
   [licence](LICENSE)
 
