@@ -1,42 +1,24 @@
-name: Validate AFF contracts
+name: Repository validation
 
 on:
   pull_request:
-    paths:
-      - ".github/agents/**"
-      - ".github/skills/**"
-      - ".github/workflows/validate.yml"
-      - "cases/**"
-      - "docs/**"
-      - "schemas/**"
-      - "src/**"
-      - "test/**"
-      - "package.json"
-      - "package-lock.json"
-      - "tsconfig.json"
-      - "README.md"
+    branches: [main]
   push:
     branches: [main]
-    paths:
-      - ".github/agents/**"
-      - ".github/skills/**"
-      - ".github/workflows/validate.yml"
-      - "cases/**"
-      - "docs/**"
-      - "schemas/**"
-      - "src/**"
-      - "test/**"
-      - "package.json"
-      - "package-lock.json"
-      - "tsconfig.json"
-      - "README.md"
+  workflow_dispatch:
 
 permissions:
   contents: read
 
+concurrency:
+  group: repository-validation-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   validate:
+    name: Repository validation
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - name: Check out repository
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
@@ -48,7 +30,10 @@ jobs:
           cache: npm
 
       - name: Install pinned dependencies
-        run: npm ci
+        run: npm ci --no-audit --no-fund
+
+      - name: Run repository governance tests
+        run: npm run test:governance
 
       - name: Run contract tests
         run: npm run test:contracts

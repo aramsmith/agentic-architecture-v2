@@ -15,6 +15,7 @@
     "build": "tsc -p tsconfig.json",
     "test": "vitest run",
     "test:contracts": "vitest run test/schema.test.ts test/framework.test.ts test/case.test.ts",
+    "test:governance": "vitest run test/repository-governance.test.ts",
     "test:renderer": "vitest run test/render.test.ts test/render-cli.test.ts",
     "test:smoke": "vitest run test/smoke-contoso.test.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit",

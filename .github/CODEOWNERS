@@ -4,7 +4,10 @@
 /CONTRIBUTING.md @aramsmith
 /CODE_OF_CONDUCT.md @aramsmith
 /SUPPORT.md @aramsmith
+/README.md @aramsmith
+/agentic-architecture-v2.html @aramsmith
 /.github/CODEOWNERS @aramsmith
+/.github/dependabot.yml @aramsmith
 /.github/ISSUE_TEMPLATE/ @aramsmith
 /.github/pull_request_template.md @aramsmith
 

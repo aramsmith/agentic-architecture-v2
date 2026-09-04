@@ -52,6 +52,7 @@ During development, these narrower commands can provide faster feedback:
 
 ```powershell
 npm run test:contracts
+npm run test:governance
 npm run test:renderer
 npm run test:smoke
 ```
@@ -59,6 +60,18 @@ npm run test:smoke
 Run `npm run test:renderer` for changes to Markdown handling, sanitisation, links, assets, paths,
 hash-bound rendering, or renderer command behaviour. The Contoso smoke is offline and synthetic; it
 must not call a model, access Azure, or create a real approval.
+
+Every pull request to `main` runs the stable **Repository validation** and **CodeQL** checks. Repository
+validation covers the complete command sequence above plus governance files, issue forms, security
+routing, internal Markdown links, action pinning, CODEOWNERS coverage, package licence metadata, and
+AFF lifecycle/profile/skill safety boundaries.
+
+`main` requires a pull request, one approval including CODEOWNER review, resolved review threads, and
+blocks deletion and force pushes. The repository administrator has pull-request-only bypass because
+there is currently no second maintainer; the bypass cannot be used for a direct push. Required status
+checks can be activated only after these workflows exist on `main`; maintainers must then require the
+exact check names **Repository validation** and **CodeQL**. This avoids making the stacked Plan 1 and
+Plan 2 branches impossible to merge before GitHub can create those checks on the default branch.
 
 ## Contracts and versioning
 
