@@ -120,6 +120,7 @@ export async function prepareApproval(options: {
     options.repositoryRoot,
     caseRoot,
     loaded,
+    { ...(options.home ? { home: options.home } : {}) },
   );
   // The approval being recorded is precisely what settles convergence, approval
   // binding, assurance mode, and phase sequence. Blocking on those would be

@@ -39,14 +39,37 @@ export function approvalModeLabel(mode: ApprovalMode): string {
   }
 }
 
+export interface ApprovalModeOptions {
+  /**
+   * True when this machine holds an architect approval key. Holding a key means
+   * a real decision is expected to carry it, so an unsigned approval stops being
+   * a quiet fallback and becomes a failure. Synthetic harness evidence is exempt:
+   * it never claims to be a human decision.
+   */
+  requireSignedApprovals?: boolean;
+}
+
 export function validateApprovalModes(
   records: LoadedRecord[],
+  options: ApprovalModeOptions = {},
 ): ValidationError[] {
   const errors: ValidationError[] = [];
 
   for (const approval of records
     .map(asApproval)
     .filter((value): value is Approval => value !== undefined)) {
+    const resolved = resolveApprovalMode(approval);
+    if (options.requireSignedApprovals && resolved === "self-asserted") {
+      errors.push({
+        file: approval.file,
+        invariant,
+        message:
+          "This machine holds an architect approval key, so a human decision must be signed. This decision is not.",
+        remediation:
+          "Record the decision yourself with the approval command, in your own terminal, outside any agent session.",
+      });
+    }
+
     const claimed = approval.claimedMode;
     if (claimed === undefined) {
       continue;
@@ -61,7 +84,6 @@ export function validateApprovalModes(
       continue;
     }
 
-    const resolved = resolveApprovalMode(approval);
     if (claimed !== resolved) {
       errors.push({
         file: approval.file,

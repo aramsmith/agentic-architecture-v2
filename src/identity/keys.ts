@@ -13,6 +13,7 @@ export interface ArchitectIdentity {
   label: string;
   publicKeyPem: string;
   fingerprint: string;
+  requireSignedApprovals: boolean;
 }
 
 export class IdentityError extends Error {
@@ -110,7 +111,7 @@ export async function createIdentity(options: {
   });
   await writeFileAtomic(
     publicKeyPath,
-    `${JSON.stringify({ label, publicKeyPem: publicKey }, null, 2)}\n`,
+    `${JSON.stringify({ label, publicKeyPem: publicKey, requireSignedApprovals: true }, null, 2)}\n`,
     { encoding: "utf8" },
   );
 
@@ -118,6 +119,7 @@ export async function createIdentity(options: {
     label,
     publicKeyPem: publicKey,
     fingerprint: fingerprintPublicKey(publicKey),
+    requireSignedApprovals: true,
     privateKeyPath,
     publicKeyPath,
   };
@@ -164,6 +166,13 @@ export async function readIdentity(
     label: parsed.label,
     publicKeyPem: parsed.publicKeyPem,
     fingerprint: fingerprintPublicKey(parsed.publicKeyPem),
+    // Holding a key means approvals are expected to carry it. An absent setting
+    // is read as the stricter value so a truncated file cannot quietly relax the
+    // policy on this machine.
+    requireSignedApprovals:
+      "requireSignedApprovals" in parsed
+        ? parsed.requireSignedApprovals !== false
+        : true,
   };
 }
 

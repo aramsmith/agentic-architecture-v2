@@ -146,11 +146,33 @@ Two continuity rules follow:
 > **What this does not do.** Verification is not access control. An agent may still write an approval
 > file; it simply cannot produce a valid signature without the passphrase, so its record fails
 > validation. Two limits remain, and are accepted deliberately: a human who types the passphrase on an
-> agent's request has delegated their authority, which is not forgery; and an actor who removes every
-> signature from a case leaves records that look as though the case was never signed. On a single machine
-> the records and any local anchor are equally writable, so a fully consistent rewrite is not detectable.
-> The control moves forgery from writing one JSON file to destroying the architect's identity and
-> regenerating the entire chain.
+> agent's request has delegated their authority, which is not forgery; and a machine that has never held
+> an approval key has no expectation to measure against, so `self-asserted` remains legitimate there.
+> The control moves forgery from writing one JSON file to obtaining a passphrase that is never stored.
+
+## Machine approval policy
+
+Creating an architect identity also sets a policy on that machine: **a real human decision must be
+signed.** `requireSignedApprovals` is written into `architect.pub` as `true`, and validation reads it.
+
+This closes the remaining gap. Without it, an agent never needed to forge a signature — it could simply
+write an *unsigned* approval and have it accepted as `self-asserted`, because that mode is legitimate.
+With a key present, an unsigned real decision becomes a validation failure, so there is no route to a
+valid approval on your machine that does not pass through your passphrase.
+
+The policy degrades correctly rather than spreading:
+
+- **A machine with no identity** — continuous integration, the offline evaluation, a colleague trying the
+  framework — has no policy, so `self-asserted` still validates and the ten-minute quick start is
+  unaffected.
+- **Synthetic harness evidence is always exempt.** It never claims to be a human decision, so it is not
+  measured against one.
+- **A truncated or damaged identity file reads as the stricter policy**, so the protection cannot be
+  quietly lost by corruption.
+
+Removing the policy is a deliberate edit to your own identity file. It is not a step any failure ever
+pushes you towards, which is why the policy lives on the machine rather than in per-case bookkeeping that
+would raise false alarms on renames, restores, and second machines.
 
 ## Schema catalogue
 

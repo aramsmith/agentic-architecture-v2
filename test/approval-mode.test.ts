@@ -128,6 +128,39 @@ describe("approval assurance mode", () => {
     expect(validateApprovalModes([approvalRecord()])).toEqual([]);
   });
 
+  it("rejects an unsigned decision when this machine holds an approval key", () => {
+    const errors = validateApprovalModes([approvalRecord()], {
+      requireSignedApprovals: true,
+    });
+
+    expect(errors).toHaveLength(1);
+    expect(errors[0]?.message).toContain("must be signed");
+    expect(errors[0]?.remediation).toContain("your own terminal");
+  });
+
+  it("never treats harness evidence as an unsigned human decision", () => {
+    const errors = validateApprovalModes(
+      [
+        approvalRecord({
+          approvalMode: "synthetic",
+          syntheticTestEvidence: true,
+          realApproval: false,
+        }),
+      ],
+      { requireSignedApprovals: true },
+    );
+
+    expect(errors).toEqual([]);
+  });
+
+  it("leaves self-asserted approvals valid on a machine with no approval key", () => {
+    expect(
+      validateApprovalModes([approvalRecord()], {
+        requireSignedApprovals: false,
+      }),
+    ).toEqual([]);
+  });
+
   it("rejects a later decision that drops the signature the case already established", async () => {
     const { mkdtemp, rm } = await import("node:fs/promises");
     const { tmpdir } = await import("node:os");

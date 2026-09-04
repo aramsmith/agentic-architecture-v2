@@ -29,6 +29,10 @@ All notable user-visible changes are recorded here. Versions follow the separate
   signed record. Approvals and rejections are both signed.
 - Signature continuity: once a case holds a verified decision every later decision must also be verified,
   and a decision signed by a different key is rejected unless it records an explicit `keyRotation`.
+- A per-machine approval policy. Creating an architect identity sets `requireSignedApprovals`, so an
+  unsigned real decision is rejected on that machine. Without it an agent never needed to forge a
+  signature: it could write an unsigned approval and have it accepted as `self-asserted`. Machines with
+  no identity are unaffected, and synthetic harness evidence is always exempt.
 
 ### Changed
 

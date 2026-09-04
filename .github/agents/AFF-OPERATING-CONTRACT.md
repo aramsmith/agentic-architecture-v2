@@ -126,7 +126,9 @@ intent. Agents prepare, challenge, and evidence the work; the human performs the
 their own terminal, outside any agent session.
 
 An unsigned approval remains valid and is labelled `self-asserted`. It proves reviewer convergence on
-identical hashes and record integrity, but not who decided or that a human decided.
+identical hashes and record integrity, but not who decided or that a human decided. On a machine that
+holds an architect approval key, an unsigned real decision is rejected: holding a key means decisions are
+expected to carry it.
 
 ## Evidence and change control
 

@@ -111,6 +111,52 @@ describe("architect approval identity", () => {
   it("reports no identity rather than failing when none exists", async () => {
     expect(await readIdentity(await temporaryHome())).toBeUndefined();
   });
+
+  it("requires signed approvals by default once a key exists", async () => {
+    const home = await temporaryHome();
+    await createIdentity({ label: "Accountable architect", passphrase, home });
+
+    expect((await readIdentity(home))?.requireSignedApprovals).toBe(true);
+  });
+
+  it("reads a truncated identity as the stricter policy", async () => {
+    const home = await temporaryHome();
+    const created = await createIdentity({
+      label: "Accountable architect",
+      passphrase,
+      home,
+    });
+    await writeFile(
+      created.publicKeyPath,
+      JSON.stringify({
+        label: created.label,
+        publicKeyPem: created.publicKeyPem,
+      }),
+      "utf8",
+    );
+
+    expect((await readIdentity(home))?.requireSignedApprovals).toBe(true);
+  });
+
+  it("honours a deliberate relaxation of the policy", async () => {
+    const home = await temporaryHome();
+    const created = await createIdentity({
+      label: "Accountable architect",
+      passphrase,
+      home,
+    });
+    await writeFile(
+      created.publicKeyPath,
+      JSON.stringify({
+        label: created.label,
+        publicKeyPem: created.publicKeyPem,
+        requireSignedApprovals: false,
+      }),
+      "utf8",
+    );
+
+    expect((await readIdentity(home))?.requireSignedApprovals).toBe(false);
+  });
 });
 
 describe("approval signatures", () => {

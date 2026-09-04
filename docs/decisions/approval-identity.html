@@ -216,6 +216,7 @@ Signing reuses <code>json-canonicalize</code>, already present and already trust
     <tr><td>Modes</td><td><code>synthetic</code> · <code>self-asserted</code> · <code>human-verified</code></td></tr>
     <tr><td>Display</td><td>Derived from <strong>verification</strong>, never from the claimed field</td></tr>
     <tr><td>Scope</td><td>Phase approvals only. Phases 7 and 8 remain blocked and documented — no schema version bump</td></tr>
+    <tr><td>Machine policy</td><td>Creating an approval key sets <code>requireSignedApprovals</code> on that machine, so an unsigned real decision is rejected. Added after testing showed an agent never needed to forge a signature — it could simply omit one</td></tr>
   </tbody>
 </table>
 
@@ -282,10 +283,12 @@ fabricates an approval produces a record with no valid signature, and validation
   forgery from writing one JSON file to destroying the architect's identity file and regenerating the
   entire chain: <em>conspicuous and detectable</em> rather than trivial. For solo work, that is the right
   ceiling.</p>
-  <p><strong>Removing every signature from a case is not detectable.</strong> Continuity protects a case
-  that still holds a verified decision. Strip them all and the records look as though the case was never
-  signed, because on one machine the records and any local anchor are equally writable. This was
-  confirmed by test after the signing work landed, and is accepted rather than papered over.</p>
+  <p><strong>Removing every signature from a case was not detectable</strong> in the first signing
+  build. Continuity protected a case that still held a verified decision, but stripping them all left
+  records that looked as though the case was never signed. This was found by test rather than reasoning,
+  and closed by a per-machine policy: creating an approval key sets <code>requireSignedApprovals</code>,
+  so an unsigned real decision fails on that machine. A machine that has never held a key has no
+  expectation to measure against, so the offline evaluation is unaffected.</p>
   <p><strong>The passphrase must never be typed into an agent conversation.</strong> An agent that asks
   for it is phishing, whether or not it intends to be.</p>
 </div>
