@@ -148,16 +148,18 @@ describe("architect adoption and release surfaces", () => {
     }
   });
 
-  it("defines release and migration gates without claiming a release", async () => {
+  it("defines release and migration gates consistently", async () => {
     const [changelog, release, migrations] = await Promise.all([
       read("CHANGELOG.md"),
       read("docs/release-process.md"),
       read("docs/migrations/README.md"),
     ]);
 
-    expect(changelog).toContain("## Unreleased");
-    expect(changelog).toContain("No GitHub release or tag has been created.");
-    expect(release).toContain("AFF currently has no tagged public release.");
+    expect(changelog).toContain("## [Unreleased]");
+    expect(changelog).toContain("## [1.0.0] - 2026-09-04");
+    expect(release).toContain(
+      "A changelog entry alone does not create the corresponding GitHub tag or release.",
+    );
     expect(release).toContain("npm run docs:check");
     expect(release).toContain("Repository validation and CodeQL pass");
     expect(release).toContain("git status --short");
