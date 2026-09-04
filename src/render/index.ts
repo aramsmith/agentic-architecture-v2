@@ -10,6 +10,10 @@ import writeFileAtomic from "write-file-atomic";
 import { hashArtifact, hashArtifactBytes } from "../case/hash.js";
 import { validateHashBindings } from "../case/hash.js";
 import { validateLoadedCase } from "../case/index.js";
+import {
+  approvalModeLabel,
+  resolveApprovalMode,
+} from "../case/approval-mode.js";
 import { validateRecordIdentity } from "../case/identity.js";
 import { loadCaseRecords, type LoadedRecord } from "../case/records.js";
 import {
@@ -997,7 +1001,7 @@ export async function renderPhaseHtml(
   const title = rendered.toc[0]?.text ?? `AFF Phase ${options.phaseId}`;
   const html = `<!doctype html>
 <html lang="en"><head><meta charset="utf-8">${contentSecurityPolicyMeta(false)}<meta name="viewport" content="width=device-width,initial-scale=1"><meta name="generator" content="aff-render"><meta name="aff-source-sha256" content="${bindings[0]?.sha256 ?? ""}"><title>${escapeHtml(title)}</title><style>${styles}</style></head>
-<body><a class="skip-link" href="#${mainContentId}">Skip to main content</a><header><p>AFF generated view</p><p class="document-title">${escapeHtml(title)}</p>${renderBindings(bindings)}</header>
+<body><a class="skip-link" href="#${mainContentId}">Skip to main content</a><header><p>AFF generated view</p><p class="document-title">${escapeHtml(title)}</p>${renderBindings(bindings)}<p>This is generated phase evidence. It carries no approval of its own; approval state and assurance are recorded in <code>solution-overview.html</code>.</p></header>
 <main id="${mainContentId}"><article aria-label="${escapeHtml(title)}">${rendered.body}</article>${renderToc(rendered.toc)}</main>
 <footer>Generated from authoritative case sources. Markdown and structured records remain authoritative.</footer></body></html>
 `;
@@ -1367,7 +1371,7 @@ export async function renderSolutionOverview(
     tabs.push({
       id: `phase-${phase.id}`,
       label: phase.displayName,
-      content: `<article>${phaseContent}<section aria-label="Phase state and evidence"><h2>Phase state and evidence</h2><p><strong>Journal-derived state:</strong> ${escapeHtml(state)}</p>${approval?.syntheticTestEvidence ? '<p><strong>Synthetic test evidence:</strong> This is not a real human or architecture approval.</p>' : ""}<p><strong>Latest event:</strong> ${escapeHtml(String(latestEvent.value.eventType))} - ${escapeHtml(String(latestEvent.value.summary))}</p>${renderBindingTable("Artifact hashes", approval?.artifactHashes ?? candidate?.artifacts ?? [])}${approvalHash ? `<h3>Approval evidence</h3><p>Approval record: <code>${escapeHtml(approval?.file ?? "")}</code></p><p>Approval record SHA-256: <code>${approvalHash}</code></p>${renderBindingTable("Review record hashes", approval?.reviewRecords ?? [])}` : "<p>No validated human approval is recorded.</p>"}</section></article>`,
+      content: `<article>${phaseContent}<section aria-label="Phase state and evidence"><h2>Phase state and evidence</h2><p><strong>Journal-derived state:</strong> ${escapeHtml(state)}</p>${approval ? `<p><strong>Approval assurance:</strong> ${escapeHtml(approvalModeLabel(resolveApprovalMode(approval)))}</p>` : ""}<p><strong>Latest event:</strong> ${escapeHtml(String(latestEvent.value.eventType))} - ${escapeHtml(String(latestEvent.value.summary))}</p>${renderBindingTable("Artifact hashes", approval?.artifactHashes ?? candidate?.artifacts ?? [])}${approvalHash ? `<h3>Approval evidence</h3><p>Approval record: <code>${escapeHtml(approval?.file ?? "")}</code></p><p>Approval record SHA-256: <code>${approvalHash}</code></p>${renderBindingTable("Review record hashes", approval?.reviewRecords ?? [])}` : "<p>No validated human approval is recorded.</p>"}</section></article>`,
     });
   }
   const reviews = latestReviews(loaded.records);

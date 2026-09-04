@@ -4,6 +4,7 @@ import { loadCaseRecords, type LoadedCaseRecords } from "./records.js";
 import { validateHashBindings } from "./hash.js";
 import { readLifecycle } from "../framework/lifecycle.js";
 import { validateApprovals } from "./approvals.js";
+import { validateApprovalModes } from "./approval-mode.js";
 import { validateReviewConvergence } from "./convergence.js";
 import { validateCandidateFileCoverage } from "./coverage.js";
 import { validateRecordIdentity } from "./identity.js";
@@ -51,6 +52,7 @@ export async function validateLoadedCase(
       ...hashErrors,
       ...validateReviewConvergence(loaded.records),
       ...validateApprovals(loaded.records),
+      ...validateApprovalModes(loaded.records),
       ...validatePhaseSequence(loaded.records, lifecycle),
     ],
   };

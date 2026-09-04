@@ -19,11 +19,20 @@ All notable user-visible changes are recorded here. Versions follow the separate
   browser blocks remote loading, framing, form submission, and base-URI rewriting even if sanitisation
   were bypassed. Phase HTML uses `script-src 'none'`.
 - A `.gitattributes` file pinning text files to LF in the working tree on every platform.
+- Approval assurance modes. Every approval declares `synthetic`, `self-asserted`, or `human-verified`
+  in `extensions.approvalMode`, and the new `approval-mode` invariant rejects any declaration the
+  recorded evidence does not support. The solution overview reports the resolved mode per phase.
+- An executable assertion that the Contoso harness can only ever emit `synthetic` approval evidence.
 
 ### Changed
 
 - The Contoso smoke harness now names the contract invariants that failed instead of reporting a
   generic validation message.
+- Documentation now states plainly what an AFF approval proves: reviewer convergence on identical
+  hashes and record integrity, but **not** who decided or that a human decided.
+- Phase HTML states that it carries no approval of its own. Approval state and assurance live in
+  `solution-overview.html`, because re-rendering a phase document after approval would change its hash
+  and invalidate the approval bound to it.
 - `latestApprovals` is defined once in `src/case/review-records.ts` instead of being reimplemented in
   both the approval and hash-binding validators.
 

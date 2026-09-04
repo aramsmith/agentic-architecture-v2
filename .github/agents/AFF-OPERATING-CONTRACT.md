@@ -118,6 +118,12 @@ The human approval record identifies the phase, artifact hashes, reviewer-record
 approver, and time. Store it beneath `approvals/phase-<id>/` as a `human-approval` JSON record.
 Approval is the handoff; agents cannot approve for the human.
 
+Every approval declares its assurance in `extensions.approvalMode`, and the declaration must match what
+the evidence supports. Be clear about what the current contract proves: an approval demonstrates that
+both reviewers converged on identical artifact hashes and that the record is internally consistent. It
+does **not** demonstrate who made the decision, or that a human made it. Until signature verification
+exists, every real approval is `self-asserted`, and no agent may declare a stronger mode on a record.
+
 ## Evidence and change control
 
 - Record sources precisely enough to audit: path or URL, section, date where relevant, and short

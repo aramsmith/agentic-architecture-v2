@@ -26,6 +26,7 @@ export interface Approval {
   artifactHashes: Binding[];
   reviewRecords: Binding[];
   syntheticTestEvidence: boolean;
+  claimedMode?: string;
 }
 
 export interface CandidateEvent {
@@ -104,6 +105,10 @@ export function asApproval(record: LoadedRecord): Approval | undefined {
       isRecord(value.extensions) &&
       value.extensions.syntheticTestEvidence === true &&
       value.extensions.realApproval === false,
+    ...(isRecord(value.extensions) &&
+    typeof value.extensions.approvalMode === "string"
+      ? { claimedMode: value.extensions.approvalMode }
+      : {}),
   };
 }
 
