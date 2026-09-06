@@ -80,6 +80,16 @@ export function validateApprovals(records: LoadedRecord[]): ValidationError[] {
     }
 
     const converged = bindingSet(affA.subjectArtifacts);
+    const decidedAt = Date.parse(approval.decidedAt);
+    if (citedReviews.some((review) => {
+      const source = records.find(({ file }) => file === review.file);
+      const reviewedAt = Date.parse(String(source?.value.reviewedAt));
+      return !Number.isFinite(reviewedAt) || !Number.isFinite(decidedAt) || reviewedAt > decidedAt;
+    })) {
+      errors.push({ file: approval.file, invariant: "approval-binding",
+        message: "A decision must not precede either of its final reviews.",
+        remediation: "Preserve the decision history and record accurate review and decision timestamps; never backdate an approval." });
+    }
     if (
       converged !== bindingSet(affB.subjectArtifacts) ||
       converged !== bindingSet(approval.artifactHashes)

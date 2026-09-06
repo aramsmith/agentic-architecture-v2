@@ -1,4 +1,5 @@
 import { isRecord } from "../common/json.js";
+import { verifyApprovalSignature } from "../identity/signature.js";
 import type { LifecycleManifest, ValidationError } from "../types.js";
 import type { LoadedRecord } from "./records.js";
 import { asReview, type Review } from "./review-records.js";
@@ -7,6 +8,7 @@ interface ModelAssignment {
   agent: string;
   model: string;
   separationStatus: string;
+  available: boolean;
   approvalReference?: string;
 }
 
@@ -16,8 +18,31 @@ function isModelAssignment(value: unknown): value is ModelAssignment {
     typeof value.agent === "string" &&
     typeof value.model === "string" &&
     typeof value.separationStatus === "string" &&
+    typeof value.available === "boolean" &&
     (value.approvalReference === undefined ||
       typeof value.approvalReference === "string")
+  );
+}
+
+function hasSubstitutionApproval(
+  plan: LoadedRecord,
+  assignment: ModelAssignment,
+  defaultModel: string,
+  records: LoadedRecord[],
+): boolean {
+  const reference = assignment.approvalReference;
+  if (!reference || reference.startsWith("/") || reference.includes("\\") || reference.split("/").some((part) => part === "." || part === ".." || part === "")) return false;
+  const approval = records.find(({ file, value }) => file === reference && value.recordType === "human-approval");
+  if (!approval || approval.value.decision !== "APPROVED" || !verifyApprovalSignature(approval.value).verified) return false;
+  const bindings = isRecord(plan.value.extensions) ? plan.value.extensions.modelSubstitutionApprovals : undefined;
+  if (!Array.isArray(bindings) || !bindings.some((binding) => isRecord(binding) && binding.path === reference && binding.sha256 === approval.snapshotSha256)) return false;
+  // A prior decision authorizes the change; binding the new plan back into
+  // that same decision would require a circular pair of content hashes.
+  if (Array.isArray(approval.value.artifactHashes) && approval.value.artifactHashes.some((binding) => isRecord(binding) && binding.path === plan.file && binding.sha256 === plan.snapshotSha256)) return false;
+  const substitutions = isRecord(approval.value.extensions) ? approval.value.extensions.modelSubstitutions : undefined;
+  return Array.isArray(substitutions) && substitutions.some((substitution) =>
+    isRecord(substitution) && substitution.agent === assignment.agent &&
+    substitution.fromModel === defaultModel && substitution.toModel === assignment.model,
   );
 }
 
@@ -53,6 +78,16 @@ export function validateModelPlans(
     }
     const byAgent = new Map<string, ModelAssignment>();
     for (const assignment of assignments) {
+      if (!assignment.available || !expected.has(assignment.agent)) {
+        errors.push({
+          file: record.file,
+          invariant: "model-plan-consistency",
+          message: !assignment.available
+            ? `Model "${assignment.model}" assigned to ${assignment.agent} is unavailable.`
+            : `Model plan names unknown lifecycle agent "${assignment.agent}".`,
+          remediation: "Assign an available model to each declared lifecycle agent; obtain bound human approval for substitutions.",
+        });
+      }
       if (byAgent.has(assignment.agent)) {
         errors.push({
           file: record.file,
@@ -75,13 +110,13 @@ export function validateModelPlans(
         });
         continue;
       }
-      if (assignment.model !== defaultModel && !assignment.approvalReference) {
+      if (assignment.model !== defaultModel && !hasSubstitutionApproval(record, assignment, defaultModel, records)) {
         errors.push({
           file: record.file,
           invariant: "model-plan-consistency",
-          message: `${agent} changes the default model without human approval evidence.`,
+          message: `${agent} changes the default model without verified, hash-bound human approval evidence for this substitution.`,
           remediation:
-            "Restore the lifecycle model or add the explicit approval record reference.",
+            "Restore the lifecycle model, or reference a prior signed APPROVED decision with the exact agent/fromModel/toModel in extensions.modelSubstitutions and bind its hash in model-plan extensions.modelSubstitutionApprovals.",
         });
       }
     }

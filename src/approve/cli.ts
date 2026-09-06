@@ -17,6 +17,8 @@ interface ApproveOptions {
   case: string;
   phase: string;
   root: string;
+  rotateFrom?: string;
+  rotationReason?: string;
 }
 
 function presentEvidence(context: ApprovalContext): void {
@@ -53,6 +55,8 @@ export async function runApproveCli(argv: string[]): Promise<number> {
     .requiredOption("--case <path>", "case beneath cases/<case-name>")
     .requiredOption("--phase <id>", "phase identifier")
     .option("--root <path>", "repository root", process.cwd())
+    .option("--rotate-from <fingerprint>", "active signing key fingerprint being replaced")
+    .option("--rotation-reason <reason>", "reason for the explicit signing key rotation")
     .exitOverride();
 
   try {
@@ -67,6 +71,12 @@ export async function runApproveCli(argv: string[]): Promise<number> {
   const options = program.opts<ApproveOptions>();
 
   try {
+    if (Boolean(options.rotateFrom) !== Boolean(options.rotationReason) ||
+      (options.rotateFrom !== undefined && !/^[a-f0-9]{64}$/u.test(options.rotateFrom)) ||
+      (options.rotationReason !== undefined && options.rotationReason.trim() === "")) {
+      throw new ApproveError("Rotation requires the active SHA-256 fingerprint and a nonempty reason.",
+        "Provide both --rotate-from and --rotation-reason, or neither.");
+    }
     const context = await prepareApproval({
       repositoryRoot: path.resolve(options.root),
       casePath: options.case,
@@ -82,6 +92,10 @@ export async function runApproveCli(argv: string[]): Promise<number> {
     if (answer !== "approve" && answer !== "reject") {
       console.log("Cancelled. No decision was recorded.");
       return 0;
+    }
+    if (answer === "approve" && context.verdicts.some(({ verdict }) => verdict === "DIVERGES")) {
+      throw new ApproveError("An APPROVED decision cannot override a DIVERGES final verdict.",
+        "Resolve reviewer blockers or record a rejection.");
     }
 
     const gapsAnswer = (
@@ -103,6 +117,9 @@ export async function runApproveCli(argv: string[]): Promise<number> {
       decision: answer === "approve" ? "APPROVED" : "REJECTED",
       passphrase,
       residualGapAcceptance,
+      ...(options.rotateFrom && options.rotationReason ? {
+        keyRotation: { previousKeyFingerprint: options.rotateFrom, reason: options.rotationReason.trim() },
+      } : {}),
     });
 
     console.log(

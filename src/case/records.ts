@@ -69,6 +69,12 @@ function validateParsedRecord(
   value: unknown,
 ): { record?: LoadedRecord["value"]; errors: ValidationError[] } {
   const expected = expectedRecordType(registry, file);
+  // Application data and copied source evidence are not AFF records. Still
+  // inspect self-identifying AFF records outside contracted locations so a
+  // misplaced record cannot silently disappear from validation.
+  if (!expected && !(isRecord(value) && typeof value.recordType === "string" && registry.entries.has(value.recordType))) {
+    return { errors: [] };
+  }
   const schemaErrors = validateRecordSchema(registry, file, value, expected);
   if (!isRecord(value)) {
     return { errors: schemaErrors };
@@ -96,7 +102,7 @@ async function loadJsonFile(
   try {
     value = JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(content));
   } catch (error: unknown) {
-    if (!(error instanceof SyntaxError)) {
+    if (!(error instanceof SyntaxError) && !(error instanceof TypeError)) {
       throw error;
     }
     return {
@@ -105,7 +111,7 @@ async function loadJsonFile(
     };
   }
 
-  if (file.startsWith("input/")) {
+  if (file.startsWith("input/") || file.startsWith("0-coordination/input/")) {
     return { records: [], errors: [] };
   }
 
@@ -132,12 +138,16 @@ async function loadJsonLinesFile(
 ): Promise<LoadedCaseRecords> {
   const absolutePath = path.join(caseRoot, file);
   const content = await readFile(absolutePath);
-  const snapshotSha256 = hashArtifactBytes(absolutePath, content);
-  const lines = new TextDecoder("utf-8", { fatal: true })
-    .decode(content)
-    .split(/\r?\n/u);
+  let lines: string[];
+  try {
+    lines = new TextDecoder("utf-8", { fatal: true }).decode(content).split(/\r?\n/u);
+  } catch (error: unknown) {
+    if (!(error instanceof TypeError)) throw error;
+    return { records: [], errors: [syntaxError(file, `Invalid UTF-8: ${error.message}`)] };
+  }
   const records: LoadedRecord[] = [];
   const errors: ValidationError[] = [];
+  let invalidSyntax = false;
 
   for (const [index, line] of lines.entries()) {
     if (line.trim() === "") {
@@ -152,13 +162,17 @@ async function loadJsonLinesFile(
         throw error;
       }
       errors.push(syntaxError(lineFile, `Invalid JSONL event: ${error.message}`));
+      invalidSyntax = true;
       continue;
     }
 
-    if (file.startsWith("input/")) {
+    if (file.startsWith("input/") || file.startsWith("0-coordination/input/")) {
       continue;
     }
     const expected = expectedRecordType(registry, file);
+    if (!expected && !(isRecord(value) && typeof value.recordType === "string" && registry.entries.has(value.recordType))) {
+      continue;
+    }
     const schemaErrors = validateRecordSchema(registry, lineFile, value, expected);
     const recordType =
       isRecord(value) && typeof value.recordType === "string"
@@ -169,11 +183,14 @@ async function loadJsonLinesFile(
       ...(recordType ? locationErrors(registry, file, recordType) : []),
     );
     if (schemaErrors.length === 0 && isRecord(value)) {
-      records.push({ file: lineFile, absolutePath, snapshotSha256, value });
+      records.push({ file: lineFile, absolutePath, snapshotSha256: "", value });
     }
   }
 
-  return { records, errors };
+  // No record may cite a snapshot of a journal that could not be parsed in full.
+  if (invalidSyntax) return { records: [], errors };
+  const snapshotSha256 = hashArtifactBytes(absolutePath, content);
+  return { records: records.map((record) => ({ ...record, snapshotSha256 })), errors };
 }
 
 export async function loadCaseRecords(

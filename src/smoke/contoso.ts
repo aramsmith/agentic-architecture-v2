@@ -17,7 +17,7 @@ import { bindingSet, type Binding } from "../case/review-records.js";
 import { isRecord } from "../common/json.js";
 import { validateFramework } from "../framework/index.js";
 import { readLifecycle } from "../framework/lifecycle.js";
-import { renderPhaseHtml, renderSolutionOverview } from "../render/index.js";
+import { renderApprovalOverview, renderPhaseHtml, renderSolutionOverview } from "../render/index.js";
 
 const CASE_PATH = "cases/contoso-permit-services";
 const CASE_NAME = "contoso-permit-services";
@@ -940,6 +940,10 @@ async function retainOutput(
     path.join(destination, "cases", CASE_NAME),
     { recursive: true },
   );
+  // Keep the exact contracts needed to regenerate the diagnostic dashboard.
+  await cp(path.join(workspaceRoot, "schemas"), path.join(destination, "schemas"), { recursive: true });
+  await cp(path.join(workspaceRoot, ".github/agents/AFF-LIFECYCLE.json"),
+    path.join(destination, ".github/agents/AFF-LIFECYCLE.json"));
   await writeJson(path.join(destination, "smoke-report.json"), result);
 }
 
@@ -950,6 +954,7 @@ export async function runContosoSmoke(
   try {
     await buildContosoSmokeWorkspace(options.repositoryRoot, workspaceRoot);
     const result = await verifyContosoSmokeWorkspace(workspaceRoot);
+    await renderApprovalOverview({ repositoryRoot: workspaceRoot, casePath: CASE_PATH });
     if (options.keepOutputPath) {
       await retainOutput(
         workspaceRoot,

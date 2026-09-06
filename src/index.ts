@@ -4,6 +4,7 @@ export {
   RenderError,
   renderPhaseHtml,
   renderSolutionOverview,
+  renderApprovalOverview,
 } from "./render/index.js";
 export {
   SmokeError,

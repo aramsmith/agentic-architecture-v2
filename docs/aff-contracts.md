@@ -79,8 +79,8 @@ A phase therefore cannot be entered, evidenced, or approved before its predecess
 Phases 7 and 8 additionally declare `scoped-attempt-authorisation`, `scoped-test-attempt-authorisation`,
 and `phase-7-succeeded`. These have no catalogued record type in contract `1.0.0`, so the validator
 cannot verify them and **fails closed**: entering Phase 7 or Phase 8 reports a `phase-sequence` error
-until the prerequisite is either catalogued as a case record or removed from
-`.github/agents/AFF-LIFECYCLE.json`.
+until scoped authorisation and deployment-result contracts and their validators are implemented.
+Removing prerequisites is not an approved workaround.
 
 ## Approval assurance modes
 
@@ -142,6 +142,20 @@ Two continuity rules follow:
   unless it records an explicit `extensions.keyRotation` naming the previous fingerprint and the reason.
   A forgotten passphrase cannot be cryptographically bridged, so a rotation is a visible break in the
   chain rather than a silent substitution.
+
+The continuity fingerprint is derived from the verified Ed25519 public key. A conflicting declared
+fingerprint is rejected. Rotations must name the currently active key and give a nonempty reason;
+subsequent decisions use the new key. Rotation is an explicit recovery assertion, not proof of approval
+by the lost old key. New decision files use unique identifiers and exclusive creation; existing signed
+records are never rewritten by the approval command.
+
+The approval command rechecks evidence before writing. An `APPROVED` decision cannot override a final
+`DIVERGES` verdict. Reopening and blocker events withdraw existing approvals from downstream gates;
+phase-entry and candidate timestamps are checked against predecessor approval state at that time.
+
+Use `npm run render -- approvals --case cases/<case-name>` to generate the diagnostic
+`approval-overview.html` snapshot. It includes decision history, state, recommendations, evidence links,
+and validation errors. A displayed recorded state in an invalid case does not authorise progression.
 
 > **What this does not do.** Verification is not access control. An agent may still write an approval
 > file; it simply cannot produce a valid signature without the passphrase, so its record fails

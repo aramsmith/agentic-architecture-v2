@@ -1,9 +1,9 @@
-import { mkdir } from "node:fs/promises";
+import { randomUUID } from "node:crypto";
+import { lstat, mkdir, open } from "node:fs/promises";
 import path from "node:path";
 
-import writeFileAtomic from "write-file-atomic";
-
 import { validateLoadedCase } from "../case/index.js";
+import { activeApproval } from "../case/state.js";
 import { resolveCasePath } from "../case/path.js";
 import { loadCaseRecords } from "../case/records.js";
 import {
@@ -11,9 +11,8 @@ import {
   latestApprovals,
   latestCandidateEvents,
   latestReviews,
-  type Approval,
   type Binding,
-  type Review,
+  type Approval,
 } from "../case/review-records.js";
 import { readLifecycle } from "../framework/lifecycle.js";
 import {
@@ -24,6 +23,8 @@ import {
 import { signApproval } from "../identity/signature.js";
 
 export interface ApprovalContext {
+  repositoryRoot: string;
+  casePath: string;
   caseRoot: string;
   caseName: string;
   artifactPrefix: string;
@@ -122,20 +123,30 @@ export async function prepareApproval(options: {
     loaded,
     { ...(options.home ? { home: options.home } : {}) },
   );
-  // The approval being recorded is precisely what settles convergence, approval
-  // binding, assurance mode, and phase sequence. Blocking on those would be
-  // circular: the case cannot satisfy them until this decision exists. Every
-  // other invariant describes evidence that must already be sound, so it blocks.
-  const decidedByThisApproval = new Set([
-    "review-convergence",
-    "approval-binding",
-    "approval-mode",
-    "phase-sequence",
-  ]);
+  // A replacement decision can settle only its own stale-current-review error.
+  // Invalid historical signatures, review bindings, and predecessor state remain
+  // blocking even when they concern the phase receiving the new decision.
+  const targetApprovals = new Set(loaded.records.filter(({ value }) =>
+    value.recordType === "human-approval" && value.phaseId === options.phaseId,
+  ).map(({ file }) => file));
+  const previous = latestApprovals(loaded.records.map(asApproval)
+    .filter((approval): approval is Approval => approval !== undefined)).get(options.phaseId);
+  const replacedArtifactErrors = new Set((previous?.artifactHashes ?? []).map(({ path: artifactPath }) =>
+    `Artifact "${artifactPath}" has SHA-256 `));
   const blocking = [
     ...new Set(
       validation.errors
-        .filter(({ invariant }) => !decidedByThisApproval.has(invariant))
+        .filter((error) => !((error.invariant === "approval-binding" &&
+          targetApprovals.has(error.file) &&
+          error.message === "The latest approval is stale because a newer or incomplete review round exists.") ||
+          (error.invariant === "artifact-hash-binding" && error.file === previous?.file &&
+            [...replacedArtifactErrors].some((prefix) => error.message.startsWith(prefix)) &&
+            !previous.reviewRecords.some(({ path: reviewPath }) => error.message.startsWith(`Artifact "${reviewPath}" `))) ||
+          (error.invariant === "phase-sequence" &&
+            error.message.endsWith(`depends on phase ${options.phaseId}, whose approval is no longer active.`)) ||
+          (error.invariant === "phase-sequence" && previous &&
+            error.file.split("; ").includes(previous.file) &&
+            error.message.startsWith(`Phase ${options.phaseId} was approved at ${previous.decidedAt}, before phase `))))
         .map(({ invariant }) => invariant),
     ),
   ];
@@ -146,16 +157,11 @@ export async function prepareApproval(options: {
     );
   }
 
-  const approvals = latestApprovals(
-    loaded.records
-      .map(asApproval)
-      .filter((value): value is Approval => value !== undefined),
-  );
   for (const required of await requiredApprovedPhases(
     options.repositoryRoot,
     options.phaseId,
   )) {
-    if (approvals.get(required)?.decision !== "APPROVED") {
+    if (!activeApproval(loaded.records, required)) {
       throw new ApproveError(
         `Phase ${options.phaseId} cannot be approved while phase ${required} has no approved human decision.`,
         `Approve phase ${required} first. Phases are approved in lifecycle order.`,
@@ -209,6 +215,8 @@ export async function prepareApproval(options: {
   }
 
   return {
+    repositoryRoot: options.repositoryRoot,
+    casePath: options.casePath,
     caseRoot,
     caseName: path.basename(caseRoot),
     artifactPrefix: candidate.artifactPrefix,
@@ -220,7 +228,7 @@ export async function prepareApproval(options: {
       verdict,
       round,
     })),
-    outputPath: `approvals/phase-${options.phaseId}/${candidate.artifactPrefix}-phase-${options.phaseId}-approval.json`,
+    outputPath: `approvals/phase-${options.phaseId}/${candidate.artifactPrefix}-phase-${options.phaseId}-approval-${randomUUID()}.json`,
     approverLabel: identity.label,
     keyFingerprint: identity.fingerprint,
   };
@@ -236,6 +244,36 @@ export async function recordSignedDecision(options: {
   home?: string;
 }): Promise<{ file: string; keyFingerprint: string }> {
   const { context } = options;
+  if (options.decision === "APPROVED" && context.verdicts.some(({ verdict }) => verdict === "DIVERGES")) {
+    throw new ApproveError("An APPROVED decision cannot override a DIVERGES final verdict.",
+      "Resolve the blockers and complete new reviews, or record a rejection.");
+  }
+  if (!/^approvals\/phase-[0-8]\/[a-z0-9-]+\.json$/u.test(context.outputPath) ||
+      !context.outputPath.startsWith(`approvals/phase-${context.phaseId}/`)) {
+    throw new ApproveError("Invalid approval output path.", "Prepare the decision again using the approval command.");
+  }
+  if (!context.repositoryRoot || !context.casePath) {
+    throw new ApproveError("A complete case context is required before signing.",
+      "Prepare the decision again using the approval command.");
+  }
+  {
+    const fresh = await prepareApproval({
+      repositoryRoot: context.repositoryRoot,
+      casePath: context.casePath,
+      phaseId: context.phaseId,
+      ...(options.home ? { home: options.home } : {}),
+    });
+    if (fresh.caseRoot !== context.caseRoot || fresh.caseName !== context.caseName ||
+      fresh.artifactPrefix !== context.artifactPrefix ||
+      JSON.stringify(fresh.verdicts) !== JSON.stringify(context.verdicts) ||
+      bindingKey(fresh.artifacts) !== bindingKey(context.artifacts) ||
+      bindingKey(fresh.reviewBindings) !== bindingKey(context.reviewBindings) ||
+      fresh.keyFingerprint !== context.keyFingerprint ||
+      fresh.approverLabel !== context.approverLabel) {
+      throw new ApproveError("The approval evidence or identity changed while the decision was being entered.",
+        "Restart the approval command and review the current evidence.");
+    }
+  }
   const identity = await readIdentity(options.home);
   if (!identity) {
     throw new ApproveError(
@@ -281,10 +319,39 @@ export async function recordSignedDecision(options: {
   }
 
   const absolute = path.join(context.caseRoot, ...context.outputPath.split("/"));
-  await mkdir(path.dirname(absolute), { recursive: true });
-  await writeFileAtomic(absolute, `${JSON.stringify(signed, null, 2)}\n`, {
-    encoding: "utf8",
-  });
+  const loaded = await loadCaseRecords(context.repositoryRoot, context.caseRoot);
+  const prospective = await validateLoadedCase(context.repositoryRoot, context.caseRoot, {
+    ...loaded,
+    records: [...loaded.records, { file: context.outputPath, absolutePath: absolute,
+      value: signed, snapshotSha256: "" }],
+  }, { ...(options.home ? { home: options.home } : {}) });
+  // Reapproving an upstream phase deliberately makes older downstream decisions
+  // stale. Preserve that diagnostic, but allow the architect to repair in order.
+  const decisionErrors = prospective.errors.filter((error) => !(error.invariant === "phase-sequence" &&
+    error.message.endsWith(`before phase ${context.phaseId} was approved at ${String(signed.decidedAt)}.`) &&
+    !error.message.startsWith(`Phase ${context.phaseId} was approved at `)));
+  if (decisionErrors.length) {
+    throw new ApproveError(`The proposed decision does not validate: ${decisionErrors.map(({ message }) => message).join(" ")}`,
+      "Resolve the evidence or decision chronology before signing a new decision.");
+  }
+  // Only create the two contracted directories and never follow directory links.
+  for (const directory of [path.join(context.caseRoot, "approvals"), path.dirname(absolute)]) {
+    try { await mkdir(directory); } catch (error: unknown) {
+      if (!(error instanceof Error) || !("code" in error) || error.code !== "EEXIST") throw error;
+    }
+    const details = await lstat(directory);
+    if (details.isSymbolicLink() || !details.isDirectory()) {
+      throw new ApproveError("Approval output directory is not a physical case directory.",
+        "Remove the link or conflicting path before recording a decision.");
+    }
+  }
+  const handle = await open(absolute, "wx", 0o600);
+  try {
+    await handle.writeFile(`${JSON.stringify(signed, null, 2)}\n`, "utf8");
+    await handle.sync();
+  } finally {
+    await handle.close();
+  }
 
   return { file: context.outputPath, keyFingerprint: identity.fingerprint };
 }

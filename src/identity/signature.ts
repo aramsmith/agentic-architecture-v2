@@ -58,6 +58,7 @@ export function readSignature(
 
 export interface VerificationResult {
   verified: boolean;
+  keyFingerprint?: string;
   reason?: string;
 }
 
@@ -81,6 +82,9 @@ export function verifyApprovalSignature(
   } catch {
     return { verified: false, reason: "the embedded public key is unreadable" };
   }
+  if (publicKey.asymmetricKeyType !== "ed25519") {
+    return { verified: false, reason: "the embedded public key is not Ed25519" };
+  }
 
   let actualFingerprint: string;
   try {
@@ -94,23 +98,32 @@ export function verifyApprovalSignature(
       reason: "the recorded fingerprint does not match the embedded public key",
     };
   }
+  if (
+    isRecord(record.extensions) &&
+    record.extensions.keyFingerprint !== undefined &&
+    record.extensions.keyFingerprint !== actualFingerprint
+  ) {
+    return { verified: false, reason: "the approval fingerprint does not match the verified key" };
+  }
 
   let signatureBytes: Buffer;
+  if (!/^[A-Za-z0-9+/]{86}==$/u.test(signature.value)) {
+    return { verified: false, reason: "the signature is not valid Ed25519 base64" };
+  }
   try {
     signatureBytes = Buffer.from(signature.value, "base64");
   } catch {
     return { verified: false, reason: "the signature is not valid base64" };
   }
 
-  const valid = verify(
-    null,
-    signablePayload(record),
-    publicKey,
-    signatureBytes,
-  );
-  return valid
-    ? { verified: true }
-    : { verified: false, reason: "the signature does not match the record" };
+  try {
+    const valid = verify(null, signablePayload(record), publicKey, signatureBytes);
+    return valid
+      ? { verified: true, keyFingerprint: actualFingerprint }
+      : { verified: false, reason: "the signature does not match the record" };
+  } catch {
+    return { verified: false, reason: "the signature could not be verified" };
+  }
 }
 
 export function signApproval(

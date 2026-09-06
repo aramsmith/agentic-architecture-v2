@@ -14,7 +14,7 @@
 
 | Candidate artifact | SHA-256 |
 |---|---|
-| `0-coordination/contoso-coordination.html` | `bd0685c57cbbe3e608ed81f9105cb9d2ca57856ac2468c529096ad321cb9364c` |
+| `0-coordination/contoso-coordination.html` | `2b51850be6d044db92cb0bdf6bb189c122a17520279574cf433134912270d962` |
 | `0-coordination/contoso-coordination.md` | `f674d12e010f15e17cefa9861055ba94dcc769e5e6d8164e47843b5eef1327ba` |
 | `0-coordination/contoso-input-inventory.json` | `7a16561e778d709e552fd36b95d5bab5803afeeefc8a83b6733cd4eeabff403d` |
 | `0-coordination/contoso-model-plan.json` | `b60f76412ab4dfb4deafab12b68fe65b65aadad2693d9deb305b03d57d37345e` |

@@ -97,6 +97,7 @@ export function asApproval(record: LoadedRecord): Approval | undefined {
   ) {
     return undefined;
   }
+  const verification = verifyApprovalSignature(value);
   return {
     file: record.file,
     phaseId: value.phaseId,
@@ -109,10 +110,9 @@ export function asApproval(record: LoadedRecord): Approval | undefined {
       isRecord(value.extensions) &&
       value.extensions.syntheticTestEvidence === true &&
       value.extensions.realApproval === false,
-    signatureVerified: verifyApprovalSignature(value).verified,
-    ...(isRecord(value.extensions) &&
-    typeof value.extensions.keyFingerprint === "string"
-      ? { keyFingerprint: value.extensions.keyFingerprint }
+    signatureVerified: verification.verified,
+    ...(verification.keyFingerprint
+      ? { keyFingerprint: verification.keyFingerprint }
       : {}),
     ...(isRecord(value.extensions) &&
     isRecord(value.extensions.keyRotation) &&

@@ -343,7 +343,7 @@ describe("offline Contoso smoke journey", () => {
     );
 
     await expect(verifyContosoSmokeWorkspace(workspaceRoot)).rejects.toThrow(
-      /last Phase 0 gate action|solution-overview/u,
+      /last Phase 0 gate action|solution-overview|phase-sequence/u,
     );
   });
 

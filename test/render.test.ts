@@ -18,6 +18,7 @@ import { hashArtifact } from "../src/case/hash.js";
 import {
   renderPhaseHtml,
   renderSolutionOverview,
+  renderApprovalOverview,
 } from "../src/render/index.js";
 
 const projectRoot = path.resolve(
@@ -735,7 +736,7 @@ describe("phase HTML renderer", () => {
     }
   });
 
-  it("represents an explicit reopened phase without losing approved content", async () => {
+  it("reports a reopened predecessor in the dashboard while refusing a validated overview", async () => {
     const { repositoryRoot, caseRoot } = await createValidatedOverviewCase();
     const journalPath = path.join(caseRoot, "sample-run-journal.jsonl");
     await writeFile(
@@ -755,17 +756,19 @@ describe("phase HTML renderer", () => {
       })}\n`,
     );
 
-    await renderSolutionOverview({
+    await expect(renderSolutionOverview({
       repositoryRoot,
       casePath: "cases/valid-case",
-    });
+    })).rejects.toThrow(/no longer active|review predates/u);
+    await renderApprovalOverview({ repositoryRoot, casePath: "cases/valid-case" });
 
     const html = await readFile(
-      path.join(caseRoot, "solution-overview.html"),
+      path.join(caseRoot, "approval-overview.html"),
       "utf8",
     );
     expect(html).toContain("Reopened");
-    expect(html).toContain("Approved candidate.");
+    expect(html).toContain("no longer active");
+    expect(html).toContain("sample-coordination.md");
   });
 
   it("refuses to create an overview from stale candidate evidence", async () => {
@@ -841,17 +844,18 @@ describe("phase HTML renderer", () => {
       `${await readFile(journalPath, "utf8")}${extraEvents.map((event) => JSON.stringify(event)).join("\n")}\n`,
     );
 
-    await renderSolutionOverview({
+    await expect(renderSolutionOverview({
       repositoryRoot,
       casePath: "cases/valid-case",
-    });
+    })).rejects.toThrow(/no longer active|review predates/u);
+    await renderApprovalOverview({ repositoryRoot, casePath: "cases/valid-case" });
 
     const html = await readFile(
-      path.join(caseRoot, "solution-overview.html"),
+      path.join(caseRoot, "approval-overview.html"),
       "utf8",
     );
     expect(html).not.toContain("Approved and exited");
-    expect(html).toContain("Not approved");
+    expect(html).toContain("Reopened");
   });
 
   it("cannot render tampered unapproved content after a later hash-less candidate event", async () => {

@@ -5,6 +5,43 @@ All notable user-visible changes are recorded here. Versions follow the separate
 
 ## [Unreleased]
 
+- Added a single-architect operating guide and a dashboard review with explicit outstanding manual
+  accessibility/visual release checks. Corrected the dashboard phase-heading hierarchy.
+
+- Reject decisions timestamped before either final review, including historical gate checks.
+- Require complete case context and fresh evidence checks for direct signing calls; validate
+  proposed decisions before writing while retaining ordered upstream-to-downstream recovery.
+
+- Restyled the architect approval dashboard to match `agentic-architecture-v2.html`: embedded
+  typography, dark palette, navigation, hero metrics, and separate numbered phase cards.
+
+### Added
+
+- Local architect dashboard: `npm run render -- approvals --case cases/<case-name>` shows all readable
+  decisions, current phase state, recorded blockers, recommendations, and validation diagnostics.
+- Shared lifecycle state and regression coverage for reopened phases, historical phase entry,
+  signing-key continuity, immutable reapproval, ordinary application JSON, and damaged journals.
+- Read-only `npm run doctor` setup diagnostics. Host model availability and presentation tooling remain
+  explicit manual checks.
+- `npm run demo:approvals` generates a complete synthetic Phase 0–6 contract fixture with a historical
+  rejection, later approvals, and both local overviews. It does not execute application tests or DECKIO.
+- CI configuration for Linux, Windows, and macOS on Node 22 and 24; execution of that matrix occurs in CI.
+
+### Fixed
+
+- Dashboard phase cards no longer inherit the phase document's fixed grid cell; cards have independent
+  responsive placement, readable spacing, and a single-column narrow-screen layout.
+- Fingerprints now derive from verified Ed25519 keys; invalid signatures fail closed and rotations
+  advance the active key after checking the previous fingerprint and reason.
+- New approvals and rejections use unique files with exclusive creation, preserving earlier decisions.
+- Approval preparation no longer broadly suppresses evidence failures and rejects approval of DIVERGES.
+- Reopenings and blockers withdraw predecessor gates; later approvals do not legitimise premature entry.
+- Application/source JSON no longer requires AFF fields; malformed JSONL receives line diagnostics.
+- Model availability and signed, hash-bound substitution evidence are checked.
+
+Existing-case guidance: [approval integrity migration](docs/migrations/approval-integrity.md).
+Phases 7–8 remain fail-closed pending scoped execution contracts; no live deployment is added here.
+
 ## [1.1.0] - 2026-09-04
 
 ### Added

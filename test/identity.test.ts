@@ -183,7 +183,7 @@ describe("approval signatures", () => {
   it("verifies a decision signed with the correct passphrase", async () => {
     const { signed, fingerprint } = await signedFixture();
 
-    expect(verifyApprovalSignature(signed)).toEqual({ verified: true });
+    expect(verifyApprovalSignature(signed)).toEqual({ verified: true, keyFingerprint: fingerprint });
     const extensions = signed.extensions as Record<string, unknown>;
     expect(extensions.approvalMode).toBe("human-verified");
     expect(extensions.keyFingerprint).toBe(fingerprint);

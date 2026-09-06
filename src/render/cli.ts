@@ -10,6 +10,7 @@ import {
   RenderError,
   renderPhaseHtml,
   renderSolutionOverview,
+  renderApprovalOverview,
 } from "./index.js";
 
 interface PhaseCliOptions {
@@ -86,6 +87,19 @@ export async function runRenderCli(argv: string[]): Promise<number> {
         outputPath: options.output,
       });
       console.log(`Rendered ${options.output} from validated case records.`);
+    });
+
+  program
+    .command("approvals")
+    .description("Render the architect approval dashboard, including case diagnostics.")
+    .requiredOption("--case <path>", "case path beneath cases/<case-name>")
+    .option("--root <path>", "repository root", process.cwd())
+    .action(async (options: OverviewCliOptions) => {
+      await renderApprovalOverview({
+        repositoryRoot: path.resolve(options.root),
+        casePath: options.case,
+      });
+      console.log("Rendered approval-overview.html. This is a snapshot, not an approval.");
     });
 
   try {

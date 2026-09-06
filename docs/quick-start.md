@@ -1,5 +1,7 @@
 # Ten-minute architect quick start
 
+For the ongoing decision workflow, see the [single-architect operating guide](architect-operating-guide.md).
+
 This path proves that the checked-out AFF framework is internally consistent and produces a safe,
 synthetic Phase 0 result. It does not call a model, access Azure, deploy anything, or create a real
 architecture approval.
@@ -17,7 +19,7 @@ architecture approval.
 The commands below are the verified Windows path. On Linux or macOS, use the same `git`, `npm`, and
 Node.js commands in a terminal, replace `Set-Location` with `cd`, use `cat` for the report, and open the
 HTML file with the operating system's normal file command. Those local shell equivalents are expected,
-but this repository does not automate them.
+with platform coverage configured in repository CI. A configured CI job is not evidence of a completed run.
 
 From a clean folder:
 
@@ -34,6 +36,19 @@ Invoke-Item .\.aff-smoke\contoso-review\cases\contoso-permit-services\solution-o
 ```
 
 If you are evaluating an unmerged branch, check out that branch before `npm ci`.
+
+Run `npm run doctor` to inspect local prerequisites and see remaining manual host/model checks.
+To inspect the retained smoke case's decision dashboard:
+
+```powershell
+npm run render -- approvals --root .\.aff-smoke\contoso-review --case cases/contoso-permit-services
+Invoke-Item .\.aff-smoke\contoso-review\cases\contoso-permit-services\approval-overview.html
+```
+
+For a real case, omit `--root` and pass its case path. Regenerate the snapshot after every change.
+The dashboard cannot sign decisions. Create an identity with `npm run identity:create` before using
+`npm run approve`; run both commands yourself outside an agent session. Before Phase 6, arrange an
+organisation-approved DECKIO installation and PDF export toolchain; `npm ci` does not install these.
 
 ### Successful evidence
 
@@ -77,6 +92,10 @@ convergence, approval, Azure readiness, or production fitness.
 
 Local evaluation and an agent trial do not require Azure. Do not improvise deployment commands from this
 quick start.
+
+**Not yet available:** the current validator deliberately blocks Phases 7 and 8 because scoped
+authorisation and deployment-success prerequisite evaluation is not implemented. The following describes
+the intended boundary, not an executable supported path. Do not remove lifecycle prerequisites.
 
 Phase 7 may be invoked only after Phase 6 is approved and a human gives scoped deployment-attempt
 authorisation. Phase 8 may be invoked only after a successful approved Phase 7 deployment and separate

@@ -4,6 +4,7 @@ import type {
   ValidationError,
 } from "../types.js";
 import type { LoadedRecord } from "./records.js";
+import { activeApproval } from "./state.js";
 import {
   asApproval,
   firstPhaseEntries,
@@ -111,6 +112,30 @@ export function validatePhaseSequence(
           remediation:
             "Record human decisions in lifecycle order using accurate RFC 3339 instants.",
         });
+      }
+
+      if (predecessor.decision === "APPROVED" && !activeApproval(records, prerequisite.phaseId)) {
+        errors.push({
+          file: evidence.file,
+          invariant,
+          message: `Phase ${phase.id} depends on phase ${prerequisite.phaseId}, whose approval is no longer active.`,
+          remediation: `Resolve the reopening, blocker, or changed review in phase ${prerequisite.phaseId} and record a new decision before continuing.`,
+        });
+      }
+
+      // Validate history at the time work happened, not against a later approval.
+      for (const event of records.filter(({ value }) =>
+        value.recordType === "run-journal-event" && value.phaseId === phase.id &&
+        ["PHASE-ENTERED", "ARTIFACTS-RECORDED"].includes(String(value.eventType)))) {
+        const timestamp = String(event.value.timestamp);
+        if (!activeApproval(records, prerequisite.phaseId, Date.parse(timestamp))) {
+          errors.push({
+            file: event.file,
+            invariant,
+            message: `Phase ${phase.id} activity at ${timestamp} occurred before an active approval of phase ${prerequisite.phaseId}.`,
+            remediation: "Preserve the historical violation and record a reviewed recovery before resuming; never backdate approval evidence.",
+          });
+        }
       }
     }
 

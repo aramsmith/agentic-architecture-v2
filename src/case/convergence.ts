@@ -56,6 +56,18 @@ export function validateReviewConvergence(
     }
     const affASet = bindingSet(affA.subjectArtifacts);
     const affBSet = bindingSet(affB.subjectArtifacts);
+    const reopenedAt = Math.max(-Infinity, ...records.filter(({ value }) =>
+      value.recordType === "run-journal-event" && value.phaseId === phaseId &&
+      ["PHASE-REOPENED", "BLOCKER"].includes(String(value.eventType)))
+      .map(({ value }) => Date.parse(String(value.timestamp))));
+    for (const review of [affA, affB]) {
+      const source = records.find(({ file }) => file === review.file);
+      if (source && Date.parse(String(source.value.reviewedAt)) <= reopenedAt) {
+        errors.push({ file: review.file, invariant: "review-convergence",
+          message: `Phase ${phaseId} final review predates its latest reopening or blocker.`,
+          remediation: "Complete a new final review round after resolving the issue before recording a new decision." });
+      }
+    }
     if (affASet !== affBSet) {
       errors.push({
         file: `${affA.file}; ${affB.file}`,

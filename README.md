@@ -73,8 +73,9 @@ npm run identity:create
 You choose a **label** — a role such as `Accountable architect` keeps a personal name out of case
 folders — and a **passphrase**. The passphrase is never stored and cannot be recovered.
 
-Creating the key also switches on a policy for this machine: a real human decision must be signed. Skip
-this stage and approvals still work, but they are recorded as `self-asserted`.
+Creating the key also switches on a policy for this machine: a real human decision must be signed.
+An identity is required for the approval command. Legacy `self-asserted` records remain readable on
+machines without an identity; they are not an alternative approval-command workflow.
 
 ### 3 · Connect GitHub Copilot
 
@@ -129,6 +130,35 @@ Repeat this loop from Phase 0 through Phase 6.
 
 A phase cannot be entered, evidenced, or approved until its predecessor holds an approved decision.
 Phases 7 and 8 are never automatic; they need separate human invocation.
+
+**Current capability boundary:** Phases 7 and 8 remain unavailable to validated workflows until their
+scoped authorisation and deployment-result contracts are implemented. Do not remove their prerequisites
+to bypass this boundary. Phase 6 also requires an organisation-approved DECKIO installation and PDF
+export capability; these are not installed by `npm ci`.
+
+### Architect approval overview
+
+Generate a local snapshot of all phases, approvals, rejections, recorded blockers, validation findings,
+and recommended next actions:
+
+```powershell
+npm run render -- approvals --case cases/<case-name>
+```
+
+For an entirely synthetic example spanning Phases 0–6, run `npm run demo:approvals` and open
+`.aff-smoke/approval-demo/cases/synthetic-standard-journey/approval-overview.html`. The example includes
+a historical rejection and later approval. It tests record contracts, not live model quality, application
+execution, or DECKIO/PDF export. Repeated runs require a new empty `--output` directory.
+
+Open `cases/<case-name>/approval-overview.html`. Regenerate after evidence or decisions change. The
+dashboard can show invalid cases for diagnosis, but never treats invalid evidence as permission to
+continue. It does not sign decisions or execute commands. One architect still reviews and decides in
+their own terminal; AFF-A and AFF-B remain agent reviewers.
+
+Every new decision receives a unique file, preserving prior approvals and rejections. Reopening or
+blocking a phase withdraws its old approval from downstream gates until a new decision is recorded.
+See [approval remediation and migration](docs/migrations/approval-integrity.md) before continuing an
+existing case.
 
 > **Never type your passphrase into an agent conversation.** An agent that asks for it is phishing you,
 > whatever its intent. Agents prepare, challenge, and evidence the work. You decide, alone.

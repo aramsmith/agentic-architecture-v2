@@ -10,6 +10,7 @@ import writeFileAtomic from "write-file-atomic";
 import { hashArtifact, hashArtifactBytes } from "../case/hash.js";
 import { validateHashBindings } from "../case/hash.js";
 import { validateLoadedCase } from "../case/index.js";
+import { phaseStatus } from "../case/state.js";
 import {
   approvalModeLabel,
   resolveApprovalMode,
@@ -784,13 +785,14 @@ a{color:#0645ad;text-underline-offset:.18em}a:focus-visible,button:focus-visible
 .skip-link{position:absolute;left:.75rem;top:-5rem;background:#111827;color:#fff;padding:.75rem 1rem;z-index:10}.skip-link:focus{top:.75rem}
 header,main,footer{max-width:72rem;margin:auto;padding:1.25rem}header{border-bottom:1px solid var(--border)}main{display:grid;grid-template-columns:minmax(13rem,18rem) minmax(0,1fr);gap:2rem}
 nav{align-self:start;position:sticky;top:1rem;grid-column:1;grid-row:1;background:var(--soft);padding:1rem;border-radius:.5rem}nav h2{font-size:1rem;margin-top:0}.toc-depth-3{margin-left:1rem}.toc-depth-4,.toc-depth-5,.toc-depth-6{margin-left:2rem}
-article{min-width:0;grid-column:2;grid-row:1}.document-title{font-size:1.8rem;font-weight:700;margin:.25rem 0}h1,h2,h3,h4,h5,h6{line-height:1.25;scroll-margin-top:1rem}table{border-collapse:collapse;width:100%;display:block;overflow-x:auto}th,td{border:1px solid var(--border);padding:.5rem;text-align:left}th{background:var(--soft)}
+article{min-width:0}main>article{grid-column:2;grid-row:1}.document-title{font-size:1.8rem;font-weight:700;margin:.25rem 0}h1,h2,h3,h4,h5,h6{line-height:1.25;scroll-margin-top:1rem}table{border-collapse:collapse;width:100%;display:block;overflow-x:auto}th,td{border:1px solid var(--border);padding:.5rem;text-align:left}th{background:var(--soft)}
 pre{overflow:auto;background:#111827;color:#f8fafc;padding:1rem;border-radius:.4rem}.code-block figcaption{font-weight:700}.diagram-warning{border-left:.3rem solid #9a6700;background:#fff4ce;padding:.75rem}
 .source-metadata{font-size:.9rem;color:var(--muted)}.source-metadata div{border-top:1px solid var(--border);padding:.5rem 0}.source-metadata dt{font-weight:700}.source-metadata dd{margin:0;overflow-wrap:anywhere}
 img{max-width:100%;height:auto}footer{border-top:1px solid var(--border);color:var(--muted)}
-@media(max-width:48rem){main{grid-template-columns:1fr}nav{position:static}}@media print{.skip-link,nav{display:none}main{display:block}a{color:inherit}body{font-size:11pt}}
+@media(max-width:48rem){main{grid-template-columns:1fr}main>article{grid-column:1;grid-row:auto}nav{position:static}}@media print{.skip-link,nav{display:none}main{display:block}a{color:inherit}body{font-size:11pt}}
 `;
 
+// The dashboard has its own reference-page theme, independent of document layout.
 export async function renderPhaseHtml(
   options: RenderPhaseOptions,
 ): Promise<void> {
@@ -1045,76 +1047,6 @@ function eventBindings(
   );
 }
 
-function phaseState(
-  phaseEvents: LoadedRecord[],
-  approval: Approval | undefined,
-): string {
-  const latestEvent = phaseEvents.at(-1);
-  if (!latestEvent) {
-    return "Not invoked";
-  }
-  if (latestEvent.value.eventType === "PHASE-REOPENED") {
-    return "Reopened";
-  }
-  if (latestEvent.value.eventType === "BLOCKER") {
-    return "Blocked";
-  }
-  if (latestEvent.value.eventType === "PHASE-ENTERED") {
-    return "In progress";
-  }
-  let invalidatedAt = -1;
-  let approvedAt = -1;
-  for (const [index, event] of phaseEvents.entries()) {
-    if (
-      event.value.eventType === "PHASE-REOPENED" ||
-      event.value.eventType === "BLOCKER" ||
-      event.value.eventType === "ARTIFACTS-RECORDED"
-    ) {
-      invalidatedAt = index;
-    }
-    if (
-      event.value.eventType === "HUMAN-DECISION" &&
-      event.value.decision === "APPROVED" &&
-      approval?.decision === "APPROVED" &&
-      bindingSet(eventBindings(event, "artifactHashes")) ===
-        bindingSet(approval.artifactHashes) &&
-      bindingSet(eventBindings(event, "reviewHashes")) ===
-        bindingSet(approval.reviewRecords)
-    ) {
-      approvedAt = index;
-    }
-  }
-  const activeApproval = approvedAt > invalidatedAt;
-  const journalApproved =
-    activeApproval && approval?.decision === "APPROVED";
-  if (
-    latestEvent.value.eventType === "PHASE-EXITED" &&
-    journalApproved
-  ) {
-    return approval.syntheticTestEvidence
-      ? "Synthetic test approval and exited"
-      : "Approved and exited";
-  }
-  if (
-    latestEvent.value.eventType === "HUMAN-DECISION" &&
-    latestEvent.value.decision === "APPROVED" &&
-    journalApproved
-  ) {
-    return approval.syntheticTestEvidence ? "Synthetic test approval" : "Approved";
-  }
-  if (
-    latestEvent.value.eventType === "HUMAN-DECISION" &&
-    latestEvent.value.decision === "REJECTED"
-  ) {
-    return "Rejected";
-  }
-  const eventType =
-    typeof latestEvent.value.eventType === "string"
-      ? latestEvent.value.eventType
-      : "UNKNOWN";
-  return `Not approved (${eventType})`;
-}
-
 function renderReviewPanel(
   reviewer: "AFF-A" | "AFF-B",
   displayName: string,
@@ -1364,10 +1296,7 @@ export async function renderSolutionOverview(
     const approvalHash = approval
       ? loadedRecordHashByFile.get(approval.file)
       : undefined;
-    const phaseEvents = events.filter(
-      (event) => event.value.phaseId === phase.id,
-    );
-    const state = phaseState(phaseEvents, approval);
+    const state = phaseStatus(loaded.records, phase.id, lifecycle).state;
     tabs.push({
       id: `phase-${phase.id}`,
       label: phase.displayName,
@@ -1433,3 +1362,87 @@ export async function renderSolutionOverview(
     fsync: true,
   });
 }
+
+/** A diagnostic view: invalid evidence is displayed, never promoted to approval. */
+export async function renderApprovalOverview(
+  options: RenderOverviewOptions,
+): Promise<void> {
+  const resolved = await resolveCasePath(options.repositoryRoot, options.casePath);
+  if (!resolved.caseRoot) {
+    throw new RenderError(
+      resolved.errors[0]?.message ?? "Case path is invalid.",
+      resolved.errors[0]?.remediation ?? "Use cases/<case-name>.",
+    );
+  }
+  const caseRoot = resolved.caseRoot;
+  const outputPath = options.outputPath ?? "approval-overview.html";
+  if (outputPath !== "approval-overview.html") {
+    throw new RenderError("Approval dashboard must be approval-overview.html at the case root.", "Remove the custom output path.");
+  }
+  const output = await resolveContainedOutputPath(caseRoot, outputPath);
+  if (!output.absolutePath) {
+    throw new RenderError(output.error?.message ?? "Unsafe dashboard output.", output.error?.remediation ?? "Use a physical case-root output file.");
+  }
+  const loaded = await loadCaseRecords(options.repositoryRoot, caseRoot);
+  const validation = await validateLoadedCase(options.repositoryRoot, caseRoot, loaded);
+  const lifecycle = await readLifecycle(options.repositoryRoot);
+  const caseName = path.basename(caseRoot);
+  const approvals = loaded.records.map(asApproval)
+    .filter((approval): approval is Approval => approval !== undefined)
+    .sort((left, right) => Date.parse(right.decidedAt) - Date.parse(left.decidedAt) || left.file.localeCompare(right.file));
+  const events = journalEvents(loaded.records);
+
+  // Invalid references remain visible as text; never turn them into clickable URLs.
+  const evidenceLink = async (file: string): Promise<string> => {
+    const target = await resolveContainedCaseFile(caseRoot, file, "Dashboard evidence");
+    const label = escapeHtml(file);
+    return target.absolutePath
+      ? `<a href="${escapeHtml(file.split("/").map(encodeURIComponent).join("/"))}">${label}</a>`
+      : `<span>${label} (unavailable or unsafe)</span>`;
+  };
+  const bindingLinks = async (bindings: Binding[]): Promise<string> => {
+    if (bindings.length === 0) return "<p>No evidence bindings recorded.</p>";
+    return `<ul>${(await Promise.all(bindings.map(async (binding) => `<li>${await evidenceLink(binding.path)}<br><code>${escapeHtml(binding.sha256)}</code></li>`))).join("")}</ul>`;
+  };
+  const phaseCards = await Promise.all(lifecycle.phases.map(async (phase) => {
+    const status = phaseStatus(loaded.records, phase.id, lifecycle);
+    const latestEvent = events.filter((event) => event.value.phaseId === phase.id).at(-1);
+    const phaseDecisions = approvals.filter((approval) => approval.phaseId === phase.id);
+    const candidate = latestCandidateEvents(loaded.records).get(phase.id);
+    const readiness = validation.errors.length > 0
+      ? `${status.recommendation} Resolve the case diagnostics below and regenerate this snapshot before relying on readiness.`
+      : status.recommendation;
+    const reviews = allReviews(loaded.records).filter((review) => review.phaseId === phase.id);
+    return `<article class="step" id="phase-${escapeHtml(phase.id)}"><div class="step-head"><span class="step-num">PHASE ${escapeHtml(phase.id)}</span><h3>${escapeHtml(phase.displayName)}</h3><span class="status">${escapeHtml(status.state)}</span></div><p><strong>Recorded state:</strong> ${escapeHtml(status.state)}</p>${validation.errors.length ? "<p class=\"diagnostic\">Case evidence is invalid; this state is not validated readiness.</p>" : ""}<p><strong>Next action:</strong> ${escapeHtml(readiness)}</p>${latestEvent ? `<p><strong>Latest journal event:</strong> ${escapeHtml(String(latestEvent.value.eventType))} — ${escapeHtml(String(latestEvent.value.summary ?? ""))}</p>` : "<p>No phase journal events recorded.</p>"}<p>${phaseDecisions.length} recorded decision(s).</p><details><summary>Candidate evidence and reviews</summary>${await bindingLinks(candidate?.artifacts ?? [])}<ul>${(await Promise.all(reviews.map(async (review) => `<li>${escapeHtml(review.reviewer)} · round ${review.round} · ${escapeHtml(review.verdict)} · ${review.final ? "final" : "interim"}: ${await evidenceLink(review.file)}</li>`))).join("")}</ul></details></article>`;
+  }));
+  const history = await Promise.all(approvals.map(async (approval) => {
+    const record = loaded.records.find(({ file }) => file === approval.file);
+    const gaps = record?.value.residualGapAcceptance;
+    const active = phaseStatus(loaded.records, approval.phaseId).approval?.file === approval.file;
+    return `<article class="step"><h3>Phase ${escapeHtml(approval.phaseId)} · ${escapeHtml(approval.decision)}</h3><p>${escapeHtml(approval.decidedAt)} · ${escapeHtml(approval.approver)}</p><p><strong>Assurance:</strong> ${escapeHtml(approvalModeLabel(resolveApprovalMode(approval)))}</p><p>${active ? "Current recorded decision" : "Historical decision; not current approval"}${validation.errors.length ? " — case validation has errors" : ""}.</p><p>${await evidenceLink(approval.file)}</p>${approval.keyFingerprint ? `<p><strong>Key fingerprint:</strong> <code>${escapeHtml(approval.keyFingerprint)}</code></p>` : ""}${approval.keyRotation ? `<p><strong>Recorded key rotation:</strong> previous key <code>${escapeHtml(approval.keyRotation.previousKeyFingerprint)}</code>; reason: ${escapeHtml(approval.keyRotation.reason)}. A rotation is a visible break in key continuity.</p>` : ""}${Array.isArray(gaps) && gaps.length ? `<p><strong>Recorded residual gap acceptance:</strong> ${escapeHtml(gaps.map(String).join("; "))}</p>` : ""}<details><summary>Decision artifact and reviewer bindings</summary><h4>Artifacts</h4>${await bindingLinks(approval.artifactHashes)}<h4>Reviewer records</h4>${await bindingLinks(approval.reviewRecords)}</details></article>`;
+  }));
+  const diagnostics = validation.errors.length
+    ? `<ol>${validation.errors.map((error) => `<li><strong>${escapeHtml(error.invariant)}</strong> · <code>${escapeHtml(error.file)}</code><p>${escapeHtml(error.message)}</p><p><strong>Required action:</strong> ${escapeHtml(error.remediation)}</p></li>`).join("")}</ol>`
+    : "<p>No validation errors in the records read for this snapshot.</p>";
+  const blockers = events.filter((event) => event.value.eventType === "BLOCKER");
+  const refreshCommand = `npm run render -- approvals --case cases/${caseName}`;
+  const html = `<!doctype html>
+<html lang="en"><head><meta charset="utf-8">${contentSecurityPolicyMeta(false).replace("default-src 'none';", "default-src 'none'; font-src data:;")}<meta name="viewport" content="width=device-width,initial-scale=1"><meta name="generator" content="aff-render"><title>${escapeHtml(caseName)} — Architect approval dashboard</title><style>${dashboardStyles}</style></head>
+<body><a class="skip-link" href="#main-content">Skip to main content</a>
+<header class="topbar"><div class="wrap topbar-inner"><a class="brand" href="#top"><span class="brand-orb" aria-hidden="true"></span>Agentic Architecture v2</a><nav class="primary" aria-label="Page navigation"><ul><li><a href="#phases">Phases</a></li><li><a href="#diagnostics">Diagnostics</a></li><li><a href="#blockers">Blockers</a></li><li><a href="#history">Decisions</a></li></ul></nav></div></header>
+<main class="dashboard" id="main-content">
+<div class="hero" id="top"><div class="wrap hero-inner"><p class="tag"><span class="dot" aria-hidden="true"></span>AFF local architect workspace</p><h1 class="display">Architect approval<br><span class="accent">dashboard.</span></h1><p class="lede">${escapeHtml(caseName)}<br>The evidence in one place. The architect decides.</p><div class="hero-actions"><a class="cta solid" href="#phases">Review phase status</a><a class="cta ghost" href="#history">View decisions</a></div>
+<div class="metrics"><div class="metric"><div class="n">${lifecycle.phases.length}</div><div class="l">Lifecycle phases</div></div><div class="metric"><div class="n">${approvals.filter((approval) => approval.decision === "APPROVED").length}</div><div class="l">Recorded approvals*</div></div><div class="metric"><div class="n">${approvals.filter((approval) => approval.decision === "REJECTED").length}</div><div class="l">Recorded rejections*</div></div><div class="metric"><div class="n">${validation.errors.length}</div><div class="l">Validation errors</div></div></div>
+<div class="snapshot"><p>* Includes historical and synthetic records, not a count of valid human approvals.</p><p><strong>Snapshot generated:</strong> ${escapeHtml(new Date().toISOString())}. This page does not update automatically and cannot approve, sign, or execute anything.</p><p>Refresh after every record change, then validate before deciding. Run from the repository root: <code>${escapeHtml(refreshCommand)}</code></p></div>
+${validation.errors.length ? `<p class="diagnostic"><strong>Attention: ${validation.errors.length} validation error(s).</strong> Records below are diagnostic evidence, not validated approval or permission to continue.</p>` : '<p class="note safe">The loaded records passed validation. Read the evidence and remaining gaps before any human decision.</p>'}</div></div>
+<section id="phases" aria-label="Phase status"><div class="wrap"><div class="head"><p class="kicker">01 / Lifecycle</p><h2>Every phase. A clear next action.</h2><p>Recorded state, recommendations and supporting evidence, from intake to operation.</p></div><div class="phase-grid">${phaseCards.join("")}</div></div></section>
+<section id="diagnostics"><div class="wrap"><div class="head"><p class="kicker">02 / Evidence integrity</p><h2>Validation diagnostics and required actions</h2></div>${diagnostics}</div></section>
+<section id="blockers"><div class="wrap"><div class="head"><p class="kicker">03 / Blocker journal</p><h2>Recorded blockers</h2><p>Historical entries are retained; consult the current phase state and diagnostics for unresolved work.</p></div>${blockers.length ? `<ul class="diagnostics-list">${blockers.map((event) => `<li>Phase ${escapeHtml(String(event.value.phaseId))} · ${escapeHtml(String(event.value.timestamp))}: ${escapeHtml(String(event.value.summary ?? ""))}</li>`).join("")}</ul>` : '<p class="note">No blocker events recorded.</p>'}</div></section>
+<section id="history"><div class="wrap"><div class="head"><p class="kicker">04 / Decision trail</p><h2>All recorded approvals and rejections</h2><p>Newest decisions first. Malformed records excluded from this history appear in diagnostics; no missing evidence implies approval.</p></div><div class="steps">${history.length ? history.join("") : "<p>No readable human-decision records.</p>"}</div></div></section>
+</main><footer class="page"><div class="wrap">Local generated view. Authoritative case records remain separate. Synthetic decisions are test evidence and never human approval. Perform any human decision in your own terminal outside an agent session.</div></footer></body></html>`;
+  if (Buffer.byteLength(html, "utf8") > MAX_OUTPUT_BYTES) {
+    throw new RenderError("Approval dashboard exceeds the output size limit.", "Reduce oversized case evidence or split the case using the governance process.");
+  }
+  await writeFileAtomic(output.absolutePath, html, { encoding: "utf8", fsync: true });
+}
+import { dashboardStyles } from "./dashboard-theme.js";

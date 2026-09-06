@@ -1,4 +1,6 @@
 import type { ValidationError } from "../types.js";
+import { isRecord } from "../common/json.js";
+import { verifyApprovalSignature } from "../identity/signature.js";
 import type { LoadedRecord } from "./records.js";
 import { asApproval, type Approval } from "./review-records.js";
 
@@ -54,6 +56,30 @@ export function validateApprovalModes(
   options: ApprovalModeOptions = {},
 ): ValidationError[] {
   const errors: ValidationError[] = [];
+
+  for (const record of records) {
+    if (record.value.recordType !== "human-approval" ||
+      !isRecord(record.value.extensions)) continue;
+    const rotation = record.value.extensions.keyRotation;
+    if (rotation !== undefined && (!isRecord(rotation) ||
+      typeof rotation.previousKeyFingerprint !== "string" ||
+      !/^[a-f0-9]{64}$/u.test(rotation.previousKeyFingerprint) ||
+      typeof rotation.reason !== "string" || rotation.reason.trim() === "")) {
+      errors.push({ file: record.file, invariant,
+        message: "Approval key rotation must name the previous SHA-256 fingerprint and a nonempty reason.",
+        remediation: "Record a complete, explicit rotation from the active approval key." });
+    }
+    if (record.value.extensions.signature === undefined) continue;
+    const verification = verifyApprovalSignature(record.value);
+    if (!verification.verified) {
+      errors.push({
+        file: record.file,
+        invariant,
+        message: `Approval signature is invalid: ${verification.reason}.`,
+        remediation: "Restore the original signed record; never treat a damaged signature as an unsigned decision.",
+      });
+    }
+  }
 
   for (const approval of records
     .map(asApproval)
@@ -121,7 +147,7 @@ function validateSignatureContinuity(
 
   const errors: ValidationError[] = [];
   const anchor = signed[0];
-  const anchorFingerprint = anchor?.keyFingerprint;
+  let anchorFingerprint = anchor?.keyFingerprint;
   const firstSignedAt = anchor ? Date.parse(anchor.decidedAt) : 0;
 
   for (const approval of approvals) {
@@ -138,12 +164,11 @@ function validateSignatureContinuity(
       }
       continue;
     }
-    if (
-      anchorFingerprint &&
-      approval.keyFingerprint &&
-      approval.keyFingerprint !== anchorFingerprint &&
-      !approval.keyRotation
-    ) {
+    const changedKey = approval.keyFingerprint !== anchorFingerprint;
+    const validRotation = approval.keyRotation && changedKey &&
+      approval.keyRotation.previousKeyFingerprint === anchorFingerprint &&
+      approval.keyRotation.reason.trim().length > 0;
+    if ((changedKey && !validRotation) || (approval.keyRotation && !validRotation)) {
       errors.push({
         file: approval.file,
         invariant,
@@ -151,6 +176,8 @@ function validateSignatureContinuity(
         remediation:
           "Use the case's established approval key, or record an explicit key rotation in extensions.keyRotation naming the previous fingerprint and the reason.",
       });
+    } else if (validRotation) {
+      anchorFingerprint = approval.keyFingerprint;
     }
   }
 

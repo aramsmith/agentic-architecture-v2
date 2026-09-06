@@ -36,7 +36,7 @@ function approval(phaseId: string, decidedAt: string, decision = "APPROVED") {
     artifactPrefix: "sample",
     phaseId,
     artifactHashes: binding,
-    reviewRecords: binding,
+    reviewRecords: ["AFF-A", "AFF-B"].map((reviewer) => ({ path: `${phaseId}-${reviewer}.json`, sha256: "a".repeat(64) })),
     decision,
     approver: "Human Architect",
     decidedAt,
@@ -91,6 +91,10 @@ describe("phase sequence", () => {
 
     const errors = validatePhaseSequence(
       [
+        ...["0", "1", "2"].flatMap((phaseId) => ["AFF-A", "AFF-B"].map((reviewer) =>
+          record(`${phaseId}-${reviewer}.json`, { recordType: "review-record", phaseId, reviewer,
+            model: "test", round: 1, final: true, verdict: "CONVERGES", subjectArtifacts: binding,
+            reviewedAt: "2026-01-01T09:00:00Z" }))),
         approval("0", "2026-01-01T10:00:00Z"),
         approval("1", "2026-01-02T10:00:00Z"),
         approval("2", "2026-01-03T10:00:00Z"),
